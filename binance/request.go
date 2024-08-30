@@ -17,6 +17,8 @@ import (
 	"github.com/sleep-go/exchange-go/binance/consts"
 )
 
+var LogLevel = os.Stderr
+
 // Client define API client
 type Client struct {
 	APIKey     string
@@ -69,12 +71,19 @@ func NewClient(apiKey string, secretKey string, baseURL ...string) *Client {
 	if len(baseURL) > 0 {
 		api = baseURL[0]
 	}
+	prefix := "[INFO] "
+	switch LogLevel {
+	case os.Stderr:
+		prefix = "[ERROR] "
+	case os.Stdout:
+		prefix = "[INFO] "
+	}
 	return &Client{
 		APIKey:     apiKey,
 		SecretKey:  secretKey,
 		BaseURL:    api,
 		HTTPClient: http.DefaultClient,
-		Logger:     log.New(os.Stderr, "", log.LstdFlags),
+		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 	}
 }
 

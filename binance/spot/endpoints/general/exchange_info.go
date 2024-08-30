@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -12,11 +13,17 @@ import (
 	"github.com/sleep-go/exchange-go/binance/consts"
 )
 
-type ExchangeInfo struct {
+type ExchangeInfoRequest struct {
 	*binance.Client
+	log *log.Logger
 }
 
-type Body struct {
+// ExchangeInfoResponse 解释响应中的 permissionSets：
+// [["A","B"]] - 有权限"A"或权限"B"的账户可以下订单。
+// [["A"],["B"]] - 有权限"A"和权限"B"的账户可以下订单。
+// [["A"],["B","C"]] - 有权限"A"和权限"B"或权限"C"的账户可以下订单。（此处应用的是包含或，而不是排除或，因此账户可以同时拥有权限"B"和权限"C"。）
+// 数据源: 缓存
+type ExchangeInfoResponse struct {
 	Timezone   string `json:"timezone"`
 	ServerTime int64  `json:"serverTime"`
 	RateLimits []struct {
@@ -77,17 +84,29 @@ type Body struct {
 	} `json:"symbols"`
 }
 
-func (ex *ExchangeInfo) Do(ctx context.Context, symbols []string) (body *Body, err error) {
+// Do ExchangeInfoRequest
+// 备注:
+// 如果参数 symbol 或者 symbols 提供的交易对不存在, 系统会返回错误并提示交易对不正确.
+// 所有的参数都是可选的.
+// permissions 支持单个或者多个值, 比如 SPOT, ["MARGIN","LEVERAGED"].
+// 如果permissions值没有提供, 其默认值为 ["SPOT","MARGIN","LEVERAGED"].
+// 如果想显示所有交易权限，需要分别指定(比如，["SPOT","MARGIN",...]). 从 账户与交易对权限 查看交易权限列表.
+func (ex *ExchangeInfoRequest) Do(ctx context.Context, symbols, permissions []string) (body *ExchangeInfoResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ExchangeInfoApi,
+		Path:   consts.ApiExchangeInfo,
 	}
 	if len(symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(symbols, `","`))
 		r.SetParam("symbols", result)
 	}
+	if len(permissions) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(permissions, `","`))
+		r.SetParam("permissions", result)
+	}
 	res, err := ex.Client.Do(ctx, r)
 	if err != nil {
+		ex.log.Println("ExchangeInfoRequest response err:", err)
 		return nil, err
 	}
 	defer res.Body.Close()
@@ -95,6 +114,7 @@ func (ex *ExchangeInfo) Do(ctx context.Context, symbols []string) (body *Body, e
 	if err != nil {
 		return
 	}
+	fmt.Println(string(bytes))
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {
 		return nil, err
