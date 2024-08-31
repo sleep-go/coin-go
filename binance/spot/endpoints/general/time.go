@@ -4,27 +4,32 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/sleep-go/exchange-go/binance"
-
 	"github.com/sleep-go/exchange-go/binance/consts"
 )
 
-type TimeRequest struct {
-	*binance.Client
-	log *log.Logger
+type Time interface {
+	Call(ctx context.Context) (body *timeResponse, err error)
 }
 
-func (t *TimeRequest) Do(ctx context.Context) (body *TimeResponse, err error) {
+type timeRequest struct {
+	*binance.Client
+}
+
+func NewTime(client *binance.Client) Time {
+	return &timeRequest{Client: client}
+}
+
+func (t *timeRequest) Call(ctx context.Context) (body *timeResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiTime,
 	}
 	res, err := t.Client.Do(ctx, r)
 	if err != nil {
-		t.log.Println("PingRequest response err:", err)
+		t.Debugf("pingRequest response err: %v", err)
 		return nil, err
 	}
 	defer res.Body.Close()
@@ -39,6 +44,6 @@ func (t *TimeRequest) Do(ctx context.Context) (body *TimeResponse, err error) {
 	return body, nil
 }
 
-type TimeResponse struct {
+type timeResponse struct {
 	ServerTime int64 `json:"serverTime"`
 }

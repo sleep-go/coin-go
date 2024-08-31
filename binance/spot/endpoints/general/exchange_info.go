@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -13,21 +12,23 @@ import (
 	"github.com/sleep-go/exchange-go/binance/consts"
 )
 
-type ExchangeInfoRequest struct {
+type ExchangeInfo interface {
+	Call(ctx context.Context, symbols, permissions []string) (body *exchangeInfoResponse, err error)
+}
+type exchangeInfoRequest struct {
 	*binance.Client
-	log *log.Logger
 }
 
-func NewExchangeInfo(client *binance.Client) *ExchangeInfoRequest {
-	return &ExchangeInfoRequest{Client: client}
+func NewExchangeInfo(client *binance.Client) ExchangeInfo {
+	return &exchangeInfoRequest{Client: client}
 }
 
-// ExchangeInfoResponse 解释响应中的 permissionSets：
+// exchangeInfoResponse 解释响应中的 permissionSets：
 // [["A","B"]] - 有权限"A"或权限"B"的账户可以下订单。
 // [["A"],["B"]] - 有权限"A"和权限"B"的账户可以下订单。
 // [["A"],["B","C"]] - 有权限"A"和权限"B"或权限"C"的账户可以下订单。（此处应用的是包含或，而不是排除或，因此账户可以同时拥有权限"B"和权限"C"。）
 // 数据源: 缓存
-type ExchangeInfoResponse struct {
+type exchangeInfoResponse struct {
 	Timezone   string `json:"timezone"`
 	ServerTime int64  `json:"serverTime"`
 	RateLimits []struct {
@@ -95,7 +96,7 @@ type ExchangeInfoResponse struct {
 // permissions 支持单个或者多个值, 比如 SPOT, ["MARGIN","LEVERAGED"].
 // 如果permissions值没有提供, 其默认值为 ["SPOT","MARGIN","LEVERAGED"].
 // 如果想显示所有交易权限，需要分别指定(比如，["SPOT","MARGIN",...]). 从 账户与交易对权限 查看交易权限列表.
-func (ex *ExchangeInfoRequest) Call(ctx context.Context, symbols, permissions []string) (body *ExchangeInfoResponse, err error) {
+func (ex *exchangeInfoRequest) Call(ctx context.Context, symbols, permissions []string) (body *exchangeInfoResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiExchangeInfo,
@@ -110,13 +111,13 @@ func (ex *ExchangeInfoRequest) Call(ctx context.Context, symbols, permissions []
 	}
 	res, err := ex.Client.Do(ctx, r)
 	if err != nil {
-		ex.Client.Log("ExchangeInfoRequest response err:%v", err)
+		ex.Client.Debugf("exchangeInfoRequest response err:%v", err)
 		return nil, err
 	}
 	defer res.Body.Close()
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		ex.Client.Log("ExchangeInfoRequest call err:%v", err)
+		ex.Client.Debugf("exchangeInfoRequest call err:%v", err)
 		return
 	}
 	err = json.Unmarshal(bytes, &body)

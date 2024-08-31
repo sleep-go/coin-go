@@ -29,7 +29,7 @@ func TestNewClient(t *testing.T) {
 		"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
 		consts.TESTNET,
 	)
-	client.TimeOffset = 1000
+	//client.TimeOffset = 1000
 	client.Debug = true
 	r := &Request{
 		Method: http.MethodGet,
@@ -40,7 +40,7 @@ func TestNewClient(t *testing.T) {
 	r.SetParam("symbols", result)
 	request, err := client.request(context.Background(), r)
 	if err != nil {
-		client.Log("%v", err)
+		client.Debugf("%v", err)
 		return
 	}
 	response, err := client.HTTPClient.Do(request)

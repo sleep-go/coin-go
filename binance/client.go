@@ -20,9 +20,9 @@ type Client struct {
 	SecretKey  string
 	BaseURL    string
 	HTTPClient *http.Client
-	Debug      bool
 	Logger     *log.Logger
 	TimeOffset int64
+	Debug      bool
 }
 
 // NewClient 创建客户端函数来初始化客户端
@@ -75,23 +75,26 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 	}
 	req = req.WithContext(ctx)
 	req.Header = r.header
-	c.Log("r.fullURL:%s", r.fullURL)
-	c.Log("query:%s", r.query)
-	c.Log("form:%v", r.form)
+	c.Debugf("r.fullURL:%s", r.fullURL)
+	c.Debugf("query:%s", r.query)
+	c.Debugf("form:%v", r.form)
 	return req, nil
 }
 
 func (c *Client) Do(ctx context.Context, r *Request) (*http.Response, error) {
 	request, err := c.request(ctx, r)
 	if err != nil {
-		c.Log("request err:%v", err)
+		c.Debugf("request err:%v", err)
 		return nil, err
 	}
 	return c.HTTPClient.Do(request)
 }
 
-func (c *Client) Log(format string, v ...interface{}) {
+func (c *Client) Debugf(format string, v ...interface{}) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
 	}
+}
+func (c *Client) Println(v ...interface{}) {
+	c.Logger.Println(v...)
 }

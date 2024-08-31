@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -38,41 +37,37 @@ func TestGetIP(t *testing.T) {
 	fmt.Println(string(all))
 }
 func TestExchangeInfo_Do(t *testing.T) {
-	ex := ExchangeInfoRequest{
+	ex := exchangeInfoRequest{
 		Client: client,
-		log:    client.Logger,
 	}
 	do, err := ex.Call(context.Background(), []string{}, nil)
 	if err != nil {
 		return
 	}
 	for _, limit := range do.RateLimits {
-		client.Logger.Println(limit.RateLimitType, limit.IntervalNum, limit.Limit)
+		client.Debugf(limit.RateLimitType, limit.IntervalNum, limit.Limit)
 	}
 	for _, s := range do.Symbols {
 		client.Logger.Println(s.Symbol, s.Filters)
 	}
 }
 func TestPing_Do(t *testing.T) {
-	ping := PingRequest{
-		Client: client,
-		log:    client.Logger,
-	}
-	do, err := ping.Do(context.Background())
+	ping := NewPing(client)
+	do, err := ping.Call(context.Background())
 	if err != nil {
 		return
 	}
 	binance.LogLevel = os.Stdout
-	ping.log.Println(do.Status, do.Code)
+	t.Log(do.Status, do.Code)
 }
 func TestTime_Do(t *testing.T) {
-	tr := TimeRequest{
-		Client: client,
-		log:    client.Logger,
+	tr := NewTime(client)
+	for i := 0; i < 3; i++ {
+		res, err := tr.Call(context.Background())
+		if err != nil {
+			return
+		}
+		t.Log(time.UnixMilli(res.ServerTime))
+		time.Sleep(1 * time.Second)
 	}
-	do, err := tr.Do(context.Background())
-	if err != nil {
-		return
-	}
-	tr.log.Println(time.Parse(time.DateTime, strconv.FormatInt(do.ServerTime, 10)))
 }
