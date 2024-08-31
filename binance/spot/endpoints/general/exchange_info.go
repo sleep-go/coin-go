@@ -18,6 +18,10 @@ type ExchangeInfoRequest struct {
 	log *log.Logger
 }
 
+func NewExchangeInfo(client *binance.Client) *ExchangeInfoRequest {
+	return &ExchangeInfoRequest{Client: client}
+}
+
 // ExchangeInfoResponse 解释响应中的 permissionSets：
 // [["A","B"]] - 有权限"A"或权限"B"的账户可以下订单。
 // [["A"],["B"]] - 有权限"A"和权限"B"的账户可以下订单。
@@ -84,14 +88,14 @@ type ExchangeInfoResponse struct {
 	} `json:"symbols"`
 }
 
-// Do ExchangeInfoRequest
+// Call
 // 备注:
 // 如果参数 symbol 或者 symbols 提供的交易对不存在, 系统会返回错误并提示交易对不正确.
 // 所有的参数都是可选的.
 // permissions 支持单个或者多个值, 比如 SPOT, ["MARGIN","LEVERAGED"].
 // 如果permissions值没有提供, 其默认值为 ["SPOT","MARGIN","LEVERAGED"].
 // 如果想显示所有交易权限，需要分别指定(比如，["SPOT","MARGIN",...]). 从 账户与交易对权限 查看交易权限列表.
-func (ex *ExchangeInfoRequest) Do(ctx context.Context, symbols, permissions []string) (body *ExchangeInfoResponse, err error) {
+func (ex *ExchangeInfoRequest) Call(ctx context.Context, symbols, permissions []string) (body *ExchangeInfoResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiExchangeInfo,
@@ -106,15 +110,15 @@ func (ex *ExchangeInfoRequest) Do(ctx context.Context, symbols, permissions []st
 	}
 	res, err := ex.Client.Do(ctx, r)
 	if err != nil {
-		ex.log.Println("ExchangeInfoRequest response err:", err)
+		ex.Client.Log("ExchangeInfoRequest response err:%v", err)
 		return nil, err
 	}
 	defer res.Body.Close()
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
+		ex.Client.Log("ExchangeInfoRequest call err:%v", err)
 		return
 	}
-	fmt.Println(string(bytes))
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {
 		return nil, err

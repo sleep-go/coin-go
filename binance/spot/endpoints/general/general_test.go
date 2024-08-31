@@ -42,7 +42,7 @@ func TestExchangeInfo_Do(t *testing.T) {
 		Client: client,
 		log:    client.Logger,
 	}
-	do, err := ex.Do(context.Background(), []string{"BTCUSDT"}, []string{})
+	do, err := ex.Call(context.Background(), []string{}, nil)
 	if err != nil {
 		return
 	}

@@ -30,6 +30,7 @@ func TestNewClient(t *testing.T) {
 		consts.TESTNET,
 	)
 	client.TimeOffset = 1000
+	client.Debug = true
 	r := &Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiExchangeInfo,
@@ -39,6 +40,7 @@ func TestNewClient(t *testing.T) {
 	r.SetParam("symbols", result)
 	request, err := client.request(context.Background(), r)
 	if err != nil {
+		client.Log("%v", err)
 		return
 	}
 	response, err := client.HTTPClient.Do(request)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/sleep-go/exchange-go/binance"
+
 	"github.com/sleep-go/exchange-go/binance/consts"
 )
 
