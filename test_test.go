@@ -8,6 +8,7 @@ import (
 	"github.com/sleep-go/exchange-go/binance"
 	"github.com/sleep-go/exchange-go/binance/consts"
 	"github.com/sleep-go/exchange-go/binance/spot/endpoints/general"
+	"github.com/sleep-go/exchange-go/binance/spot/endpoints/market"
 )
 
 var client *binance.Client
@@ -21,10 +22,27 @@ func init() {
 	client.Debug = true
 }
 func TestNewExchangeInfo(t *testing.T) {
-	response, err := general.NewExchangeInfo(client).Call(context.Background(), []string{"ETHUSDT"}, nil)
+	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 	fmt.Println(response)
+}
+
+func TestDepth(t *testing.T) {
+	response, err := market.NewDepth(client, "ETCUSDT", market.DepthLimit20).Call(context.Background())
+	if err != nil {
+		return
+	}
+	fmt.Println(len(response.Asks))
+	fmt.Println(len(response.Bids))
+	fmt.Println(response.LastUpdateId)
+}
+func TestTrades(t *testing.T) {
+	res, err := market.NewTrades(client, "BTCUSDT", market.TradesLimit500).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
 }

@@ -53,16 +53,6 @@ func (r *Request) SetForm(key string, value interface{}) *Request {
 	return r
 }
 
-func sign(raw string, secret string) string {
-	// 创建 HMAC-SHA256 哈希
-	h := hmac.New(sha256.New, []byte(secret))
-	_, err := h.Write([]byte(raw))
-	if err != nil {
-		return ""
-	}
-	// 计算 HMAC 并将结果转换为十六进制字符串
-	return hex.EncodeToString(h.Sum(nil))
-}
 func signPayload(payload string, privateKey any) string {
 	hash := sha256.Sum256([]byte(payload))
 	switch privateKey.(type) {

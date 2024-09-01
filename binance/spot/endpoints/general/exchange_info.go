@@ -13,14 +13,19 @@ import (
 )
 
 type ExchangeInfo interface {
-	Call(ctx context.Context, symbols, permissions []string) (body *exchangeInfoResponse, err error)
+	Call(ctx context.Context) (body *exchangeInfoResponse, err error)
 }
 type exchangeInfoRequest struct {
 	*binance.Client
+	Symbols, Permissions []string
 }
 
-func NewExchangeInfo(client *binance.Client) ExchangeInfo {
-	return &exchangeInfoRequest{Client: client}
+func NewExchangeInfo(client *binance.Client, symbols, permissions []string) ExchangeInfo {
+	return &exchangeInfoRequest{
+		Client:      client,
+		Symbols:     symbols,
+		Permissions: permissions,
+	}
 }
 
 // exchangeInfoResponse 解释响应中的 permissionSets：
@@ -96,17 +101,17 @@ type exchangeInfoResponse struct {
 // permissions 支持单个或者多个值, 比如 SPOT, ["MARGIN","LEVERAGED"].
 // 如果permissions值没有提供, 其默认值为 ["SPOT","MARGIN","LEVERAGED"].
 // 如果想显示所有交易权限，需要分别指定(比如，["SPOT","MARGIN",...]). 从 账户与交易对权限 查看交易权限列表.
-func (ex *exchangeInfoRequest) Call(ctx context.Context, symbols, permissions []string) (body *exchangeInfoResponse, err error) {
+func (ex *exchangeInfoRequest) Call(ctx context.Context) (body *exchangeInfoResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiExchangeInfo,
 	}
-	if len(symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(symbols, `","`))
+	if len(ex.Symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.Symbols, `","`))
 		r.SetParam("symbols", result)
 	}
-	if len(permissions) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(permissions, `","`))
+	if len(ex.Permissions) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.Permissions, `","`))
 		r.SetParam("permissions", result)
 	}
 	res, err := ex.Client.Do(ctx, r)
@@ -117,7 +122,7 @@ func (ex *exchangeInfoRequest) Call(ctx context.Context, symbols, permissions []
 	defer res.Body.Close()
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		ex.Client.Debugf("exchangeInfoRequest call err:%v", err)
+		ex.Client.Debugf("ReadAll err:%v", err)
 		return
 	}
 	err = json.Unmarshal(bytes, &body)
