@@ -3,6 +3,7 @@ package general
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -36,6 +37,9 @@ func (t *timeRequest) Call(ctx context.Context) (body *timeResponse, err error) 
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", bytes)
 	}
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {

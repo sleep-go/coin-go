@@ -24,18 +24,23 @@ type Trades interface {
 	Call(ctx context.Context) (body []*tradesResponse, err error)
 }
 
+// tradesRequest 近期成交
 // 名称	类型	是否必须	描述
-// Symbol	STRING	YES
-// Limit	INT	NO	默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
-// 如果 Limit > 5000, 最多返回5000条数据.
+// symbol	STRING	YES
+// limit	INT	NO	默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
+// 如果 limit > 5000, 最多返回5000条数据.
 type tradesRequest struct {
 	*binance.Client
-	Symbol string
-	Limit  TradesLimitType
+	symbol string
+	limit  TradesLimitType //默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
 }
 
 func NewTrades(client *binance.Client, symbol string, limit TradesLimitType) Trades {
-	return &tradesRequest{Client: client, Symbol: symbol, Limit: limit}
+	return &tradesRequest{
+		Client: client,
+		symbol: symbol,
+		limit:  limit,
+	}
 }
 
 type tradesResponse struct {
@@ -48,14 +53,16 @@ type tradesResponse struct {
 }
 
 // Call 获取近期成交
-// 权重: 25
+// 名称	类型	是否必需	描述
+// symbol	STRING	YES
+// limit	INT	NO	Default 500; max 1000.
 func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketTrades,
 	}
-	req.SetParam("symbol", t.Symbol)
-	req.SetParam("limit", t.Limit)
+	req.SetParam("symbol", t.symbol)
+	req.SetParam("limit", t.limit)
 	res, err := t.Client.Do(ctx, req)
 	if err != nil {
 		t.Client.Debugf("response err:%v", err)
@@ -67,7 +74,9 @@ func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err e
 		t.Client.Debugf("ReadAll err:%v", err)
 		return nil, err
 	}
-	fmt.Println(string(bytes))
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", bytes)
+	}
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {
 		return nil, err

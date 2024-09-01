@@ -125,6 +125,9 @@ func (ex *exchangeInfoRequest) Call(ctx context.Context) (body *exchangeInfoResp
 		ex.Client.Debugf("ReadAll err:%v", err)
 		return
 	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", bytes)
+	}
 	err = json.Unmarshal(bytes, &body)
 	if err != nil {
 		return nil, err

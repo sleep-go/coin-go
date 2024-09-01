@@ -2,6 +2,8 @@ package general
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/sleep-go/exchange-go/binance"
@@ -35,6 +37,13 @@ func (p *pingRequest) Call(ctx context.Context) (*pingResponse, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", bytes)
+	}
 	return &pingResponse{
 		Status: res.Status,
 		Code:   res.StatusCode,
