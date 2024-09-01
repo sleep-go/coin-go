@@ -52,6 +52,9 @@ const (
 
 type Klines interface {
 	Call(ctx context.Context) (body []*klinesResponse, err error)
+	// CallUI 请求参数与响应和k线接口相同。
+	// uiKlines 返回修改后的k线数据，针对k线图的呈现进行了优化。
+	CallUI(ctx context.Context) (body []*klinesResponse, err error)
 	SetInterval(interval KlineIntervalType) Klines
 	SetStartTime(startTime int64) Klines
 	SetEndTime(endTime int64) Klines
@@ -112,10 +115,59 @@ func (k *klinesRequest) SetTimeZone(timeZone string) Klines {
 	return k
 }
 
+// Call 请注意：
+//
+// 如果未发送startTime和endTime，将返回最近的K线数据。
+// timeZone支持的值包括：
+// 小时和分钟（例如 -1:00，05:45）
+// 仅小时（例如 0，8，4）
+// 接受的值范围严格为 [-12:00 到 +14:00]（包括边界）
+// 如果提供了timeZone，K线间隔将在该时区中解释，而不是在UTC中。
+// 请注意，无论timeZone如何，startTime和endTime始终以UTC时区解释。
 func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketKLines,
+	}
+	req.SetParam("symbol", k.symbol)
+	req.SetParam("limit", k.limit)
+	if k.interval != "" {
+		req.SetParam("interval", string(k.interval))
+	}
+	if k.startTime != nil {
+		req.SetParam("startTime", *k.startTime)
+	}
+	if k.endTime != nil {
+		req.SetParam("endTime", *k.endTime)
+	}
+	req.SetParam("timeZone", "0")
+	if k.timeZone != "" {
+		req.SetParam("timeZone", k.timeZone)
+	}
+	res, err := k.Client.Do(ctx, req)
+	if err != nil {
+		k.Debugf("response err:%v", err)
+		return nil, err
+	}
+	defer res.Body.Close()
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		k.Debugf("ReadAll err:%v", err)
+		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s", bytes)
+	}
+	err = json.Unmarshal(bytes, &body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.ApiMarketUIKLines,
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)

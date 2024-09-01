@@ -77,22 +77,27 @@ func TestAggTrades(t *testing.T) {
 }
 
 func TestKlines(t *testing.T) {
-	res, err := market.NewKlines(client, "BTCUSDT", market.TradesLimit500).
+	k := market.NewKlines(client, "BTCUSDT", market.TradesLimit500).
 		SetInterval(market.KlineInterval1m).
 		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
 		SetEndTime(time.Now().UnixMilli()).
-		SetTimeZone("0").
-		Call(context.Background())
+		SetTimeZone("0")
+	res, err := k.Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	res1, err := k.CallUI(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())
 		return
 	}
-	for _, r := range res {
+	for i, r := range res {
 		fmt.Print(time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), "开盘时间 ") // 开盘时间
-		fmt.Print(r[1], "开盘价 ")                                                      // 开盘价
-		fmt.Print(r[2], "最高价 ")                                                      // 最高价
-		fmt.Print(r[3], "最低价 ")                                                      // 最低价
-		fmt.Print(r[4], "收盘价 ")                                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print(r[1], " ", res1[i][1], "开盘价 ")                                     // 开盘价
+		fmt.Print(r[2], " ", res1[i][2], "最高价 ")                                     // 最高价
+		fmt.Print(r[3], " ", res1[i][3], "最低价 ")                                     // 最低价
+		fmt.Print(r[4], " ", res1[i][4], "收盘价 ")                                     // 收盘价(当前K线未结束的即为最新价)
 		fmt.Print(r[5], "成交量 ")                                                      // 成交量
 		fmt.Print(time.UnixMilli(cast.ToInt64(r[6])), "收盘时间 ")                       // 收盘时间
 		fmt.Print(r[7], "成交额 ")                                                      // 成交额
@@ -101,4 +106,13 @@ func TestKlines(t *testing.T) {
 		fmt.Print(r[10], "主动买入成交额 ")                                                 // 主动买入成交额
 		fmt.Println(r[11])                                                           // 请忽略该参数
 	}
+}
+
+func TestAvgPrice(t *testing.T) {
+	res, err := market.NewAvgPrice(client, "BTCUSDT").Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	fmt.Println(res)
 }
