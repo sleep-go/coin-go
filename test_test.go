@@ -1,4 +1,4 @@
-package exchange_go
+package coin_go
 
 import (
 	"context"
