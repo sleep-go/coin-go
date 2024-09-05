@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/exchange-go/binance/spot/endpoints/market/ticker"
+
 	"github.com/sleep-go/exchange-go/binance"
 	"github.com/sleep-go/exchange-go/binance/consts"
 	"github.com/sleep-go/exchange-go/binance/spot/endpoints/general"
@@ -115,4 +117,14 @@ func TestAvgPrice(t *testing.T) {
 		return
 	}
 	fmt.Println(res)
+}
+func TestHr24(t *testing.T) {
+	res, err := ticker.NewHr24(client, []string{"ETHUSDT", "BNBBTC"}, ticker.Hr24TypeFull).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
 }

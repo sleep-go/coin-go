@@ -17,14 +17,14 @@ type ExchangeInfo interface {
 }
 type exchangeInfoRequest struct {
 	*binance.Client
-	Symbols, Permissions []string
+	symbols, permissions []string
 }
 
 func NewExchangeInfo(client *binance.Client, symbols, permissions []string) ExchangeInfo {
 	return &exchangeInfoRequest{
 		Client:      client,
-		Symbols:     symbols,
-		Permissions: permissions,
+		symbols:     symbols,
+		permissions: permissions,
 	}
 }
 
@@ -106,12 +106,12 @@ func (ex *exchangeInfoRequest) Call(ctx context.Context) (body *exchangeInfoResp
 		Method: http.MethodGet,
 		Path:   consts.ApiExchangeInfo,
 	}
-	if len(ex.Symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.Symbols, `","`))
+	if len(ex.symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.symbols, `","`))
 		r.SetParam("symbols", result)
 	}
-	if len(ex.Permissions) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.Permissions, `","`))
+	if len(ex.permissions) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.permissions, `","`))
 		r.SetParam("permissions", result)
 	}
 	res, err := ex.Client.Do(ctx, r)

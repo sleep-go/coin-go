@@ -39,8 +39,8 @@ func TestGetIP(t *testing.T) {
 func TestExchangeInfo_Do(t *testing.T) {
 	ex := exchangeInfoRequest{
 		Client:      client,
-		Symbols:     []string{},
-		Permissions: nil,
+		symbols:     []string{},
+		permissions: nil,
 	}
 	do, err := ex.Call(context.Background())
 	if err != nil {
