@@ -38,7 +38,7 @@ type tradingDayRequest struct {
 }
 
 // NewTradingDay 交易日行情(Ticker)
-func NewTradingDay(client *binance.Client, symbols []string, timeZone string, _type enums.TickerType) *tradingDayRequest {
+func NewTradingDay(client *binance.Client, symbols []string, timeZone string, _type enums.TickerType) TradingDay {
 	return &tradingDayRequest{Client: client, symbols: symbols, timeZone: timeZone, _type: _type}
 }
 

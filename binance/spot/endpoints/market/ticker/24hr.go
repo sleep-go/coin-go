@@ -14,16 +14,16 @@ import (
 )
 
 type Hr24 interface {
-	Call(ctx context.Context) (body []*Hr24Response, err error)
+	Call(ctx context.Context) (body []*hr24Response, err error)
 }
 
-type Hr24Request struct {
+type hr24Request struct {
 	*binance.Client
 	symbols []string
 	_type   enums.TickerType //可接受的参数: FULL or MINI. 如果不提供, 默认值为 FULL
 }
 
-type Hr24Response struct {
+type hr24Response struct {
 	Symbol             string `json:"symbol"` // 交易对
 	PriceChange        string `json:"priceChange"`
 	PriceChangePercent string `json:"priceChangePercent"`
@@ -47,8 +47,8 @@ type Hr24Response struct {
 	Count              int    `json:"count"`       // 统计时间内交易笔数
 }
 
-func NewHr24(client *binance.Client, symbols []string, _type enums.TickerType) *Hr24Request {
-	return &Hr24Request{
+func NewHr24(client *binance.Client, symbols []string, _type enums.TickerType) Hr24 {
+	return &hr24Request{
 		Client:  client,
 		symbols: symbols,
 		_type:   _type,
@@ -57,7 +57,7 @@ func NewHr24(client *binance.Client, symbols []string, _type enums.TickerType) *
 
 // Call 24hr价格变动情况
 // 请注意，不携带symbol参数会返回全部交易对数据，不仅数据庞大，而且权重极高
-func (hr *Hr24Request) Call(ctx context.Context) (body []*Hr24Response, err error) {
+func (hr *hr24Request) Call(ctx context.Context) (body []*hr24Response, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketTicker24Hr,

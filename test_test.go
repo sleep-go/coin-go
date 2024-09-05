@@ -141,3 +141,17 @@ func TestTradingDay(t *testing.T) {
 		fmt.Println(v)
 	}
 }
+
+func TestNewPrice(t *testing.T) {
+	res, err := ticker.NewPrice(client, []string{"ETHUSDT", "BNBBTC"}).Call(context.Background())
+	if err != nil {
+		return
+	}
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
+}
