@@ -155,3 +155,14 @@ func TestNewPrice(t *testing.T) {
 		fmt.Println(v)
 	}
 }
+
+func TestBookTicker(t *testing.T) {
+	res, err := ticker.NewBookTicker(client, []string{"ETHUSDT", "BNBBTC"}).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
+}
