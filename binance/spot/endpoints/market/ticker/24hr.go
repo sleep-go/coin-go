@@ -10,23 +10,17 @@ import (
 
 	"github.com/sleep-go/exchange-go/binance"
 	"github.com/sleep-go/exchange-go/binance/consts"
+	"github.com/sleep-go/exchange-go/binance/enums"
 )
 
 type Hr24 interface {
 	Call(ctx context.Context) (body []*Hr24Response, err error)
 }
 
-type Hr24Type string
-
-const (
-	Hr24TypeFull = "FULL"
-	Hr24TypeMINI = "MINI"
-)
-
 type Hr24Request struct {
 	*binance.Client
 	symbols []string
-	_type   Hr24Type //可接受的参数: FULL or MINI. 如果不提供, 默认值为 FULL
+	_type   enums.TickerType //可接受的参数: FULL or MINI. 如果不提供, 默认值为 FULL
 }
 
 type Hr24Response struct {
@@ -53,7 +47,7 @@ type Hr24Response struct {
 	Count              int    `json:"count"`       // 统计时间内交易笔数
 }
 
-func NewHr24(client *binance.Client, symbols []string, _type Hr24Type) *Hr24Request {
+func NewHr24(client *binance.Client, symbols []string, _type enums.TickerType) *Hr24Request {
 	return &Hr24Request{
 		Client:  client,
 		symbols: symbols,
@@ -72,7 +66,7 @@ func (hr *Hr24Request) Call(ctx context.Context) (body []*Hr24Response, err erro
 		result := fmt.Sprintf(`["%s"]`, strings.Join(hr.symbols, `","`))
 		req.SetParam("symbols", result)
 	}
-	req.SetParam("type", string(hr._type))
+	req.SetParam("type", hr._type.String())
 	res, err := hr.Client.Do(ctx, req)
 	if err != nil {
 		hr.Debugf("response err:%v", err)

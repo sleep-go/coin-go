@@ -9,6 +9,8 @@ type (
 	Side string
 	// TimeInForce 生效时间 （timeInForce）:
 	TimeInForce string
+	// TickerType 可接受值: FULL or MINI.  //默认值: FULL
+	TickerType string
 )
 
 func (f TimeInForce) String() string {
@@ -52,5 +54,14 @@ func (o OrderTypes) String() string {
 	return string(o)
 }
 func (o Side) String() string {
+	return string(o)
+}
+
+const (
+	TickerTypeFull TickerType = "FULL"
+	TickerTypeMINI TickerType = "MINI"
+)
+
+func (o TickerType) String() string {
 	return string(o)
 }

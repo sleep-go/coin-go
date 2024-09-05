@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/exchange-go/binance/enums"
+
 	"github.com/sleep-go/exchange-go/binance/spot/endpoints/market/ticker"
 
 	"github.com/sleep-go/exchange-go/binance"
@@ -119,7 +121,18 @@ func TestAvgPrice(t *testing.T) {
 	fmt.Println(res)
 }
 func TestHr24(t *testing.T) {
-	res, err := ticker.NewHr24(client, []string{"ETHUSDT", "BNBBTC"}, ticker.Hr24TypeFull).Call(context.Background())
+	res, err := ticker.NewHr24(client, []string{"ETHUSDT", "BNBBTC"}, enums.TickerTypeFull).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
+}
+
+func TestTradingDay(t *testing.T) {
+	res, err := ticker.NewTradingDay(client, []string{"ETHUSDT", "BNBBTC"}, "8", enums.TickerTypeFull).Call(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())
 		return
