@@ -16,11 +16,45 @@ coin-go 是一个用 Go 语言编写的开源库，旨在封装各大加密货�
 
 要在项目中使用 coin-go，请确保已安装 Go 环境，并按照以下步骤操作：
 
-1. 使用 `go get` 命令获取项目：
+使用 `go get` 命令获取项目：
 
- ```bash
- go get github.com/sleep-go/coin-go
- ```
+```bash
+go get github.com/sleep-go/coin-go
+```
+
+演示代码
+
+```go
+func TestNewExchangeInfo(t *testing.T) {
+    client := binance.NewClient(
+        "vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
+        "NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
+        consts.REST_API,
+    )
+    client.Debug = true
+    response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
+    if err != nil {
+    t.Fatal(err)
+    return
+    }
+    fmt.Println(response)
+}
+
+func TestAggTrades(t *testing.T) {
+    res, err := market.NewAggTrades(client, "BTCUSDT", 1).
+    SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+    SetEndTime(time.Now().UnixMilli()).
+    SetFromId(3031206).
+    Call(context.Background())
+    if err != nil {
+    t.Fatal(err.Error())
+        return
+    }
+    for _, r := range res {
+        fmt.Println(r)
+    }
+}
+```
 
 # 目前支持的交易所
 

@@ -6,14 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sleep-go/coin-go/binance/enums"
-
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
 	"github.com/spf13/cast"
 )
 
