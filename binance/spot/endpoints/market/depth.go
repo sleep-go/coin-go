@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sleep-go/exchange-go/binance"
-	"github.com/sleep-go/exchange-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
 )
 
 // DepthLimitType 是一个表示可选 limit 的类型

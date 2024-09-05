@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sleep-go/exchange-go/binance"
-	"github.com/sleep-go/exchange-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
 )
 
 // KlineIntervalType 支持的K线间隔 （区分大小写）

@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sleep-go/exchange-go/binance"
-	"github.com/sleep-go/exchange-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
 )
 
 var client *binance.Client

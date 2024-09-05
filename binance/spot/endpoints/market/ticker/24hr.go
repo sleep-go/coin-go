@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sleep-go/exchange-go/binance"
-	"github.com/sleep-go/exchange-go/binance/consts"
-	"github.com/sleep-go/exchange-go/binance/enums"
+	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/enums"
 )
 
 type Hr24 interface {
