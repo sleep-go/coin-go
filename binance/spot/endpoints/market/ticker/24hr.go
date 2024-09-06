@@ -10,7 +10,7 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/enums"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type Hr24 interface {

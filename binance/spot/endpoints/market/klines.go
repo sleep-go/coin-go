@@ -9,45 +9,7 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-)
-
-// KlineIntervalType 支持的K线间隔 （区分大小写）
-type KlineIntervalType string
-
-const (
-	//seconds -> 秒	1s
-
-	KlineIntervals1 KlineIntervalType = "1s"
-
-	//分钟级别 minutes -> 分钟	1m， 3m， 5m， 15m， 30m
-
-	KlineInterval1m  KlineIntervalType = "1m"
-	KlineInterval3m  KlineIntervalType = "3m"
-	KlineInterval5m  KlineIntervalType = "5m"
-	KlineInterval15m KlineIntervalType = "15m"
-	KlineInterval30m KlineIntervalType = "30m"
-
-	//  小时级别 hours -> 小时	1h， 2h， 4h， 6h， 8h， 12h
-
-	KlineInterval1h  KlineIntervalType = "1h"
-	KlineInterval2h  KlineIntervalType = "2h"
-	KlineInterval4h  KlineIntervalType = "4h"
-	KlineInterval6h  KlineIntervalType = "6h"
-	KlineInterval8h  KlineIntervalType = "8h"
-	KlineInterval12h KlineIntervalType = "12h"
-
-	// 天级别 days -> 天	1d， 3d
-
-	KlineInterval1d KlineIntervalType = "1d"
-	KlineInterval3d KlineIntervalType = "3d"
-
-	//周级别 weeks -> 周	1w
-
-	KlineInterval1w KlineIntervalType = "1w"
-
-	// 月级别 months -> 月	1M
-
-	KlineInterval1M KlineIntervalType = "1M"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type Klines interface {
@@ -55,7 +17,7 @@ type Klines interface {
 	// CallUI 请求参数与响应和k线接口相同。
 	// uiKlines 返回修改后的k线数据，针对k线图的呈现进行了优化。
 	CallUI(ctx context.Context) (body []*klinesResponse, err error)
-	SetInterval(interval KlineIntervalType) Klines
+	SetInterval(interval enums.KlineIntervalType) Klines
 	SetStartTime(startTime int64) Klines
 	SetEndTime(endTime int64) Klines
 	SetTimeZone(timeZone string) Klines
@@ -63,8 +25,8 @@ type Klines interface {
 type klinesRequest struct {
 	*binance.Client
 	symbol    string
-	limit     TradesLimitType   //Default 500; max 1000.
-	interval  KlineIntervalType //	请参考 K线间隔
+	limit     TradesLimitType         //Default 500; max 1000.
+	interval  enums.KlineIntervalType //	请参考 K线间隔
 	startTime *int64
 	endTime   *int64
 	timeZone  string
@@ -95,7 +57,7 @@ func NewKlines(client *binance.Client, symbol string, limit TradesLimitType) Kli
 }
 
 // SetInterval k线间隔 必传
-func (k *klinesRequest) SetInterval(interval KlineIntervalType) Klines {
+func (k *klinesRequest) SetInterval(interval enums.KlineIntervalType) Klines {
 	k.interval = interval
 	return k
 }
