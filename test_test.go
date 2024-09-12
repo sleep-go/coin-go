@@ -8,7 +8,7 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/enums"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
@@ -24,6 +24,14 @@ func init() {
 		consts.REST_API,
 	)
 	client.Debug = true
+}
+func TestPing(t *testing.T) {
+	res, err := general.NewPing(client).Call(context.Background())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	fmt.Println(res.Status, res.Code)
 }
 func TestNewExchangeInfo(t *testing.T) {
 	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
@@ -80,7 +88,7 @@ func TestAggTrades(t *testing.T) {
 
 func TestKlines(t *testing.T) {
 	k := market.NewKlines(client, "BTCUSDT", market.TradesLimit500).
-		SetInterval(market.KlineInterval1m).
+		SetInterval(enums.KlineIntervalType1M).
 		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
 		SetEndTime(time.Now().UnixMilli()).
 		SetTimeZone("0")
@@ -162,5 +170,26 @@ func TestBookTicker(t *testing.T) {
 	}
 	for _, v := range res {
 		fmt.Println(v)
+	}
+}
+
+func TestTicker(t *testing.T) {
+	var u uint8 = 255
+	fmt.Println(u)
+	res, err := ticker.NewTicker(client, []string{"ETHUSDT"}, enums.TickerTypeFull).SetMinute(1).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
+	res, err = ticker.NewTicker(client, []string{"ETHUSDT", "BTCUSDT"}, enums.TickerTypeFull).SetDay(1).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
 	}
 }

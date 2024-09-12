@@ -35,4 +35,7 @@ const (
 
 	// ApiMarketTickerBookTicker 最优挂单接口
 	ApiMarketTickerBookTicker = "/api/v3/ticker/bookTicker"
+
+	// ApiMarketTicker 滚动窗口价格变动统计
+	ApiMarketTicker = "/api/v3/ticker"
 )
