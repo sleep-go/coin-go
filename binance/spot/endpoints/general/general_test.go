@@ -22,6 +22,7 @@ func init() {
 		"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
 		consts.TESTNET,
 	)
+	client.Debug = true
 }
 func TestGetIP(t *testing.T) {
 	curl := "https://www.ip.cn/api/index?ip&type=0"
@@ -39,7 +40,7 @@ func TestGetIP(t *testing.T) {
 func TestExchangeInfo_Do(t *testing.T) {
 	ex := exchangeInfoRequest{
 		Client:      client,
-		symbols:     []string{},
+		symbols:     []string{"ETHUSDT"},
 		permissions: nil,
 	}
 	do, err := ex.Call(context.Background())
@@ -47,7 +48,7 @@ func TestExchangeInfo_Do(t *testing.T) {
 		return
 	}
 	for _, limit := range do.RateLimits {
-		client.Debugf(limit.RateLimitType, limit.IntervalNum, limit.Limit)
+		client.Debugf("RateLimitType:%s,IntervalNum:%d,Limit:%d", limit.RateLimitType, limit.IntervalNum, limit.Limit)
 	}
 	for _, s := range do.Symbols {
 		client.Logger.Println(s.Symbol, s.Filters)
@@ -57,7 +58,7 @@ func TestPing_Do(t *testing.T) {
 	ping := NewPing(client)
 	do, err := ping.Call(context.Background())
 	if err != nil {
-		return
+		t.Fatal(err.Error())
 	}
 	binance.LogLevel = os.Stdout
 	t.Log(do.Status, do.Code)
@@ -67,7 +68,7 @@ func TestTime_Do(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		res, err := tr.Call(context.Background())
 		if err != nil {
-			return
+			t.Fatal("tr.Call err:", err)
 		}
 		t.Log(time.UnixMilli(res.ServerTime))
 		time.Sleep(1 * time.Second)

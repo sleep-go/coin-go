@@ -2,12 +2,12 @@ package general
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
+	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
@@ -120,16 +120,12 @@ func (ex *exchangeInfoRequest) Call(ctx context.Context) (body *exchangeInfoResp
 		return nil, err
 	}
 	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		ex.Client.Debugf("ReadAll err:%v", err)
-		return
-	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		return nil, errors.New(res.Status)
 	}
-	err = json.Unmarshal(bytes, &body)
+	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
+		ex.Debugf("ParseHttpResponse err:%v", err)
 		return nil, err
 	}
 	return body, nil

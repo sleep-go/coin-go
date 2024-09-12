@@ -2,9 +2,11 @@ package general
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
+
+	"github.com/duke-git/lancet/v2/netutil"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -26,7 +28,7 @@ type pingResponse struct {
 	Code   int    `json:"code"`
 }
 
-func (p *pingRequest) Call(ctx context.Context) (*pingResponse, error) {
+func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) {
 	r := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiPing,
@@ -37,12 +39,12 @@ func (p *pingRequest) Call(ctx context.Context) (*pingResponse, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		return nil, fmt.Errorf("%v", res)
+	}
+	err = netutil.ParseHttpResponse(res, &body)
+	if err != nil {
+		return nil, errors.New(res.Status)
 	}
 	return &pingResponse{
 		Status: res.Status,
