@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/sleep-go/coin-go/binance/consts/enums"
+
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -26,6 +28,59 @@ type GetOrderRequest struct {
 	timestamp         int64
 }
 
+// GetOrderResponse 查询订单 (USER_DATA)
+// 至少需要发送 orderId 与 origClientOrderId中的一个
+// 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
+type GetOrderResponse struct {
+	Symbol                  string                `json:"symbol"`                  // 交易对
+	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
+	OrderListId             int                   `json:"orderListId"`             // 除非此单是订单列表的一部分, 否则此值为 -1
+	ClientOrderId           string                `json:"clientOrderId"`           // 客户自己设置的ID
+	Price                   string                `json:"price"`                   // 订单价格
+	OrigQty                 string                `json:"origQty"`                 // 用户设置的原始订单数量
+	ExecutedQty             string                `json:"executedQty"`             // 交易的订单数量
+	CummulativeQuoteQty     string                `json:"cummulativeQuoteQty"`     // 累计交易的金额
+	Status                  enums.OrderStatusType `json:"status"`                  // 订单状态
+	TimeInForce             enums.TimeInForceType `json:"timeInForce"`             // 订单的时效方式
+	Type                    enums.OrderType       `json:"type"`                    // 订单类型， 比如市价单，现价单等
+	Side                    enums.SideType        `json:"side"`                    // 订单方向，买还是卖
+	StopPrice               string                `json:"stopPrice"`               // 止损价格
+	IcebergQty              string                `json:"icebergQty"`              // 冰山数量
+	Time                    int64                 `json:"time"`                    // 订单时间
+	UpdateTime              int64                 `json:"updateTime"`              // 最后更新时间
+	IsWorking               bool                  `json:"isWorking"`               // 订单是否出现在orderbook中
+	WorkingTime             int64                 `json:"workingTime"`             // 订单添加到 order book 的时间
+	OrigQuoteOrderQty       string                `json:"origQuoteOrderQty"`       // 原始的交易金额
+	SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"` // 如何处理自我交易模式
+}
+
+func NewGetOrder(client *binance.Client, symbol string) *GetOrderRequest {
+	return &GetOrderRequest{Client: client, symbol: symbol}
+}
+
+func (o *GetOrderRequest) SetOrderId(orderId int64) GetOrder {
+	o.orderId = orderId
+	return o
+}
+
+func (o *GetOrderRequest) SetOrigClientOrderId(origClientOrderId string) GetOrder {
+	o.origClientOrderId = origClientOrderId
+	return o
+}
+
+func (o *GetOrderRequest) SetRecvWindow(recvWindow int64) GetOrder {
+	o.recvWindow = recvWindow
+	return o
+}
+
+func (o *GetOrderRequest) SetTimestamp(timestamp int64) GetOrder {
+	o.timestamp = timestamp
+	return o
+}
+
+// Call 查询订单 (USER_DATA)
+// 至少需要发送 orderId 与 origClientOrderId中的一个
+// 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
 func (o *GetOrderRequest) Call(ctx context.Context) (body *GetOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
@@ -59,54 +114,4 @@ func (o *GetOrderRequest) Call(ctx context.Context) (body *GetOrderResponse, err
 		return nil, err
 	}
 	return body, nil
-}
-
-// GetOrderResponse 查询订单 (USER_DATA)
-// 至少需要发送 orderId 与 origClientOrderId中的一个
-// 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
-type GetOrderResponse struct {
-	Symbol                  string `json:"symbol"`
-	OrderId                 int    `json:"orderId"`
-	OrderListId             int    `json:"orderListId"`
-	ClientOrderId           string `json:"clientOrderId"`
-	Price                   string `json:"price"`
-	OrigQty                 string `json:"origQty"`
-	ExecutedQty             string `json:"executedQty"`
-	CummulativeQuoteQty     string `json:"cummulativeQuoteQty"`
-	Status                  string `json:"status"`
-	TimeInForce             string `json:"timeInForce"`
-	Type                    string `json:"type"`
-	Side                    string `json:"side"`
-	StopPrice               string `json:"stopPrice"`
-	IcebergQty              string `json:"icebergQty"`
-	Time                    int64  `json:"time"`
-	UpdateTime              int64  `json:"updateTime"`
-	IsWorking               bool   `json:"isWorking"`
-	WorkingTime             int64  `json:"workingTime"`
-	OrigQuoteOrderQty       string `json:"origQuoteOrderQty"`
-	SelfTradePreventionMode string `json:"selfTradePreventionMode"`
-}
-
-func NewGetOrder(client *binance.Client, symbol string) *GetOrderRequest {
-	return &GetOrderRequest{Client: client, symbol: symbol}
-}
-
-func (o *GetOrderRequest) SetOrderId(orderId int64) GetOrder {
-	o.orderId = orderId
-	return o
-}
-
-func (o *GetOrderRequest) SetOrigClientOrderId(origClientOrderId string) GetOrder {
-	o.origClientOrderId = origClientOrderId
-	return o
-}
-
-func (o *GetOrderRequest) SetRecvWindow(recvWindow int64) GetOrder {
-	o.recvWindow = recvWindow
-	return o
-}
-
-func (o *GetOrderRequest) SetTimestamp(timestamp int64) GetOrder {
-	o.timestamp = timestamp
-	return o
 }

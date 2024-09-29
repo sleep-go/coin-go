@@ -18,6 +18,15 @@ type (
 
 	// KlineIntervalType 支持的K线间隔 （区分大小写）
 	KlineIntervalType string
+
+	// StpModeType selfTradePreventionMode 自我交易模式
+	StpModeType string
+
+	// OrderStatusType 订单状态
+	OrderStatusType string
+
+	// OrderListStatusType 订单组（order list）状态 （状态类型集 listStatusType）
+	OrderListStatusType string
 )
 
 func (f TimeInForceType) String() string {
@@ -107,4 +116,32 @@ const (
 	// 月级别 months -> 月	1M
 
 	KlineIntervalType1M KlineIntervalType = "1M"
+)
+
+const (
+	StpModeTypeNONE        StpModeType = "NONE"
+	StpModeTypeExpireMaker StpModeType = "EXPIRE_MAKER"
+	StpModeTypeExpireTaker StpModeType = "EXPIRE_TAKER"
+	StpModeTypeExpireBoth  StpModeType = "EXPIRE_BOTH"
+)
+
+const (
+	OrderStatusTypeNew OrderStatusType = "NEW" //该订单被交易引擎接受。
+	// OrderStatusTypePendingNew 该订单处于待处理 (PENDING) 阶段，直到其所属订单组（order list） 中的 working order 完全成交。
+	OrderStatusTypePendingNew OrderStatusType = "PENDING_NEW"
+	// OrderStatusTypePartiallyFilled 部分订单已被成交。
+	OrderStatusTypePartiallyFilled OrderStatusType = "PARTIALLY_FILLED"
+	// OrderStatusTypeFilled 订单已完全成交。
+	OrderStatusTypeFilled OrderStatusType = "FILLED"
+	// OrderStatusTypeCanceled 用户撤销了订单。
+	OrderStatusTypeCanceled OrderStatusType = "CANCELED"
+	// OrderStatusTypePendingCancel 撤销中(目前并未使用)。
+	OrderStatusTypePendingCancel OrderStatusType = "PENDING_CANCEL"
+	// OrderStatusTypeRejected 订单没有被交易引擎接受，也没被处理。
+	OrderStatusTypeRejected OrderStatusType = "REJECTED"
+	// OrderStatusTypeExpiredCanceled 该订单根据订单类型的规则被取消（例如，没有成交的 LIMIT FOK 订单, LIMIT IOC 或部分成交的 MARKET 订单）
+	//或者被交易引擎取消（例如，在强平期间被取消的订单，在交易所维护期间被取消的订单）
+	OrderStatusTypeExpiredCanceled OrderStatusType = "EXPIRED"
+	// OrderStatusTypeExpiredInMatch 表示订单由于 STP 而过期。（例如，带有 EXPIRE_TAKER 的订单与账簿上同属相同帐户或相同 tradeGroupId 的现有订单匹配）
+	OrderStatusTypeExpiredInMatch OrderStatusType = "EXPIRED_IN_MATCH"
 )
