@@ -23,32 +23,17 @@ const (
 	TESTNET = "https://testnet.binance.vision"
 )
 
-type CommonService interface {
-	Ping()
-	Time()
+type ErrorResponse struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+func Error(code int, msg string) error {
+	return fmt.Errorf("code: %d, msg: %s", code, msg)
 }
 
 type General struct {
 	BaseURL    string
 	HTTPClient *http.Client
 	Debug      bool
-}
-
-func (g *General) Ping() {
-	response, err := g.HTTPClient.Get(TESTNET + "/api/v3/ping")
-	if err != nil {
-		return
-	}
-	fmt.Println(response.Status)
-}
-
-func (g *General) Time() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func Order() {
-	//symbol=LTCBTC&side=BUY&type=LIMIT&timeInForce=GTC&quantity=1&price=0.1&recvWindow=5000&timestamp=1499827319559
-	api := fmt.Sprintf(REST_API + "/api/v3/depth?symbol=BTCUSDT&limit=5")
-	fmt.Println(api)
 }

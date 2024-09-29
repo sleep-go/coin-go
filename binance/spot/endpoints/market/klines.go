@@ -2,11 +2,9 @@ package market
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 
+	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -106,22 +104,19 @@ func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err e
 	if k.timeZone != "" {
 		req.SetParam("timeZone", k.timeZone)
 	}
-	res, err := k.Client.Do(ctx, req)
+	res, err := k.Do(ctx, req)
 	if err != nil {
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		k.Debugf("ReadAll err:%v", err)
-		return nil, err
-	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		var e *consts.ErrorResponse
+		err = netutil.ParseHttpResponse(res, &e)
+		return nil, consts.Error(e.Code, e.Msg)
 	}
-	err = json.Unmarshal(bytes, &body)
+	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
+		k.Debugf("ParseHttpResponse err:%v", err)
 		return nil, err
 	}
 	return body, nil
@@ -146,22 +141,19 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 	if k.timeZone != "" {
 		req.SetParam("timeZone", k.timeZone)
 	}
-	res, err := k.Client.Do(ctx, req)
+	res, err := k.Do(ctx, req)
 	if err != nil {
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		k.Debugf("ReadAll err:%v", err)
-		return nil, err
-	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		var e *consts.ErrorResponse
+		err = netutil.ParseHttpResponse(res, &e)
+		return nil, consts.Error(e.Code, e.Msg)
 	}
-	err = json.Unmarshal(bytes, &body)
+	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
+		k.Debugf("ParseHttpResponse err:%v", err)
 		return nil, err
 	}
 	return body, nil

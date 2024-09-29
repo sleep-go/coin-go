@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/duke-git/lancet/v2/netutil"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 )

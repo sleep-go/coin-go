@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sleep-go/coin-go/binance/consts"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
@@ -38,8 +36,8 @@ func init() {
 	API_KEY := strings.TrimSpace(string(file))
 	PRIVATE_KEY_PATH := "./private.pem"
 	fmt.Println(API_KEY)
-	client = binance.NewRsaClient(API_KEY, PRIVATE_KEY_PATH, consts.REST_API4)
-	client.Debug = false
+	client = binance.NewRsaClient(API_KEY, PRIVATE_KEY_PATH)
+	client.Debug = true
 }
 func TestPing(t *testing.T) {
 	res, err := general.NewPing(client).Call(context.Background())
@@ -70,9 +68,12 @@ func TestDepth(t *testing.T) {
 func TestTrades(t *testing.T) {
 	res, err := market.NewTrades(client, "BTCUSDT", market.TradesLimit500).Call(context.Background())
 	if err != nil {
+		fmt.Println(res)
 		t.Fatal(err)
 	}
-	fmt.Println(res)
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
 }
 
 func TestHistoryTrades(t *testing.T) {
@@ -210,11 +211,11 @@ func TestTicker(t *testing.T) {
 	}
 }
 func TestGetOrder(t *testing.T) {
-	res, err := trading.NewGetOrder(client, "BTCUSDT").
+	res, err := trading.NewQueryOrder(client, "BTCUSDT").
 		//SetOrderId，SetOrigClientOrderId 二选一
-		SetOrderId(30102167318).
+		SetOrderId(30102167319).
 		//SetOrderId，SetOrigClientOrderId 二选一
-		SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
+		//SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
