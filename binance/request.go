@@ -27,6 +27,11 @@ type Request struct {
 	needSign bool
 }
 
+func (r *Request) SetNeedSign(needSign bool) *Request {
+	r.needSign = needSign
+	return r
+}
+
 func (r *Request) addParam(key string, value interface{}) *Request {
 	if r.query == nil {
 		r.query = url.Values{}

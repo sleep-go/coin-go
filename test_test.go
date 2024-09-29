@@ -3,27 +3,43 @@ package coin_go
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+
+	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/trading"
 	"github.com/spf13/cast"
 )
 
 var client *binance.Client
 
 func init() {
-	client = binance.NewClient(
-		"vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
-		"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
-		consts.REST_API,
-	)
-	client.Debug = true
+	//测试客户端
+	//client = binance.NewClient(
+	//	"vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
+	//	"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
+	//	consts.TESTNET,
+	//)
+	//client.Debug = true
+	// 设置身份验证
+	file, err := os.ReadFile("./.env")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	API_KEY := strings.TrimSpace(string(file))
+	PRIVATE_KEY_PATH := "./private.pem"
+	fmt.Println(API_KEY)
+	client = binance.NewRsaClient(API_KEY, PRIVATE_KEY_PATH, consts.REST_API4)
+	client.Debug = false
 }
 func TestPing(t *testing.T) {
 	res, err := general.NewPing(client).Call(context.Background())
@@ -192,4 +208,18 @@ func TestTicker(t *testing.T) {
 	for _, v := range res {
 		fmt.Printf("%+v\n", v)
 	}
+}
+func TestGetOrder(t *testing.T) {
+	res, err := trading.NewGetOrder(client, "BTCUSDT").
+		//SetOrderId，SetOrigClientOrderId 二选一
+		SetOrderId(30102167318).
+		//SetOrderId，SetOrigClientOrderId 二选一
+		SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Printf("%+v\n", res)
 }

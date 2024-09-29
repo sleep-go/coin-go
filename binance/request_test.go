@@ -26,6 +26,7 @@ func init() {
 	PRIVATE_KEY_PATH := "../private.pem"
 	fmt.Println(API_KEY)
 	client = NewRsaClient(API_KEY, PRIVATE_KEY_PATH)
+	client.Debug = false
 }
 
 // todo 待封装order相关接口
@@ -35,14 +36,14 @@ func TestOrder(t *testing.T) {
 		Path:     consts.ApiTradingOpenOrders,
 		needSign: true,
 	}
-	req.SetParam("symbol", "BNBUSDT")
+	req.SetParam("symbol", "BTCUSDT")
 	req.SetParam("timestamp", time.Now().UnixMilli())
 	resp, err := client.Do(context.Background(), &req)
 	fmt.Println(req.query.Encode())
 	if err != nil {
 		return
 	}
-
+	//signature=SpDQS1R24mQGZrYRAZe9hkBuRzaGGEbg7Z5Z1cI0YGGUmSF0v39pAQbz5z1P72RqFezaPYtyn4AqwjB4RZKGsjvKgFb4b5W04zZYBni%2FbnamYuWZuAwc5%2BCdo33kZDZaN%2B6hwGmLZq8g2c8EdXpzgkQ8Ik1sy91wkrhVw%2BOwpLY%3D&symbol=BTCUSDT&timestamp=1727624123207
 	//// 设置请求参数
 	//params := url.Values{
 	//	"symbol": {"BNBUSDT"},
