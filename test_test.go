@@ -45,7 +45,7 @@ func TestPing(t *testing.T) {
 	fmt.Println(res.Status, res.Code)
 }
 func TestNewExchangeInfo(t *testing.T) {
-	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
+	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT", "BTCUSDT"}, nil).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -199,7 +199,7 @@ func TestTicker(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
-func TestGetOrder(t *testing.T) {
+func TestQueryOrder(t *testing.T) {
 	res, err := trading.NewQueryOrder(client, "BTCUSDT").
 		//SetOrderId，SetOrigClientOrderId 二选一
 		SetOrderId(30102167318).
@@ -212,6 +212,18 @@ func TestGetOrder(t *testing.T) {
 		return
 	}
 	fmt.Printf("%+v\n", res)
+}
+func TestDeleteOrder(t *testing.T) {
+	response, err := trading.NewDeleteOrder(client, "BTCUSDT").
+		SetOrderId(394763750).
+		SetTimestamp(time.Now().UnixMilli()).
+		SetCancelRestrictions(enums.CancelRestrictionsTypeOnlyNew).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Printf("%+v\n", response)
 }
 func TestGenEd25519(t *testing.T) {
 	_, privateKey, err := ed25519.GenerateKey(rand.Reader)

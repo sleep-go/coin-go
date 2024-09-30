@@ -27,6 +27,8 @@ type (
 
 	// OrderListStatusType 订单组（order list）状态 （状态类型集 listStatusType）
 	OrderListStatusType string
+
+	CancelRestrictionsType string
 )
 
 func (f TimeInForceType) String() string {
@@ -153,4 +155,11 @@ const (
 	OrderListStatusTypeAllDone OrderListStatusType = "ALL_DONE"
 	// OrderListStatusTypeReject 在 ListStatus 用于响应在下单阶段或取消订单组期间的失败操作时会被使用
 	OrderListStatusTypeReject OrderListStatusType = "REJECT"
+)
+
+const (
+	// CancelRestrictionsTypeOnlyNew 如果订单状态为 NEW，撤销将成功
+	CancelRestrictionsTypeOnlyNew CancelRestrictionsType = "ONLY_NEW"
+	// CancelRestrictionsTypeOnlyPartiallyFilled 如果订单状态为 PARTIALLY_FILLED，撤销将成功。
+	CancelRestrictionsTypeOnlyPartiallyFilled CancelRestrictionsType = "ONLY_PARTIALLY_FILLED"
 )
