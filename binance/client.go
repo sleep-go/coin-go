@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto"
-	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -79,7 +79,7 @@ func NewRsaClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
 	}
 }
 
-func NewECDAClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
+func NewED25519Client(apiKey, privateKeyPath string, baseURL ...string) *Client {
 	api := consts.REST_API
 	if len(baseURL) > 0 {
 		api = baseURL[0]
@@ -92,7 +92,7 @@ func NewECDAClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
 		prefix = "[INFO] "
 	}
 	// 加载 private key
-	privateKey, err := loadECDAPrivateKey(privateKeyPath)
+	privateKey, err := loadED25519PrivateKey(privateKeyPath)
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 	req = req.WithContext(ctx)
 	req.Header = r.header
 	c.Debugf("r.fullURL:%s", r.fullURL)
-	c.Debugf("query:%s", r.query)
+	c.Debugf("query:%s", r.query.Encode())
 	c.Debugf("form:%v", r.form)
 	return req, nil
 }
@@ -164,36 +164,50 @@ func (c *Client) Println(v ...interface{}) {
 }
 
 // loadRsaPrivateKey 加载并解析 PEM 编码的 RSA 私钥
-func loadRsaPrivateKey(path string) (*rsa.PrivateKey, error) {
+func loadRsaPrivateKey(path string) (crypto.Signer, error) {
 	privKeyPEM, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	block, _ := pem.Decode(privKeyPEM)
-	if block == nil || block.Type != "RSA PRIVATE KEY" {
+	switch block.Type {
+	case "PRIVATE KEY":
+		privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		return privateKey.(*rsa.PrivateKey), nil
+	case "RSA PRIVATE KEY":
+		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		return privateKey, nil
+	default:
 		return nil, fmt.Errorf("failed to decode PEM block containing the key")
 	}
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	return privateKey, nil
 }
 
-// loadECDAPrivateKey 加载并解析 PEM 编码的 ECDSA 私钥
-func loadECDAPrivateKey(path string) (*ecdsa.PrivateKey, error) {
+// loadED25519PrivateKey 加载并解析 PEM 编码的 ECDSA 私钥
+func loadED25519PrivateKey(path string) (crypto.Signer, error) {
 	privKeyPEM, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-
 	block, _ := pem.Decode(privKeyPEM)
-	if block == nil || block.Type != "EC PRIVATE KEY" {
-		return nil, fmt.Errorf("failed to decode PEM block containing the key")
+	fmt.Println("block.Type", block.Type)
+	switch block.Type {
+	case "PRIVATE KEY":
+		privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+		prvKey, ok := privateKey.(ed25519.PrivateKey)
+		if !ok {
+			return nil, fmt.Errorf("failed to decode PEM block containing the key")
+		}
+		return prvKey, nil
+	default:
+		return nil, fmt.Errorf("unsupported key type")
 	}
-	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	return privateKey, nil
 }

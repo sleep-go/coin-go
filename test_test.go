@@ -2,6 +2,10 @@ package coin_go
 
 import (
 	"context"
+	"crypto/ed25519"
+	"crypto/rand"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"os"
 	"strings"
@@ -20,23 +24,16 @@ import (
 var client *binance.Client
 
 func init() {
-	//测试客户端
-	//client = binance.NewClient(
-	//	"vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
-	//	"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
-	//	consts.TESTNET,
-	//)
-	//client.Debug = true
 	// 设置身份验证
 	file, err := os.ReadFile("./.env")
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 		return
 	}
 	API_KEY := strings.TrimSpace(string(file))
 	PRIVATE_KEY_PATH := "./private.pem"
 	fmt.Println(API_KEY)
-	client = binance.NewRsaClient(API_KEY, PRIVATE_KEY_PATH)
+	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH)
 	client.Debug = true
 }
 func TestPing(t *testing.T) {
@@ -55,7 +52,6 @@ func TestNewExchangeInfo(t *testing.T) {
 	}
 	fmt.Println(response)
 }
-
 func TestDepth(t *testing.T) {
 	response, err := market.NewDepth(client, "ETCUSDT", market.DepthLimit20).Call(context.Background())
 	if err != nil {
@@ -75,7 +71,6 @@ func TestTrades(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
-
 func TestHistoryTrades(t *testing.T) {
 	res, err := market.NewHistoryTrades(client, "BTCUSDT", 1).
 		SetFromId(3049539).
@@ -102,7 +97,6 @@ func TestAggTrades(t *testing.T) {
 		fmt.Println(r)
 	}
 }
-
 func TestKlines(t *testing.T) {
 	k := market.NewKlines(client, "BTCUSDT", market.TradesLimit500).
 		SetInterval(enums.KlineIntervalType1M).
@@ -134,7 +128,6 @@ func TestKlines(t *testing.T) {
 		fmt.Println(r[11])                                                           // 请忽略该参数
 	}
 }
-
 func TestAvgPrice(t *testing.T) {
 	res, err := market.NewAvgPrice(client, "BTCUSDT").Call(context.Background())
 	if err != nil {
@@ -153,7 +146,6 @@ func TestHr24(t *testing.T) {
 		fmt.Println(v)
 	}
 }
-
 func TestTradingDay(t *testing.T) {
 	res, err := ticker.NewTradingDay(client, []string{"ETHUSDT", "BNBBTC"}, "8", enums.TickerTypeFull).Call(context.Background())
 	if err != nil {
@@ -164,7 +156,6 @@ func TestTradingDay(t *testing.T) {
 		fmt.Println(v)
 	}
 }
-
 func TestNewPrice(t *testing.T) {
 	res, err := ticker.NewPrice(client, []string{"ETHUSDT", "BNBBTC"}).Call(context.Background())
 	if err != nil {
@@ -178,7 +169,6 @@ func TestNewPrice(t *testing.T) {
 		fmt.Println(v)
 	}
 }
-
 func TestBookTicker(t *testing.T) {
 	res, err := ticker.NewBookTicker(client, []string{"ETHUSDT", "BNBBTC"}).Call(context.Background())
 	if err != nil {
@@ -189,7 +179,6 @@ func TestBookTicker(t *testing.T) {
 		fmt.Println(v)
 	}
 }
-
 func TestTicker(t *testing.T) {
 	var u uint8 = 255
 	fmt.Println(u)
@@ -213,7 +202,7 @@ func TestTicker(t *testing.T) {
 func TestGetOrder(t *testing.T) {
 	res, err := trading.NewQueryOrder(client, "BTCUSDT").
 		//SetOrderId，SetOrigClientOrderId 二选一
-		SetOrderId(30102167319).
+		SetOrderId(30102167318).
 		//SetOrderId，SetOrigClientOrderId 二选一
 		//SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
 		SetTimestamp(time.Now().UnixMilli()).
@@ -223,4 +212,43 @@ func TestGetOrder(t *testing.T) {
 		return
 	}
 	fmt.Printf("%+v\n", res)
+}
+func TestGenEd25519(t *testing.T) {
+	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	privBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	// 创建 PEM 块
+	privPem := &pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: privBytes,
+	}
+	f, err := os.Create("private_key.pem")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	if err := pem.Encode(f, privPem); err != nil {
+		panic(err)
+	}
+	fmt.Println("Private key saved to private_key.pem")
+}
+func TestVerify(t *testing.T) {
+	// PEM 格式的公钥字符串
+	pubPEM := `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAlBkbo+QW1d2opV7NaFtAafqYicKMavyXDbytHpiqNoY=
+-----END PUBLIC KEY-----`
+
+	// 解析 PEM 块
+	block, _ := pem.Decode([]byte(pubPEM))
+	fmt.Println(block.Type)
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ed25519PubKey, _ := pub.(ed25519.PublicKey)
+	verify := ed25519.Verify(ed25519PubKey, []byte("orderId=30102167318&symbol=BTCUSDT"), []byte("itMmaFjcvhSQNeRblW3r8R/0gxam9I3OMFmFiPG0m6RJJvJo+H1OFhdxHYjNYeBxWep2PcuTy1/F08FCpljjBQ=="))
+	fmt.Println(verify)
 }

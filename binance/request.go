@@ -2,7 +2,7 @@ package binance
 
 import (
 	"crypto"
-	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
@@ -59,7 +59,6 @@ func (r *Request) SetForm(key string, value interface{}) *Request {
 }
 
 func signPayload(payload string, privateKey any) string {
-	hash := sha256.Sum256([]byte(payload))
 	switch privateKey.(type) {
 	case string:
 		h := hmac.New(sha256.New, []byte(privateKey.(string)))
@@ -70,18 +69,14 @@ func signPayload(payload string, privateKey any) string {
 		// 计算 HMAC 并将结果转换为十六进制字符串
 		return hex.EncodeToString(h.Sum(nil))
 	case *rsa.PrivateKey:
+		hash := sha256.Sum256([]byte(payload))
 		signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey.(*rsa.PrivateKey), crypto.SHA256, hash[:])
 		if err != nil {
 			return ""
 		}
 		return base64.StdEncoding.EncodeToString(signature)
-	case *ecdsa.PrivateKey:
-		r, s, err := ecdsa.Sign(rand.Reader, privateKey.(*ecdsa.PrivateKey), hash[:])
-		if err != nil {
-			return ""
-		}
-		signature := r.Bytes()
-		signature = append(signature, s.Bytes()...)
+	case ed25519.PrivateKey:
+		signature := ed25519.Sign(privateKey.(ed25519.PrivateKey), []byte(payload))
 		return base64.StdEncoding.EncodeToString(signature)
 	default:
 		log.Println(fmt.Errorf("unsupported signing algorithm"))
