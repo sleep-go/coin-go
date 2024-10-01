@@ -14,4 +14,8 @@ const (
 
 	// ApiAccountMyPreventedMatches 获取因 STP 而过期的订单列表。
 	ApiAccountMyPreventedMatches = "/api/v3/myPreventedMatches"
+
+	// ApiAccountMyAllocations 查询分配结果 (USER_DATA)
+	//检索由 SOR 订单生成引起的分配结果。
+	ApiAccountMyAllocations = "/api/v3/myAllocations"
 )

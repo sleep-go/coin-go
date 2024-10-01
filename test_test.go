@@ -282,3 +282,14 @@ func TestMyPreventedMatches(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestMyAllocations(t *testing.T) {
+	res, err := account.NewMyAllocations(client, "BTCUSDT", enums.Limit20).
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}

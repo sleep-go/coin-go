@@ -111,7 +111,7 @@ func (m *myPreventedMatchesRequest) Call(ctx context.Context) (body []*myPrevent
 	req.SetParam("timestamp", m.timestamp)
 	resp, err := m.Do(ctx, req)
 	if err != nil {
-		m.Debugf("rateLimitOrderRequest response err:%v", err)
+		m.Debugf("myPreventedMatchesRequest response err:%v", err)
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
