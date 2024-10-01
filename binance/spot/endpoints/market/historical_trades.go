@@ -2,19 +2,18 @@ package market
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 
+	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type historyTradesRequest struct {
 	*binance.Client
 	symbol string
-	limit  TradesLimitType //Default 500; max 1000.
+	limit  enums.LimitType //Default 500; max 1000.
 	fromId *uint64         //从哪一条成交id开始返回. 缺省返回最近的成交记录
 }
 
@@ -23,7 +22,7 @@ type HistoryTrades interface {
 	SetFromId(fromId uint64) HistoryTrades
 }
 
-func NewHistoryTrades(client *binance.Client, symbol string, limit TradesLimitType) HistoryTrades {
+func NewHistoryTrades(client *binance.Client, symbol string, limit enums.LimitType) HistoryTrades {
 	return &historyTradesRequest{Client: client, symbol: symbol, limit: limit}
 }
 
@@ -48,22 +47,19 @@ func (t *historyTradesRequest) Call(ctx context.Context) (body []*tradesResponse
 	if t.fromId != nil {
 		req.SetParam("fromId", *t.fromId)
 	}
-	res, err := t.Client.Do(ctx, req)
+	res, err := t.Do(ctx, req)
 	if err != nil {
-		t.Client.Debugf("response err:%v", err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Client.Debugf("ReadAll err:%v", err)
+		t.Debugf("response err:%v", err)
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		var e *consts.ErrorResponse
+		err = netutil.ParseHttpResponse(res, &e)
+		return nil, consts.Error(e.Code, e.Msg)
 	}
-	err = json.Unmarshal(bytes, &body)
+	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
+		t.Debugf("ParseHttpResponse err:%v", err)
 		return nil, err
 	}
 	return body, nil

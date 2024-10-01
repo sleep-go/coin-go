@@ -2,10 +2,6 @@ package coin_go
 
 import (
 	"context"
-	"crypto/ed25519"
-	"crypto/rand"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"os"
 	"strings"
@@ -55,16 +51,16 @@ func TestNewExchangeInfo(t *testing.T) {
 	fmt.Println(response)
 }
 func TestDepth(t *testing.T) {
-	response, err := market.NewDepth(client, "ETCUSDT", market.DepthLimit20).Call(context.Background())
+	response, err := market.NewDepth(client, "ETCUSDT", enums.Limit20).Call(context.Background())
 	if err != nil {
-		return
+		t.Fatal(err)
 	}
 	fmt.Println(len(response.Asks))
 	fmt.Println(len(response.Bids))
 	fmt.Println(response.LastUpdateId)
 }
 func TestTrades(t *testing.T) {
-	res, err := market.NewTrades(client, "BTCUSDT", market.TradesLimit500).Call(context.Background())
+	res, err := market.NewTrades(client, "BTCUSDT", enums.Limit20).Call(context.Background())
 	if err != nil {
 		fmt.Println(res)
 		t.Fatal(err)
@@ -100,7 +96,7 @@ func TestAggTrades(t *testing.T) {
 	}
 }
 func TestKlines(t *testing.T) {
-	k := market.NewKlines(client, "BTCUSDT", market.TradesLimit500).
+	k := market.NewKlines(client, "BTCUSDT", enums.Limit100).
 		SetInterval(enums.KlineIntervalType1M).
 		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
 		SetEndTime(time.Now().UnixMilli()).
@@ -264,43 +260,4 @@ func TestMyTrades(t *testing.T) {
 	for _, v := range res {
 		fmt.Printf("%+v\n", v)
 	}
-}
-func TestGenEd25519(t *testing.T) {
-	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-	privBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
-	// 创建 PEM 块
-	privPem := &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: privBytes,
-	}
-	f, err := os.Create("private_key.pem")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	if err := pem.Encode(f, privPem); err != nil {
-		panic(err)
-	}
-	fmt.Println("Private key saved to private_key.pem")
-}
-func TestVerify(t *testing.T) {
-	// PEM 格式的公钥字符串
-	pubPEM := `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAlBkbo+QW1d2opV7NaFtAafqYicKMavyXDbytHpiqNoY=
------END PUBLIC KEY-----`
-
-	// 解析 PEM 块
-	block, _ := pem.Decode([]byte(pubPEM))
-	fmt.Println(block.Type)
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ed25519PubKey, _ := pub.(ed25519.PublicKey)
-	verify := ed25519.Verify(ed25519PubKey, []byte("orderId=30102167318&symbol=BTCUSDT"), []byte("itMmaFjcvhSQNeRblW3r8R/0gxam9I3OMFmFiPG0m6RJJvJo+H1OFhdxHYjNYeBxWep2PcuTy1/F08FCpljjBQ=="))
-	fmt.Println(verify)
 }

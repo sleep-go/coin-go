@@ -29,6 +29,9 @@ type (
 	OrderListStatusType string
 
 	CancelRestrictionsType string
+
+	// LimitType 是一个表示可选 limit 的类型
+	LimitType int
 )
 
 func (f TimeInForceType) String() string {
@@ -162,4 +165,17 @@ const (
 	CancelRestrictionsTypeOnlyNew CancelRestrictionsType = "ONLY_NEW"
 	// CancelRestrictionsTypeOnlyPartiallyFilled 如果订单状态为 PARTIALLY_FILLED，撤销将成功。
 	CancelRestrictionsTypeOnlyPartiallyFilled CancelRestrictionsType = "ONLY_PARTIALLY_FILLED"
+)
+
+// 定义可选的 limit 值的枚举
+// 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
+const (
+	Limit5    LimitType = 5
+	Limit10   LimitType = 10
+	Limit20   LimitType = 20
+	Limit50   LimitType = 50
+	Limit100  LimitType = 100
+	Limit500  LimitType = 500
+	Limit1000 LimitType = 1000
+	Limit5000 LimitType = 5000
 )

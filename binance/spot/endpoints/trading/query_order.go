@@ -20,8 +20,8 @@ type QueryOrder interface {
 type queryOrderRequest struct {
 	*binance.Client
 	symbol            string
-	orderId           int64
-	origClientOrderId string
+	orderId           *int64
+	origClientOrderId *string
 	recvWindow        int64
 	timestamp         int64
 }
@@ -53,17 +53,17 @@ type queryOrderResponse struct {
 	SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"` // 如何处理自我交易模式
 }
 
-func NewQueryOrder(client *binance.Client, symbol string) *queryOrderRequest {
+func NewQueryOrder(client *binance.Client, symbol string) QueryOrder {
 	return &queryOrderRequest{Client: client, symbol: symbol}
 }
 
 func (o *queryOrderRequest) SetOrderId(orderId int64) QueryOrder {
-	o.orderId = orderId
+	o.orderId = &orderId
 	return o
 }
 
 func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) QueryOrder {
-	o.origClientOrderId = origClientOrderId
+	o.origClientOrderId = &origClientOrderId
 	return o
 }
 
@@ -87,10 +87,10 @@ func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", o.symbol)
-	if o.orderId > 0 {
+	if o.orderId != nil {
 		req.SetParam("orderId", o.orderId)
 	}
-	if o.origClientOrderId != "" {
+	if o.origClientOrderId != nil {
 		req.SetParam("origClientOrderId", o.origClientOrderId)
 	}
 	if o.recvWindow > 0 {

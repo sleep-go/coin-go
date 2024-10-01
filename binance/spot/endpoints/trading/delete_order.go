@@ -2,11 +2,12 @@ package trading
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
-	"net/http"
 )
 
 type DeleteOrder interface {
@@ -24,9 +25,9 @@ type DeleteOrder interface {
 type deleteOrderRequest struct {
 	*binance.Client
 	symbol            string
-	orderId           int64
-	origClientOrderId string
-	newClientOrderId  string //用户自定义的本次撤销操作的ID(注意不是被撤销的订单的自定义ID)。如无指定会自动赋值
+	orderId           *int64
+	origClientOrderId *string
+	newClientOrderId  *string //用户自定义的本次撤销操作的ID(注意不是被撤销的订单的自定义ID)。如无指定会自动赋值
 	//支持的值:
 	//ONLY_NEW - 如果订单状态为 NEW，撤销将成功。
 	//ONLY_PARTIALLY_FILLED - 如果订单状态为 PARTIALLY_FILLED，撤销将成功。
@@ -59,17 +60,17 @@ func NewDeleteOrder(client *binance.Client, symbol string) DeleteOrder {
 }
 
 func (d *deleteOrderRequest) SetOrderId(orderId int64) DeleteOrder {
-	d.orderId = orderId
+	d.orderId = &orderId
 	return d
 }
 
 func (d *deleteOrderRequest) SetOrigClientOrderId(origClientOrderId string) DeleteOrder {
-	d.origClientOrderId = origClientOrderId
+	d.origClientOrderId = &origClientOrderId
 	return d
 }
 
 func (d *deleteOrderRequest) SetNewClientOrderId(newClientOrderId string) DeleteOrder {
-	d.newClientOrderId = newClientOrderId
+	d.newClientOrderId = &newClientOrderId
 	return d
 }
 
@@ -94,11 +95,17 @@ func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderRespons
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)
-	if d.orderId > 0 {
+	if d.orderId != nil {
 		req.SetParam("orderId", d.orderId)
 	}
-	if d.origClientOrderId != "" {
+	if d.origClientOrderId != nil {
 		req.SetParam("origClientOrderId", d.origClientOrderId)
+	}
+	if d.newClientOrderId != nil {
+		req.SetParam("newClientOrderId", d.newClientOrderId)
+	}
+	if d.cancelRestrictions != "" {
+		req.SetParam("cancelRestrictions", d.cancelRestrictions)
 	}
 	if d.recvWindow > 0 {
 		req.SetParam("recvWindow", d.recvWindow)

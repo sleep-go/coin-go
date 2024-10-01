@@ -23,7 +23,7 @@ type Klines interface {
 type klinesRequest struct {
 	*binance.Client
 	symbol    string
-	limit     TradesLimitType         //Default 500; max 1000.
+	limit     enums.LimitType         //Default 500; max 1000.
 	interval  enums.KlineIntervalType //	请参考 K线间隔
 	startTime *int64
 	endTime   *int64
@@ -50,7 +50,7 @@ type klinesRequest struct {
 // ]
 type klinesResponse [12]any
 
-func NewKlines(client *binance.Client, symbol string, limit TradesLimitType) Klines {
+func NewKlines(client *binance.Client, symbol string, limit enums.LimitType) Klines {
 	return &klinesRequest{Client: client, symbol: symbol, limit: limit}
 }
 

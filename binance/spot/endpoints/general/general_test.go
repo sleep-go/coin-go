@@ -48,7 +48,7 @@ func TestExchangeInfo_Do(t *testing.T) {
 		return
 	}
 	for _, limit := range do.RateLimits {
-		client.Debugf("RateLimitType:%s,IntervalNum:%d,Limit:%d", limit.RateLimitType, limit.IntervalNum, limit.Limit)
+		client.Debugf("RateLimitType:%s,IntervalNum:%d,limit:%d", limit.RateLimitType, limit.IntervalNum, limit.Limit)
 	}
 	for _, s := range do.Symbols {
 		client.Logger.Println(s.Symbol, s.Filters)

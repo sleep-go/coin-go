@@ -2,10 +2,11 @@ package account
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"net/http"
 )
 
 type Account interface {
@@ -76,6 +77,7 @@ func (g *getAccountRequest) Call(ctx context.Context) (body *getAccountResponse,
 		Path:   consts.ApiAccount,
 	}
 	req.SetNeedSign(true)
+	req.SetParam("omitZeroBalances", g.omitZeroBalances)
 	if g.recvWindow > 0 {
 		req.SetParam("recvWindow", g.recvWindow)
 	}

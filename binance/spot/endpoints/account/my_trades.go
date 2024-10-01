@@ -2,16 +2,18 @@ package account
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"net/http"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type MyTrades interface {
 	SetOrderId(orderId int64) MyTrades
-	SetStartTime(startTime int64) MyTrades
-	SetEndTime(endTime int64) MyTrades
+	SetStartTime(startTime uint64) MyTrades
+	SetEndTime(endTime uint64) MyTrades
 	SetFromId(fromId int64) MyTrades
 	SetRecvWindow(recvWindow int64) MyTrades
 	SetTimestamp(timestamp int64) MyTrades
@@ -33,11 +35,11 @@ type MyTrades interface {
 type myTradesRequest struct {
 	*binance.Client
 	symbol     string
-	orderId    int64 //必须要和参数symbol一起使用.
-	startTime  int64
-	endTime    int64
-	fromId     int64 //返回该fromId之后的成交，缺省返回最近的成交
-	limit      int64 //Default 500; max 1000.
+	orderId    *int64 //必须要和参数symbol一起使用.
+	startTime  *uint64
+	endTime    *uint64
+	fromId     *int64          //返回该fromId之后的成交，缺省返回最近的成交
+	limit      enums.LimitType //Default 500; max 1000.
 	recvWindow int64
 	timestamp  int64
 }
@@ -56,27 +58,27 @@ type myTradesResponse struct {
 	IsBestMatch     bool   `json:"isBestMatch"`
 }
 
-func NewMyTrades(client *binance.Client, symbol string, limit int64) MyTrades {
+func NewMyTrades(client *binance.Client, symbol string, limit enums.LimitType) MyTrades {
 	return &myTradesRequest{Client: client, symbol: symbol, limit: limit}
 }
 
 func (m *myTradesRequest) SetOrderId(orderId int64) MyTrades {
-	m.orderId = orderId
+	m.orderId = &orderId
 	return m
 }
 
-func (m *myTradesRequest) SetStartTime(startTime int64) MyTrades {
-	m.startTime = startTime
+func (m *myTradesRequest) SetStartTime(startTime uint64) MyTrades {
+	m.startTime = &startTime
 	return m
 }
 
-func (m *myTradesRequest) SetEndTime(endTime int64) MyTrades {
-	m.endTime = endTime
+func (m *myTradesRequest) SetEndTime(endTime uint64) MyTrades {
+	m.endTime = &endTime
 	return m
 }
 
 func (m *myTradesRequest) SetFromId(fromId int64) MyTrades {
-	m.fromId = fromId
+	m.fromId = &fromId
 	return m
 }
 
@@ -97,16 +99,16 @@ func (m *myTradesRequest) Call(ctx context.Context) (body []*myTradesResponse, e
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
-	if m.orderId > 0 {
+	if m.orderId != nil {
 		req.SetParam("orderId", m.orderId)
 	}
-	if m.startTime > 0 {
+	if m.startTime != nil {
 		req.SetParam("startTime", m.startTime)
 	}
-	if m.endTime > 0 {
+	if m.endTime != nil {
 		req.SetParam("endTime", m.endTime)
 	}
-	if m.fromId > 0 {
+	if m.fromId != nil {
 		req.SetParam("fromId", m.fromId)
 	}
 	if m.limit > 0 {

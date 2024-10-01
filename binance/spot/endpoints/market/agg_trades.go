@@ -2,13 +2,13 @@ package market
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
+
+	"github.com/duke-git/lancet/v2/netutil"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type AggTrades interface {
@@ -21,7 +21,7 @@ type AggTrades interface {
 type aggTradesRequest struct {
 	*binance.Client
 	symbol    string
-	limit     TradesLimitType //默认 500; 最大 1000.
+	limit     enums.LimitType //默认 500; 最大 1000.
 	fromId    *uint64         //从包含fromID的成交开始返回结果
 	startTime *int64          //从该时刻之后的成交记录开始返回结果
 	endTime   *int64          //返回该时刻为止的成交记录
@@ -37,7 +37,7 @@ type aggTradesResponse struct {
 	M1 bool   `json:"M"` // 是否为最优撮合单(可忽略，目前总为最优撮合)
 }
 
-func NewAggTrades(client *binance.Client, symbol string, limit TradesLimitType) AggTrades {
+func NewAggTrades(client *binance.Client, symbol string, limit enums.LimitType) AggTrades {
 	return &aggTradesRequest{Client: client, symbol: symbol, limit: limit}
 }
 
@@ -74,22 +74,19 @@ func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse,
 	if a.endTime != nil {
 		req.SetParam("endTime", *a.endTime)
 	}
-	res, err := a.Client.Do(ctx, req)
+	res, err := a.Do(ctx, req)
 	if err != nil {
-		a.Client.Debugf("response err:%v", err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		a.Client.Debugf("ReadAll err:%v", err)
+		a.Debugf("response err:%v", err)
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
+		var e *consts.ErrorResponse
+		err = netutil.ParseHttpResponse(res, &e)
+		return nil, consts.Error(e.Code, e.Msg)
 	}
-	err = json.Unmarshal(bytes, &body)
+	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
+		a.Debugf("ParseHttpResponse err:%v", err)
 		return nil, err
 	}
 	return body, nil

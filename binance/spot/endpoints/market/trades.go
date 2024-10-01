@@ -7,15 +7,7 @@ import (
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-)
-
-// TradesLimitType 是一个表示可选 limit 的类型
-type TradesLimitType int
-
-// 定义可选的 limit 值的枚举
-const (
-	TradesLimit500  TradesLimitType = 500
-	TradesLimit1000 TradesLimitType = 1000
+	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
 type Trades interface {
@@ -30,10 +22,10 @@ type Trades interface {
 type tradesRequest struct {
 	*binance.Client
 	symbol string
-	limit  TradesLimitType //默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
+	limit  enums.LimitType //默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
 }
 
-func NewTrades(client *binance.Client, symbol string, limit TradesLimitType) Trades {
+func NewTrades(client *binance.Client, symbol string, limit enums.LimitType) Trades {
 	return &tradesRequest{
 		Client: client,
 		symbol: symbol,
