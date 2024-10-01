@@ -9,12 +9,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/sleep-go/coin-go/binance/consts"
 	"log"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/sleep-go/coin-go/binance/consts"
 )
 
 var LogLevel = os.Stderr
@@ -118,7 +116,8 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 		r.body = bytes.NewBufferString(bodyString)
 		//设置签名参数
 		raw := fmt.Sprintf("%s%s", queryString, bodyString)
-		r.SetParam("timestamp", time.Now().UnixMilli()-c.TimeOffset)
+		fmt.Println(raw)
+		//r.SetParam("timestamp", time.Now().UnixMilli()-c.TimeOffset)
 		if c.SecretKey != "" {
 			r.SetParam("signature", signPayload(raw, c.SecretKey))
 		} else if c.PrivateKey != nil {
@@ -151,6 +150,9 @@ func (c *Client) Do(ctx context.Context, r *Request) (*http.Response, error) {
 		c.Debugf("request err:%v", err)
 		return nil, err
 	}
+	fmt.Printf("%+v\n", request.URL)
+	fmt.Printf("%+v\n", request.Body)
+	fmt.Printf("%+v\n", request.Form.Encode())
 	return c.HTTPClient.Do(request)
 }
 

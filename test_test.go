@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
@@ -25,15 +27,15 @@ var client *binance.Client
 
 func init() {
 	// 设置身份验证
-	file, err := os.ReadFile("./.env")
+	file, err := os.ReadFile("./.test.env")
 	if err != nil {
 		panic(err)
 		return
 	}
 	API_KEY := strings.TrimSpace(string(file))
-	PRIVATE_KEY_PATH := "./private.pem"
+	PRIVATE_KEY_PATH := "./test_private.pem"
 	fmt.Println(API_KEY)
-	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH)
+	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH, consts.TESTNET)
 	client.Debug = true
 }
 func TestPing(t *testing.T) {
@@ -213,6 +215,19 @@ func TestQueryOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestNewOrder(t *testing.T) {
+	res, err := trading.NewOrder(client, "BTCUSDT").
+		SetQuantity("1").
+		SetType(enums.OrderTypeMarket).
+		SetSide(enums.SideTypeBuy).
+		SetTimestamp(time.Now().UnixMilli()).
+		CallTest(context.Background(), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+
+}
 func TestDeleteOrder(t *testing.T) {
 	response, err := trading.NewDeleteOrder(client, "BTCUSDT").
 		SetOrderId(394763750).
@@ -224,6 +239,31 @@ func TestDeleteOrder(t *testing.T) {
 		return
 	}
 	fmt.Printf("%+v\n", response)
+}
+func TestGetAccount(t *testing.T) {
+	response, err := account.NewGetAccount(client).
+		SetOmitZeroBalances(true).
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, balance := range response.Balances {
+		fmt.Printf("%+v\n", balance)
+	}
+	fmt.Printf("%+v\n", response.Permissions)
+}
+func TestMyTrades(t *testing.T) {
+	res, err := account.NewMyTrades(client, "BTCUSDT", 500).
+		SetTimestamp(time.Now().UnixMilli()).
+		//SetOrderId(11750571916).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
 }
 func TestGenEd25519(t *testing.T) {
 	_, privateKey, err := ed25519.GenerateKey(rand.Reader)

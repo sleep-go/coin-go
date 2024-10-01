@@ -10,7 +10,7 @@ import (
 )
 
 type DeleteOrder interface {
-	Call(ctx context.Context) (body *DeleteOrderResponse, err error)
+	Call(ctx context.Context) (body *deleteOrderResponse, err error)
 	SetOrderId(orderId int64) DeleteOrder
 	SetOrigClientOrderId(origClientOrderId string) DeleteOrder
 	SetNewClientOrderId(newClientOrderId string) DeleteOrder
@@ -19,9 +19,9 @@ type DeleteOrder interface {
 	SetTimestamp(timestamp int64) DeleteOrder
 }
 
-// DeleteOrderRequest orderId 与 origClientOrderId 必须至少发送一个.
+// deleteOrderRequest orderId 与 origClientOrderId 必须至少发送一个.
 // 如果两个参数一起发送, orderId优先被考虑.
-type DeleteOrderRequest struct {
+type deleteOrderRequest struct {
 	*binance.Client
 	symbol            string
 	orderId           int64
@@ -35,7 +35,7 @@ type DeleteOrderRequest struct {
 	timestamp          int64
 }
 
-type DeleteOrderResponse struct {
+type deleteOrderResponse struct {
 	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`
 	OrderId                 int                   `json:"orderId"` //// 除非此单是订单列表的一部分, 否则此值为 -1
@@ -55,39 +55,39 @@ type DeleteOrderResponse struct {
 }
 
 func NewDeleteOrder(client *binance.Client, symbol string) DeleteOrder {
-	return &DeleteOrderRequest{Client: client, symbol: symbol}
+	return &deleteOrderRequest{Client: client, symbol: symbol}
 }
 
-func (d *DeleteOrderRequest) SetOrderId(orderId int64) DeleteOrder {
+func (d *deleteOrderRequest) SetOrderId(orderId int64) DeleteOrder {
 	d.orderId = orderId
 	return d
 }
 
-func (d *DeleteOrderRequest) SetOrigClientOrderId(origClientOrderId string) DeleteOrder {
+func (d *deleteOrderRequest) SetOrigClientOrderId(origClientOrderId string) DeleteOrder {
 	d.origClientOrderId = origClientOrderId
 	return d
 }
 
-func (d *DeleteOrderRequest) SetNewClientOrderId(newClientOrderId string) DeleteOrder {
+func (d *deleteOrderRequest) SetNewClientOrderId(newClientOrderId string) DeleteOrder {
 	d.newClientOrderId = newClientOrderId
 	return d
 }
 
-func (d *DeleteOrderRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) DeleteOrder {
+func (d *deleteOrderRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) DeleteOrder {
 	d.cancelRestrictions = cancelRestrictions
 	return d
 }
 
-func (d *DeleteOrderRequest) SetRecvWindow(recvWindow int64) DeleteOrder {
+func (d *deleteOrderRequest) SetRecvWindow(recvWindow int64) DeleteOrder {
 	d.recvWindow = recvWindow
 	return d
 }
 
-func (d *DeleteOrderRequest) SetTimestamp(timestamp int64) DeleteOrder {
+func (d *deleteOrderRequest) SetTimestamp(timestamp int64) DeleteOrder {
 	d.timestamp = timestamp
 	return d
 }
-func (d *DeleteOrderRequest) Call(ctx context.Context) (body *DeleteOrderResponse, err error) {
+func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
 		Path:   consts.ApiTradingOrder,
@@ -106,7 +106,7 @@ func (d *DeleteOrderRequest) Call(ctx context.Context) (body *DeleteOrderRespons
 	req.SetParam("timestamp", d.timestamp)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
-		d.Debugf("DeleteOrderRequest response err:%v", err)
+		d.Debugf("deleteOrderRequest response err:%v", err)
 		return nil, err
 	}
 	err = netutil.ParseHttpResponse(resp, &body)

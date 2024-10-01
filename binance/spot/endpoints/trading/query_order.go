@@ -11,13 +11,13 @@ import (
 )
 
 type QueryOrder interface {
-	Call(ctx context.Context) (body *QueryOrderResponse, err error)
+	Call(ctx context.Context) (body *queryOrderResponse, err error)
 	SetOrderId(orderId int64) QueryOrder
 	SetRecvWindow(recvWindow int64) QueryOrder
 	SetOrigClientOrderId(origClientOrderId string) QueryOrder
 	SetTimestamp(timestamp int64) QueryOrder
 }
-type QueryOrderRequest struct {
+type queryOrderRequest struct {
 	*binance.Client
 	symbol            string
 	orderId           int64
@@ -26,10 +26,10 @@ type QueryOrderRequest struct {
 	timestamp         int64
 }
 
-// QueryOrderResponse 查询订单 (USER_DATA)
+// queryOrderResponse 查询订单 (USER_DATA)
 // 至少需要发送 orderId 与 origClientOrderId中的一个
 // 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
-type QueryOrderResponse struct {
+type queryOrderResponse struct {
 	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`                  // 交易对
 	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
@@ -53,26 +53,26 @@ type QueryOrderResponse struct {
 	SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"` // 如何处理自我交易模式
 }
 
-func NewQueryOrder(client *binance.Client, symbol string) *QueryOrderRequest {
-	return &QueryOrderRequest{Client: client, symbol: symbol}
+func NewQueryOrder(client *binance.Client, symbol string) *queryOrderRequest {
+	return &queryOrderRequest{Client: client, symbol: symbol}
 }
 
-func (o *QueryOrderRequest) SetOrderId(orderId int64) QueryOrder {
+func (o *queryOrderRequest) SetOrderId(orderId int64) QueryOrder {
 	o.orderId = orderId
 	return o
 }
 
-func (o *QueryOrderRequest) SetOrigClientOrderId(origClientOrderId string) QueryOrder {
+func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) QueryOrder {
 	o.origClientOrderId = origClientOrderId
 	return o
 }
 
-func (o *QueryOrderRequest) SetRecvWindow(recvWindow int64) QueryOrder {
+func (o *queryOrderRequest) SetRecvWindow(recvWindow int64) QueryOrder {
 	o.recvWindow = recvWindow
 	return o
 }
 
-func (o *QueryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
+func (o *queryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
 	o.timestamp = timestamp
 	return o
 }
@@ -80,7 +80,7 @@ func (o *QueryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
 // Call 查询订单 (USER_DATA)
 // 至少需要发送 orderId 与 origClientOrderId中的一个
 // 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
-func (o *QueryOrderRequest) Call(ctx context.Context) (body *QueryOrderResponse, err error) {
+func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiTradingOrder,
@@ -99,7 +99,7 @@ func (o *QueryOrderRequest) Call(ctx context.Context) (body *QueryOrderResponse,
 	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
-		o.Debugf("QueryOrderRequest response err:%v", err)
+		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
