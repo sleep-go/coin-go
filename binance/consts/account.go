@@ -18,4 +18,8 @@ const (
 	// ApiAccountMyAllocations 查询分配结果 (USER_DATA)
 	//检索由 SOR 订单生成引起的分配结果。
 	ApiAccountMyAllocations = "/api/v3/myAllocations"
+
+	// ApiAccountCommission 查询佣金费率 (USER_DATA)
+	// 获取当前账户的佣金费率。
+	ApiAccountCommission = "/api/v3/account/commission"
 )

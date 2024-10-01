@@ -29,7 +29,7 @@ func init() {
 		return
 	}
 	API_KEY := strings.TrimSpace(string(file))
-	PRIVATE_KEY_PATH := "./test_private.pem"
+	PRIVATE_KEY_PATH := "./test-prv-key.pem"
 	fmt.Println(API_KEY)
 	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH, consts.TESTNET)
 	client.Debug = true
@@ -222,7 +222,6 @@ func TestNewOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("%+v\n", res)
-
 }
 func TestDeleteOrder(t *testing.T) {
 	response, err := trading.NewDeleteOrder(client, "BTCUSDT").
@@ -292,4 +291,13 @@ func TestMyAllocations(t *testing.T) {
 	for _, v := range res {
 		fmt.Printf("%+v\n", v)
 	}
+}
+func TestCommission(t *testing.T) {
+	res, err := account.NewCommission(client, "BTCUSDT").
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
 }
