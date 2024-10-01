@@ -14,6 +14,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/spf13/cast"
 )
 
 type Request struct {
@@ -45,7 +47,16 @@ func (r *Request) SetParam(key string, value interface{}) *Request {
 	if r.query == nil {
 		r.query = url.Values{}
 	}
-	r.query.Set(key, fmt.Sprintf("%v", value))
+	switch value.(type) {
+	case *int, *int8, *int16, *int32, *int64:
+		r.query.Set(key, fmt.Sprintf("%v", cast.ToString(value)))
+	case *uint, *uint8, *uint16, *uint32, *uint64:
+		r.query.Set(key, fmt.Sprintf("%v", cast.ToUint(value)))
+	case *string:
+		r.query.Set(key, fmt.Sprintf("%v", cast.ToString(value)))
+	default:
+		r.query.Set(key, fmt.Sprintf("%v", value))
+	}
 	return r
 }
 
@@ -54,7 +65,16 @@ func (r *Request) SetForm(key string, value interface{}) *Request {
 	if r.form == nil {
 		r.form = url.Values{}
 	}
-	r.form.Set(key, fmt.Sprintf("%v", value))
+	switch value.(type) {
+	case *int, *int8, *int16, *int32, *int64:
+		r.form.Set(key, fmt.Sprintf("%v", cast.ToString(value)))
+	case *uint, *uint8, *uint16, *uint32, *uint64:
+		r.form.Set(key, fmt.Sprintf("%v", cast.ToUint(value)))
+	case *string:
+		r.form.Set(key, fmt.Sprintf("%v", cast.ToString(value)))
+	default:
+		r.form.Set(key, fmt.Sprintf("%v", value))
+	}
 	return r
 }
 

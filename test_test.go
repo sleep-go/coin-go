@@ -261,3 +261,24 @@ func TestMyTrades(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestRateLimitOrder(t *testing.T) {
+	res, err := account.NewRateLimitOrder(client).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
+func TestMyPreventedMatches(t *testing.T) {
+	res, err := account.NewMyPreventedMatches(client, "BTCUSDT", enums.Limit20).
+		SetOrderId(11750571916).
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
