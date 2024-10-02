@@ -81,11 +81,10 @@ func (o *userDataStreamRequest) CallDelete(ctx context.Context) (err error) {
 		Path:   consts.ApiStreamUserDataStream,
 	}
 	req.SetParam("listenKey", o.listenKey)
-	resp, err := o.Do(ctx, req)
+	_, err = o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("userDataStreamRequest response err:%v", err)
 		return err
 	}
-	fmt.Println(resp.StatusCode)
 	return nil
 }

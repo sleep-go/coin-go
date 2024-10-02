@@ -237,6 +237,16 @@ func TestDeleteOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", response)
 }
+func TestDeleteOpenOrders(t *testing.T) {
+	response, err := trading.NewDeleteOpenOrders(client, "BTCUSDT").
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Printf("%+v\n", response)
+}
 func TestGetAccount(t *testing.T) {
 	response, err := account.NewGetAccount(client).
 		SetOmitZeroBalances(true).

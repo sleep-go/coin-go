@@ -367,13 +367,16 @@ func (o *createOrderRequest) CallTest(ctx context.Context, computeCommissionRate
 	if o.recvWindow > 0 {
 		req.SetParam("recvWindow", o.recvWindow)
 	}
-	if o.timestamp > 0 {
-		req.SetParam("timestamp", o.timestamp)
-	}
+	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("createOrderRequest response err:%v", err)
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		var e *consts.ErrorResponse
+		err = netutil.ParseHttpResponse(resp, &e)
+		return nil, consts.Error(e.Code, e.Msg)
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {

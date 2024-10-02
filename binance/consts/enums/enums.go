@@ -30,6 +30,9 @@ type (
 
 	CancelRestrictionsType string
 
+	// ContingencyType 订单组的类型
+	ContingencyType string
+
 	// LimitType 是一个表示可选 limit 的类型
 	LimitType int
 )
@@ -178,4 +181,9 @@ const (
 	Limit500  LimitType = 500
 	Limit1000 LimitType = 1000
 	Limit5000 LimitType = 5000
+)
+
+const (
+	ContingencyTypeOCO ContingencyType = "OCO"
+	ContingencyTypeOTO ContingencyType = "OTO"
 )
