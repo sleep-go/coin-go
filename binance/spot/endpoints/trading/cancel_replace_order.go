@@ -102,8 +102,11 @@ type cancelReplaceResponse struct {
 	*Data `json:"data,omitempty"`
 }
 
-func NewCancelReplace(client *binance.Client) CancelReplace {
-	return &cancelReplaceRequest{Client: client}
+func NewCancelReplace(client *binance.Client, symbol string) CancelReplace {
+	return &cancelReplaceRequest{
+		Client:             client,
+		createOrderRequest: createOrderRequest{symbol: symbol},
+	}
 }
 
 func (c *cancelReplaceRequest) SetCancelReplaceMode(cancelReplaceMode enums.CancelReplaceModeType) CancelReplace {
@@ -367,8 +370,8 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
-		c.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
+		c.Debugf("ParseHttpResponse err:%v", err.Error())
+		return nil, consts.Error(resp.StatusCode, resp.Status)
 	}
 	return body, nil
 }

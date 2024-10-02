@@ -212,13 +212,22 @@ func TestQueryOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
-func TestNewOrder(t *testing.T) {
+func TestCreateOrder(t *testing.T) {
 	res, err := trading.NewOrder(client, "BTCUSDT").
 		SetQuantity("1").
 		SetType(enums.OrderTypeMarket).
 		SetSide(enums.SideTypeBuy).
 		SetTimestamp(time.Now().UnixMilli()).
 		CallTest(context.Background(), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestCancelReplace(t *testing.T) {
+	res, err := trading.NewCancelReplace(client, "BTCUSDT").
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

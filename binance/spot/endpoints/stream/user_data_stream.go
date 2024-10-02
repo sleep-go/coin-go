@@ -2,7 +2,6 @@ package stream
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/duke-git/lancet/v2/netutil"
@@ -65,12 +64,11 @@ func (o *userDataStreamRequest) CallUpdate(ctx context.Context) (err error) {
 		Path:   consts.ApiStreamUserDataStream,
 	}
 	req.SetParam("listenKey", o.listenKey)
-	resp, err := o.Do(ctx, req)
+	_, err = o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("userDataStreamRequest response err:%v", err)
 		return err
 	}
-	fmt.Println(resp.StatusCode)
 	return nil
 }
 
