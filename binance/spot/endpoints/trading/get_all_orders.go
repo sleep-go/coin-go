@@ -10,26 +10,31 @@ import (
 	"github.com/sleep-go/coin-go/binance/consts/enums"
 )
 
-type QueryOrder interface {
-	Call(ctx context.Context) (body *queryOrderResponse, err error)
-	SetOrderId(orderId int64) QueryOrder
-	SetRecvWindow(recvWindow int64) QueryOrder
-	SetOrigClientOrderId(origClientOrderId string) QueryOrder
-	SetTimestamp(timestamp int64) QueryOrder
-}
-type queryOrderRequest struct {
-	*binance.Client
-	symbol            string
-	orderId           *int64
-	origClientOrderId *string
-	recvWindow        int64
-	timestamp         int64
+type AllOrders interface {
+	SetOrderId(orderId int64) AllOrders
+	SetRecvWindow(recvWindow int64) AllOrders
+	SetTimestamp(timestamp int64) AllOrders
+	Call(ctx context.Context) (body []*queryOrderResponse, err error)
 }
 
-// queryOrderResponse 查询订单 (USER_DATA)
-// 至少需要发送 orderId 与 origClientOrderId中的一个
-// 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
-type queryOrderResponse struct {
+// AllOrdersRequest 查询所有订单（包括历史订单） (USER_DATA)
+// 注意:
+// 如设置 orderId , 订单量将 >= orderId。否则将返回最新订单。
+// 一些历史订单 cummulativeQuoteQty < 0, 是指数据此时不存在。
+// 如果设置 startTime 和 endTime, orderId 就不需要设置。
+// startTime和endTime之间的时间不能超过 24 小时。
+type allOrdersRequest struct {
+	*binance.Client
+	symbol     string
+	orderId    *int64
+	startTime  *uint64
+	endTime    *uint64
+	limit      enums.LimitType
+	recvWindow int64
+	timestamp  int64
+}
+
+type allOrdersResponse struct {
 	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`                  // 交易对
 	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
@@ -60,70 +65,52 @@ type queryOrderResponse struct {
 	TrailingTime      int64  `json:"trailingTime,omitempty"`
 }
 
-func NewQueryOrder(client *binance.Client, symbol string) QueryOrder {
-	return &queryOrderRequest{Client: client, symbol: symbol}
+func NewAllOrders(client *binance.Client, symbol string, limit enums.LimitType) AllOrders {
+	return &allOrdersRequest{Client: client, symbol: symbol, limit: limit}
+}
+func (o *allOrdersRequest) SetStartTime(startTime uint64) {
+	o.startTime = &startTime
 }
 
-func (o *queryOrderRequest) SetOrderId(orderId int64) QueryOrder {
+func (o *allOrdersRequest) SetEndTime(endTime uint64) {
+	o.endTime = &endTime
+}
+
+func (o *allOrdersRequest) SetOrderId(orderId int64) AllOrders {
 	o.orderId = &orderId
 	return o
 }
 
-func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) QueryOrder {
-	o.origClientOrderId = &origClientOrderId
-	return o
-}
-
-func (o *queryOrderRequest) SetRecvWindow(recvWindow int64) QueryOrder {
+func (o *allOrdersRequest) SetRecvWindow(recvWindow int64) AllOrders {
 	o.recvWindow = recvWindow
 	return o
 }
 
-func (o *queryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
+func (o *allOrdersRequest) SetTimestamp(timestamp int64) AllOrders {
 	o.timestamp = timestamp
 	return o
 }
 
-// Call 查询订单 (USER_DATA)
-// 至少需要发送 orderId 与 origClientOrderId中的一个
-// 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
-func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse, err error) {
+func (o *allOrdersRequest) Call(ctx context.Context) (body []*queryOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingOrder,
-	}
-	req.SetNeedSign(true)
-	req.SetParam("symbol", o.symbol)
-	if o.orderId != nil {
-		req.SetParam("orderId", o.orderId)
-	}
-	if o.origClientOrderId != nil {
-		req.SetParam("origClientOrderId", o.origClientOrderId)
-	}
-	if o.recvWindow > 0 {
-		req.SetParam("recvWindow", o.recvWindow)
-	}
-	req.SetParam("timestamp", o.timestamp)
-	resp, err := o.Do(ctx, req)
-	if err != nil {
-		o.Debugf("queryOrderRequest response err:%v", err)
-		return nil, err
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		o.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
-}
-func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOrderResponse, err error) {
-	req := &binance.Request{
-		Method: http.MethodGet,
-		Path:   consts.ApiTradingOpenOrders,
+		Path:   consts.ApiTradingAllOrders,
 	}
 	req.SetNeedSign(true)
 	if o.symbol != "" {
 		req.SetParam("symbol", o.symbol)
+	}
+	if o.limit > 0 {
+		req.SetParam("limit", o.limit)
+	}
+	if o.orderId != nil {
+		req.SetParam("orderId", *o.orderId)
+	}
+	if o.startTime != nil {
+		req.SetParam("startTime", *o.startTime)
+	}
+	if o.endTime != nil {
+		req.SetParam("endTime", *o.endTime)
 	}
 	if o.recvWindow > 0 {
 		req.SetParam("recvWindow", o.recvWindow)
