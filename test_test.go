@@ -219,7 +219,7 @@ func TestNewOrder(t *testing.T) {
 		SetType(enums.OrderTypeMarket).
 		SetSide(enums.SideTypeBuy).
 		SetTimestamp(time.Now().UnixMilli()).
-		CallTest(context.Background(), false)
+		CallTest(context.Background(), true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,9 +304,21 @@ func TestCommission(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestUserDataStream(t *testing.T) {
-	res, err := stream.NewUserDataStream(client).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	res, err := stream.NewUserDataStream(client).CallCreate(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("%+v\n", res)
+	err = stream.NewUserDataStream(client).
+		SetListenKey(res.ListenKey).
+		CallUpdate(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = stream.NewUserDataStream(client).
+		SetListenKey(res.ListenKey).
+		CallDelete(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 }

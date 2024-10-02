@@ -299,6 +299,7 @@ func (o *createOrderRequest) Call(ctx context.Context) (body *createOrderRespons
 }
 
 type CreateOrderTestResponse struct {
+	consts.ErrorResponse
 	// 订单交易的标准佣金率
 	StandardCommissionForOrder struct {
 		Maker string `json:"maker"`
