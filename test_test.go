@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/stream"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -296,6 +298,13 @@ func TestCommission(t *testing.T) {
 	res, err := account.NewCommission(client, "BTCUSDT").
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestUserDataStream(t *testing.T) {
+	res, err := stream.NewUserDataStream(client).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
