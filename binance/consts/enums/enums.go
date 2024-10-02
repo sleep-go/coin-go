@@ -35,6 +35,15 @@ type (
 
 	// LimitType 是一个表示可选 limit 的类型
 	LimitType int
+
+	// OrderRateLimitExceededModeType “DO_NOTHING”（默认值）- 仅在账户未超过未成交订单频率限制时，会尝试取消订单。
+	//
+	//“CANCEL_ONLY” - 将始终取消订单。
+	OrderRateLimitExceededModeType string
+
+	// CancelReplaceModeType 指定类型：STOP_ON_FAILURE - 如果撤消订单失败将不会继续重新下单。
+	//ALLOW_FAILURE - 不管撤消订单是否成功都会继续重新下单。
+	CancelReplaceModeType string
 )
 
 func (f TimeInForceType) String() string {
@@ -186,4 +195,15 @@ const (
 const (
 	ContingencyTypeOCO ContingencyType = "OCO"
 	ContingencyTypeOTO ContingencyType = "OTO"
+)
+const (
+	// CancelReplaceModeTypeStopOnFailure 如果撤消订单失败将不会继续重新下单。
+	CancelReplaceModeTypeStopOnFailure CancelReplaceModeType = "STOP_ON_FAILURE"
+	// CancelReplaceModeTypeAllowFailure 不管撤消订单是否成功都会继续重新下单。
+	CancelReplaceModeTypeAllowFailure CancelReplaceModeType = "ALLOW_FAILURE"
+)
+
+const (
+	OrderRateLimitExceededModeTypeDoNothing  OrderRateLimitExceededModeType = "DO_NOTHING"
+	OrderRateLimitExceededModeTypeCancelOnly OrderRateLimitExceededModeType = "CANCEL_ONLY"
 )

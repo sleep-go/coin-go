@@ -2,7 +2,6 @@ package general
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/duke-git/lancet/v2/netutil"
@@ -22,9 +21,9 @@ func NewPing(c *binance.Client) Ping {
 }
 
 type pingResponse struct {
-	consts.ErrorResponse
 	Status string `json:"status"`
 	Code   int    `json:"code"`
+	Msg    string `json:"msg"`
 }
 
 func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) {
@@ -37,17 +36,13 @@ func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) 
 		p.Debugf("pingRequest response err: %v", err)
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(res, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
 	err = netutil.ParseHttpResponse(res, &body)
 	if err != nil {
-		return nil, errors.New(res.Status)
+		return nil, consts.Error(res.StatusCode, res.Status)
 	}
 	return &pingResponse{
-		Status: res.Status,
-		Code:   res.StatusCode,
+		Status: body.Status,
+		Code:   body.Code,
+		Msg:    body.Msg,
 	}, nil
 }
