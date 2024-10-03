@@ -4,12 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/sleep-go/coin-go/pkg/errors"
-
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 // DeleteOpenOrders 撤销单一交易对下所有挂单。这也包括了来自订单列表的挂单。
@@ -101,18 +99,5 @@ func (d *deleteOpenOrdersRequest) Call(ctx context.Context) (body []*deleteOpenO
 		d.Debugf("deleteOpenOrdersRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *errors.Error
-		err = netutil.ParseHttpResponse(resp, &e)
-		if err != nil {
-			return nil, err
-		}
-		return nil, e
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		d.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*deleteOpenOrdersResponse](resp)
 }

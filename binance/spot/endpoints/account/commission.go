@@ -4,10 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/sleep-go/coin-go/pkg/utils"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Commission interface {
@@ -69,5 +68,5 @@ func (c *commissionRequest) Call(ctx context.Context) (body *commissionResponse,
 		c.Debugf("commissionRequest response err:%v", err)
 		return nil, err
 	}
-	return utils.ParseHttpResponse[commissionResponse](resp)
+	return utils.ParseHttpResponse[*commissionResponse](resp)
 }

@@ -4,12 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/sleep-go/coin-go/pkg/errors"
-
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type MyAllocations interface {
@@ -126,15 +124,5 @@ func (m *myAllocationsRequest) Call(ctx context.Context) (body []*myAllocationsR
 		m.Debugf("myAllocationsRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *errors.Error
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, e
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		m.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*myAllocationsResponse](resp)
 }
