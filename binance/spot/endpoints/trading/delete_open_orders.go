@@ -4,11 +4,12 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/sleep-go/coin-go/pkg/errors"
+
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
-	"github.com/sleep-go/coin-go/errors"
 )
 
 // DeleteOpenOrders 撤销单一交易对下所有挂单。这也包括了来自订单列表的挂单。

@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
+	"github.com/sleep-go/coin-go/pkg/utils"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
@@ -23,7 +24,6 @@ type commissionRequest struct {
 }
 
 type commissionResponse struct {
-	consts.ErrorResponse
 	Symbol             string `json:"symbol"`
 	StandardCommission struct {
 		Maker  string `json:"maker"`
@@ -65,10 +65,9 @@ func (c *commissionRequest) Call(ctx context.Context) (body *commissionResponse,
 	req.SetParam("symbol", c.symbol)
 	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
-	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
-		c.Debugf("ParseHttpResponse err:%v", err)
+		c.Debugf("commissionRequest response err:%v", err)
 		return nil, err
 	}
-	return body, nil
+	return utils.ParseHttpResponse[commissionResponse](resp)
 }
