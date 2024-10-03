@@ -8,6 +8,7 @@ import (
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/errors"
 )
 
 type MyAllocations interface {
@@ -32,7 +33,7 @@ type myAllocationsRequest struct {
 	timestamp        int64
 }
 
-func NewMyAllocations(client *binance.Client, symbol string, limit enums.LimitType) *myAllocationsRequest {
+func NewMyAllocations(client *binance.Client, symbol string, limit enums.LimitType) MyAllocations {
 	return &myAllocationsRequest{Client: client, symbol: symbol, limit: limit}
 }
 
@@ -125,9 +126,9 @@ func (m *myAllocationsRequest) Call(ctx context.Context) (body []*myAllocationsR
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
+		var e *errors.Error
 		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, consts.Error(e.Code, e.Msg)
+		return nil, e
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {

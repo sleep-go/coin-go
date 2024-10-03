@@ -7,6 +7,7 @@ import (
 	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/errors"
 )
 
 type Account interface {
@@ -24,7 +25,6 @@ type getAccountRequest struct {
 }
 
 type getAccountResponse struct {
-	consts.ErrorResponse
 	AccountType string `json:"accountType"`
 	Balances    []struct {
 		Asset  string `json:"asset"`
@@ -86,6 +86,11 @@ func (g *getAccountRequest) Call(ctx context.Context) (body *getAccountResponse,
 	if err != nil {
 		g.Debugf("getAccountRequest response err:%v", err)
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		var e *errors.Error
+		err = netutil.ParseHttpResponse(resp, &e)
+		return nil, e
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
