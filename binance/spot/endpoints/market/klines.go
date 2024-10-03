@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Klines interface {
@@ -91,35 +91,16 @@ func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err e
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)
-	if k.interval != "" {
-		req.SetParam("interval", string(k.interval))
-	}
-	if k.startTime != nil {
-		req.SetParam("startTime", *k.startTime)
-	}
-	if k.endTime != nil {
-		req.SetParam("endTime", *k.endTime)
-	}
-	req.SetParam("timeZone", "0")
-	if k.timeZone != "" {
-		req.SetParam("timeZone", k.timeZone)
-	}
-	res, err := k.Do(ctx, req)
+	req.SetOptionalParam("interval", string(k.interval))
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	resp, err := k.Do(ctx, req)
 	if err != nil {
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(res, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		k.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*klinesResponse](resp)
 }
 func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err error) {
 	req := &binance.Request{
@@ -128,33 +109,14 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)
-	if k.interval != "" {
-		req.SetParam("interval", string(k.interval))
-	}
-	if k.startTime != nil {
-		req.SetParam("startTime", *k.startTime)
-	}
-	if k.endTime != nil {
-		req.SetParam("endTime", *k.endTime)
-	}
-	req.SetParam("timeZone", "0")
-	if k.timeZone != "" {
-		req.SetParam("timeZone", k.timeZone)
-	}
-	res, err := k.Do(ctx, req)
+	req.SetOptionalParam("interval", string(k.interval))
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	resp, err := k.Do(ctx, req)
 	if err != nil {
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(res, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		k.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*klinesResponse](resp)
 }

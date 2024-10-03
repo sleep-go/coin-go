@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type QueryOrder interface {
@@ -30,7 +30,6 @@ type queryOrderRequest struct {
 // 至少需要发送 orderId 与 origClientOrderId中的一个
 // 某些订单中cummulativeQuoteQty<0，是由于这些订单是cummulativeQuoteQty功能上线之前的订单。
 type queryOrderResponse struct {
-	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`                  // 交易对
 	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
 	OrderListId             int                   `json:"orderListId"`             // 除非此单是订单列表的一部分, 否则此值为 -1
@@ -94,27 +93,16 @@ func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", o.symbol)
-	if o.orderId != nil {
-		req.SetParam("orderId", o.orderId)
-	}
-	if o.origClientOrderId != nil {
-		req.SetParam("origClientOrderId", o.origClientOrderId)
-	}
-	if o.recvWindow > 0 {
-		req.SetParam("recvWindow", o.recvWindow)
-	}
+	req.SetOptionalParam("orderId", o.orderId)
+	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
+	req.SetOptionalParam("recvWindow", o.recvWindow)
 	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		o.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*queryOrderResponse](resp)
 }
 func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOrderResponse, err error) {
 	req := &binance.Request{
@@ -122,27 +110,13 @@ func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOr
 		Path:   consts.ApiTradingOpenOrders,
 	}
 	req.SetNeedSign(true)
-	if o.symbol != "" {
-		req.SetParam("symbol", o.symbol)
-	}
-	if o.recvWindow > 0 {
-		req.SetParam("recvWindow", o.recvWindow)
-	}
+	req.SetOptionalParam("symbol", o.symbol)
+	req.SetOptionalParam("recvWindow", o.recvWindow)
 	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		o.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*queryOrderResponse](resp)
 }

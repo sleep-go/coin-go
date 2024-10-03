@@ -23,6 +23,10 @@ import (
 
 var client *binance.Client
 
+const (
+	BTCUSDT = "BTCUSDT"
+)
+
 func init() {
 	// 设置身份验证
 	file, err := os.ReadFile("./.test.env")
@@ -44,7 +48,7 @@ func TestPing(t *testing.T) {
 	fmt.Println(res)
 }
 func TestNewExchangeInfo(t *testing.T) {
-	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT", "BTCUSDT"}, nil).Call(context.Background())
+	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT", BTCUSDT}, nil).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -61,7 +65,7 @@ func TestDepth(t *testing.T) {
 	fmt.Println(response.LastUpdateId)
 }
 func TestTrades(t *testing.T) {
-	res, err := market.NewTrades(client, "BTCUSDT", enums.Limit20).Call(context.Background())
+	res, err := market.NewTrades(client, BTCUSDT, enums.Limit20).Call(context.Background())
 	if err != nil {
 		fmt.Println(res)
 		t.Fatal(err)
@@ -71,7 +75,7 @@ func TestTrades(t *testing.T) {
 	}
 }
 func TestHistoryTrades(t *testing.T) {
-	res, err := market.NewHistoryTrades(client, "BTCUSDT", 1).
+	res, err := market.NewHistoryTrades(client, BTCUSDT, 1).
 		SetFromId(3049539).
 		Call(context.Background())
 	if err != nil {
@@ -83,7 +87,7 @@ func TestHistoryTrades(t *testing.T) {
 	}
 }
 func TestAggTrades(t *testing.T) {
-	res, err := market.NewAggTrades(client, "BTCUSDT", 1).
+	res, err := market.NewAggTrades(client, BTCUSDT, 1).
 		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
 		SetEndTime(time.Now().UnixMilli()).
 		//SetFromId(3031206).
@@ -97,7 +101,7 @@ func TestAggTrades(t *testing.T) {
 	}
 }
 func TestKlines(t *testing.T) {
-	k := market.NewKlines(client, "BTCUSDT", enums.Limit100).
+	k := market.NewKlines(client, BTCUSDT, enums.Limit100).
 		SetInterval(enums.KlineIntervalType1M).
 		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
 		SetEndTime(time.Now().UnixMilli()).
@@ -128,7 +132,7 @@ func TestKlines(t *testing.T) {
 	}
 }
 func TestAvgPrice(t *testing.T) {
-	res, err := market.NewAvgPrice(client, "BTCUSDT").Call(context.Background())
+	res, err := market.NewAvgPrice(client, BTCUSDT).Call(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())
 		return
@@ -189,7 +193,7 @@ func TestTicker(t *testing.T) {
 	for _, v := range res {
 		fmt.Println(v)
 	}
-	res, err = ticker.NewTicker(client, []string{"ETHUSDT", "BTCUSDT"}, enums.TickerTypeFull).SetDay(1).Call(context.Background())
+	res, err = ticker.NewTicker(client, []string{"ETHUSDT", BTCUSDT}, enums.TickerTypeFull).SetDay(1).Call(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())
 		return
@@ -199,7 +203,7 @@ func TestTicker(t *testing.T) {
 	}
 }
 func TestQueryOrder(t *testing.T) {
-	res, err := trading.NewQueryOrder(client, "BTCUSDT").
+	res, err := trading.NewQueryOrder(client, BTCUSDT).
 		//SetOrderId，SetOrigClientOrderId 二选一
 		SetOrderId(30102167318).
 		//SetOrderId，SetOrigClientOrderId 二选一
@@ -213,7 +217,7 @@ func TestQueryOrder(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestCreateOrder(t *testing.T) {
-	res, err := trading.NewOrder(client, "BTCUSDT").
+	res, err := trading.NewOrder(client, BTCUSDT).
 		SetQuantity("1").
 		SetType(enums.OrderTypeMarket).
 		SetSide(enums.SideTypeBuy).
@@ -225,7 +229,7 @@ func TestCreateOrder(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestCancelReplace(t *testing.T) {
-	res, err := trading.NewCancelReplace(client, "BTCUSDT").
+	res, err := trading.NewCancelReplace(client, BTCUSDT).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
@@ -234,7 +238,7 @@ func TestCancelReplace(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestDeleteOrder(t *testing.T) {
-	response, err := trading.NewDeleteOrder(client, "BTCUSDT").
+	response, err := trading.NewDeleteOrder(client, BTCUSDT).
 		SetOrderId(394763750).
 		SetTimestamp(time.Now().UnixMilli()).
 		SetCancelRestrictions(enums.CancelRestrictionsTypeOnlyNew).
@@ -246,7 +250,7 @@ func TestDeleteOrder(t *testing.T) {
 	fmt.Printf("%+v\n", response)
 }
 func TestDeleteOpenOrders(t *testing.T) {
-	response, err := trading.NewDeleteOpenOrders(client, "BTCUSDT").
+	response, err := trading.NewDeleteOpenOrders(client, BTCUSDT).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
@@ -269,7 +273,7 @@ func TestGetAccount(t *testing.T) {
 	fmt.Printf("%+v\n", response.Permissions)
 }
 func TestMyTrades(t *testing.T) {
-	res, err := account.NewMyTrades(client, "BTCUSDT", 500).
+	res, err := account.NewMyTrades(client, BTCUSDT, 500).
 		SetTimestamp(time.Now().UnixMilli()).
 		//SetOrderId(11750571916).
 		Call(context.Background())
@@ -290,7 +294,7 @@ func TestRateLimitOrder(t *testing.T) {
 	}
 }
 func TestMyPreventedMatches(t *testing.T) {
-	res, err := account.NewMyPreventedMatches(client, "BTCUSDT", enums.Limit20).
+	res, err := account.NewMyPreventedMatches(client, BTCUSDT, enums.Limit20).
 		SetOrderId(11750571916).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
@@ -302,7 +306,7 @@ func TestMyPreventedMatches(t *testing.T) {
 	}
 }
 func TestMyAllocations(t *testing.T) {
-	res, err := account.NewMyAllocations(client, "BTCUSDT", enums.Limit20).
+	res, err := account.NewMyAllocations(client, BTCUSDT, enums.Limit20).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
@@ -313,7 +317,7 @@ func TestMyAllocations(t *testing.T) {
 	}
 }
 func TestCommission(t *testing.T) {
-	res, err := account.NewCommission(client, "BTCUSDT").
+	res, err := account.NewCommission(client, BTCUSDT).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {

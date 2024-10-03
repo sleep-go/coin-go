@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Depth interface {
@@ -24,7 +24,6 @@ type depthRequest struct {
 	limit  enums.LimitType
 }
 type depthResponse struct {
-	consts.ErrorResponse
 	LastUpdateId int        `json:"lastUpdateId"`
 	Bids         [][]string `json:"bids"`
 	Asks         [][]string `json:"asks"`
@@ -50,15 +49,10 @@ func (d *depthRequest) Call(ctx context.Context) (body *depthResponse, err error
 	}
 	req.SetParam("symbol", d.Symbol)
 	req.SetParam("limit", d.limit)
-	res, err := d.Do(ctx, req)
+	resp, err := d.Do(ctx, req)
 	if err != nil {
 		d.Debugf("response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		d.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*depthResponse](resp)
 }

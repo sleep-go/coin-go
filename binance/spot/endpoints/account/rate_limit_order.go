@@ -4,10 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
-	"github.com/sleep-go/coin-go/binance/consts"
-
 	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type RateLimitOrder interface {
@@ -61,15 +60,5 @@ func (r *rateLimitOrderRequest) Call(ctx context.Context) (body []*rateLimitOrde
 		r.Debugf("rateLimitOrderRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		r.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*rateLimitOrderResponse](resp)
 }

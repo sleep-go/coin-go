@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type DeleteOrder interface {
@@ -37,7 +37,6 @@ type deleteOrderRequest struct {
 }
 
 type deleteOrderResponse struct {
-	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`
 	OrderId                 int                   `json:"orderId"` //// 除非此单是订单列表的一部分, 否则此值为 -1
 	OrderListId             int                   `json:"orderListId"`
@@ -95,31 +94,16 @@ func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderRespons
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)
-	if d.orderId != nil {
-		req.SetParam("orderId", d.orderId)
-	}
-	if d.origClientOrderId != nil {
-		req.SetParam("origClientOrderId", d.origClientOrderId)
-	}
-	if d.newClientOrderId != nil {
-		req.SetParam("newClientOrderId", d.newClientOrderId)
-	}
-	if d.cancelRestrictions != "" {
-		req.SetParam("cancelRestrictions", d.cancelRestrictions)
-	}
-	if d.recvWindow > 0 {
-		req.SetParam("recvWindow", d.recvWindow)
-	}
+	req.SetOptionalParam("orderId", d.orderId)
+	req.SetOptionalParam("origClientOrderId", d.origClientOrderId)
+	req.SetOptionalParam("newClientOrderId", d.newClientOrderId)
+	req.SetOptionalParam("cancelRestrictions", d.cancelRestrictions)
+	req.SetOptionalParam("recvWindow", d.recvWindow)
 	req.SetParam("timestamp", d.timestamp)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
 		d.Debugf("deleteOrderRequest response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		d.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*deleteOrderResponse](resp)
 }

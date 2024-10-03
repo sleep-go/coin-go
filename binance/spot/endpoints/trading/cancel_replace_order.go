@@ -371,7 +371,7 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
 		c.Debugf("ParseHttpResponse err:%v", err.Error())
-		return nil, consts.Error(resp.StatusCode, resp.Status)
+		return nil, err
 	}
 	return body, nil
 }

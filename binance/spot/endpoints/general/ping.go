@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
+	"github.com/sleep-go/coin-go/pkg/utils"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
@@ -23,7 +24,6 @@ func NewPing(c *binance.Client) Ping {
 type pingResponse struct {
 	Status string `json:"status"`
 	Code   int    `json:"code"`
-	Msg    string `json:"msg"`
 }
 
 func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) {
@@ -31,18 +31,10 @@ func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) 
 		Method: http.MethodGet,
 		Path:   consts.ApiPing,
 	}
-	res, err := p.Client.Do(ctx, r)
+	resp, err := p.Do(ctx, r)
 	if err != nil {
 		p.Debugf("pingRequest response err: %v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		return nil, consts.Error(res.StatusCode, res.Status)
-	}
-	return &pingResponse{
-		Status: body.Status,
-		Code:   body.Code,
-		Msg:    body.Msg,
-	}, nil
+	return utils.ParseHttpResponse[*pingResponse](resp)
 }

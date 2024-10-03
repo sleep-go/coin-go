@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 //	新建用户数据流 (USER_STREAM)
@@ -24,7 +24,6 @@ type userDataStreamRequest struct {
 }
 
 type userDataStreamResponse struct {
-	consts.ErrorResponse
 	ListenKey string `json:"listenKey"` //用于订阅的数据流名
 }
 
@@ -49,12 +48,7 @@ func (o *userDataStreamRequest) CallCreate(ctx context.Context) (body *userDataS
 		o.Debugf("userDataStreamRequest response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		o.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*userDataStreamResponse](resp)
 }
 
 // CallUpdate 延长用户数据流有效期到60分钟之后。 建议每30分钟调用一次

@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type CreateOrder interface {
@@ -28,7 +28,7 @@ type CreateOrder interface {
 	SetRecvWindow(recvWindow int64) CreateOrder
 	SetTimestamp(timestamp int64) CreateOrder
 	Call(ctx context.Context) (body *createOrderResponse, err error)
-	CallTest(ctx context.Context, computeCommissionRates bool) (body *CreateOrderTestResponse, err error)
+	CallTest(ctx context.Context, computeCommissionRates bool) (body *createOrderTestResponse, err error)
 }
 
 type createOrderRequest struct {
@@ -52,7 +52,6 @@ type createOrderRequest struct {
 	timestamp               int64
 }
 type createOrderResponse struct {
-	consts.ErrorResponse
 	Symbol                  string `json:"symbol"`
 	OrderId                 int    `json:"orderId"`
 	OrderListId             int    `json:"orderListId"`
@@ -248,58 +247,28 @@ func (c *createOrderRequest) Call(ctx context.Context) (body *createOrderRespons
 	req.SetParam("symbol", c.symbol)
 	req.SetParam("side", c.side)
 	req.SetParam("type", c._type)
-	if c.timeInForce != "" {
-		req.SetForm("timeInForce", c.timeInForce)
-	}
 	req.SetParam("quantity", c.quantity)
-	if c.quoteOrderQty != nil {
-		req.SetParam("quoteOrderQty", c.quoteOrderQty)
-	}
-	if c.price != nil {
-		req.SetParam("price", c.price)
-	}
-	if c.newClientOrderId != nil {
-		req.SetParam("newClientOrderId", c.newClientOrderId)
-	}
-	if c.strategyId != nil {
-		req.SetParam("strategyId", c.strategyId)
-	}
-	if c.stopPrice != nil {
-		req.SetParam("stopPrice", c.stopPrice)
-	}
-	if c.trailingDelta != nil {
-		req.SetParam("trailingDelta", c.trailingDelta)
-	}
-	if c.icebergQty != nil {
-		req.SetParam("icebergQty", c.icebergQty)
-	}
-	if c.newOrderRespType != "" {
-		req.SetParam("newOrderRespType", c.newOrderRespType)
-	}
-	if c.selfTradePreventionMode != "" {
-		req.SetParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	}
-	if c.recvWindow > 0 {
-		req.SetParam("recvWindow", c.recvWindow)
-	}
-	if c.timestamp > 0 {
-		req.SetParam("timestamp", c.timestamp)
-	}
+	req.SetOptionalParam("timeInForce", c.timeInForce)
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	req.SetOptionalParam("recvWindow", c.recvWindow)
+	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("createOrderRequest response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		c.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*createOrderResponse](resp)
 }
 
-type CreateOrderTestResponse struct {
-	consts.ErrorResponse
+type createOrderTestResponse struct {
 	// 订单交易的标准佣金率
 	StandardCommissionForOrder struct {
 		Maker string `json:"maker"`
@@ -319,7 +288,7 @@ type CreateOrderTestResponse struct {
 	} `json:"discount"`
 }
 
-func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRates bool) (body *CreateOrderTestResponse, err error) {
+func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRates bool) (body *createOrderTestResponse, err error) {
 	// 没有 computeCommissionRates返回空
 	if computeCommissionRates == false {
 		return nil, nil
@@ -333,55 +302,23 @@ func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRate
 	req.SetParam("side", c.side)
 	req.SetParam("type", c._type)
 	req.SetParam("computeCommissionRates", computeCommissionRates)
-	if c.timeInForce != "" {
-		req.SetForm("timeInForce", c.timeInForce)
-	}
 	req.SetParam("quantity", c.quantity)
-	if c.quoteOrderQty != nil {
-		req.SetParam("quoteOrderQty", c.quoteOrderQty)
-	}
-	if c.price != nil {
-		req.SetParam("price", c.price)
-	}
-	if c.newClientOrderId != nil {
-		req.SetParam("newClientOrderId", c.newClientOrderId)
-	}
-	if c.strategyId != nil {
-		req.SetParam("strategyId", c.strategyId)
-	}
-	if c.stopPrice != nil {
-		req.SetParam("stopPrice", c.stopPrice)
-	}
-	if c.trailingDelta != nil {
-		req.SetParam("trailingDelta", c.trailingDelta)
-	}
-	if c.icebergQty != nil {
-		req.SetParam("icebergQty", c.icebergQty)
-	}
-	if c.newOrderRespType != "" {
-		req.SetParam("newOrderRespType", c.newOrderRespType)
-	}
-	if c.selfTradePreventionMode != "" {
-		req.SetParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	}
-	if c.recvWindow > 0 {
-		req.SetParam("recvWindow", c.recvWindow)
-	}
+	req.SetOptionalParam("timeInForce", c.timeInForce)
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	req.SetOptionalParam("recvWindow", c.recvWindow)
 	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("createOrderRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		c.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*createOrderTestResponse](resp)
 }

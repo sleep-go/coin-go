@@ -4,10 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type AvgPrice interface {
@@ -24,7 +23,6 @@ func NewAvgPrice(client *binance.Client, symbol string) AvgPrice {
 }
 
 type AvgPriceResponse struct {
-	consts.ErrorResponse
 	Mins      int    `json:"mins"`
 	Price     string `json:"price"`
 	CloseTime int64  `json:"closeTime"`
@@ -37,15 +35,10 @@ func (k *AvgPriceRequest) Call(ctx context.Context) (body *AvgPriceResponse, err
 		Path:   consts.ApiMarketAvgPrice,
 	}
 	req.SetParam("symbol", k.symbol)
-	res, err := k.Do(ctx, req)
+	resp, err := k.Do(ctx, req)
 	if err != nil {
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		k.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*AvgPriceResponse](resp)
 }

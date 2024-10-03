@@ -1,10 +1,5 @@
 package consts
 
-import (
-	"fmt"
-	"net/http"
-)
-
 // 上述列表的最后4个接口 (api1-api4) 会提供更好的性能，但其稳定性略为逊色。因此，请务必使用最适合的URL。
 // 所有接口的响应都是 JSON 格式。
 // 响应中如有数组，数组元素以时间升序排列，越早的数据越提前。
@@ -22,18 +17,3 @@ const (
 
 	TESTNET = "https://testnet.binance.vision"
 )
-
-type ErrorResponse struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-}
-
-func Error(code int, msg string) error {
-	return fmt.Errorf("code: %d, msg: %s", code, msg)
-}
-
-type General struct {
-	BaseURL    string
-	HTTPClient *http.Client
-	Debug      bool
-}

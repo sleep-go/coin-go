@@ -4,11 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type AggTrades interface {
@@ -74,20 +73,10 @@ func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse,
 	if a.endTime != nil {
 		req.SetParam("endTime", *a.endTime)
 	}
-	res, err := a.Do(ctx, req)
+	resp, err := a.Do(ctx, req)
 	if err != nil {
 		a.Debugf("response err:%v", err)
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(res, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		a.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*aggTradesResponse](resp)
 }

@@ -4,17 +4,17 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type AllOrders interface {
 	SetOrderId(orderId int64) AllOrders
 	SetRecvWindow(recvWindow int64) AllOrders
 	SetTimestamp(timestamp int64) AllOrders
-	Call(ctx context.Context) (body []*queryOrderResponse, err error)
+	Call(ctx context.Context) (body []*allOrdersResponse, err error)
 }
 
 // AllOrdersRequest 查询所有订单（包括历史订单） (USER_DATA)
@@ -35,7 +35,6 @@ type allOrdersRequest struct {
 }
 
 type allOrdersResponse struct {
-	consts.ErrorResponse
 	Symbol                  string                `json:"symbol"`                  // 交易对
 	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
 	OrderListId             int                   `json:"orderListId"`             // 除非此单是订单列表的一部分, 否则此值为 -1
@@ -91,45 +90,23 @@ func (o *allOrdersRequest) SetTimestamp(timestamp int64) AllOrders {
 	return o
 }
 
-func (o *allOrdersRequest) Call(ctx context.Context) (body []*queryOrderResponse, err error) {
+func (o *allOrdersRequest) Call(ctx context.Context) (body []*allOrdersResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiTradingAllOrders,
 	}
 	req.SetNeedSign(true)
-	if o.symbol != "" {
-		req.SetParam("symbol", o.symbol)
-	}
-	if o.limit > 0 {
-		req.SetParam("limit", o.limit)
-	}
-	if o.orderId != nil {
-		req.SetParam("orderId", *o.orderId)
-	}
-	if o.startTime != nil {
-		req.SetParam("startTime", *o.startTime)
-	}
-	if o.endTime != nil {
-		req.SetParam("endTime", *o.endTime)
-	}
-	if o.recvWindow > 0 {
-		req.SetParam("recvWindow", o.recvWindow)
-	}
+	req.SetOptionalParam("symbol", o.symbol)
+	req.SetOptionalParam("limit", o.limit)
+	req.SetOptionalParam("orderId", *o.orderId)
+	req.SetOptionalParam("startTime", *o.startTime)
+	req.SetOptionalParam("endTime", *o.endTime)
+	req.SetOptionalParam("recvWindow", o.recvWindow)
 	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *consts.ErrorResponse
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, consts.Error(e.Code, e.Msg)
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		o.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*allOrdersResponse](resp)
 }
