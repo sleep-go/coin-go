@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/duke-git/lancet/v2/netutil"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -376,6 +375,7 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 		c.Debugf("cancelReplaceRequest response err:%v", err)
 		return nil, err
 	}
+	//{"code":-2022,"msg":"Order cancel-replace failed.","data":{"cancelResult":"FAILURE","newOrderResult":"NOT_ATTEMPTED","cancelResponse":{"code":-2011,"msg":"Unknown order sent."},"newOrderResponse":null}}
 	//因为这个返回值跟其他普通错误时返回不通结构，所以单独处理
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
