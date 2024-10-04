@@ -98,35 +98,35 @@ type otocoRequest struct {
 	timestamp                 int64
 }
 type otocoResponse struct {
-	OrderListId       int    `json:"orderListId"`
-	ContingencyType   string `json:"contingencyType"`
-	ListStatusType    string `json:"listStatusType"`
-	ListOrderStatus   string `json:"listOrderStatus"`
-	ListClientOrderId string `json:"listClientOrderId"`
-	TransactionTime   int64  `json:"transactionTime"`
-	Symbol            string `json:"symbol"`
+	OrderListId       int                       `json:"orderListId"`
+	ContingencyType   enums.ContingencyType     `json:"contingencyType"`
+	ListStatusType    enums.ListStatusType      `json:"listStatusType"`
+	ListOrderStatus   enums.ListOrderStatusType `json:"listOrderStatus"`
+	ListClientOrderId string                    `json:"listClientOrderId"`
+	TransactionTime   int64                     `json:"transactionTime"`
+	Symbol            string                    `json:"symbol"`
 	Orders            []struct {
 		Symbol        string `json:"symbol"`
 		OrderId       int    `json:"orderId"`
 		ClientOrderId string `json:"clientOrderId"`
 	} `json:"orders"`
 	OrderReports []struct {
-		Symbol                  string `json:"symbol"`
-		OrderId                 int    `json:"orderId"`
-		OrderListId             int    `json:"orderListId"`
-		ClientOrderId           string `json:"clientOrderId"`
-		TransactTime            int64  `json:"transactTime"`
-		Price                   string `json:"price"`
-		OrigQty                 string `json:"origQty"`
-		ExecutedQty             string `json:"executedQty"`
-		CummulativeQuoteQty     string `json:"cummulativeQuoteQty"`
-		Status                  string `json:"status"`
-		TimeInForce             string `json:"timeInForce"`
-		Type                    string `json:"type"`
-		Side                    string `json:"side"`
-		WorkingTime             int64  `json:"workingTime"`
-		SelfTradePreventionMode string `json:"selfTradePreventionMode"`
-		StopPrice               string `json:"stopPrice,omitempty"`
+		Symbol                  string                `json:"symbol"`
+		OrderId                 int                   `json:"orderId"`
+		OrderListId             int                   `json:"orderListId"`
+		ClientOrderId           string                `json:"clientOrderId"`
+		TransactTime            int64                 `json:"transactTime"`
+		Price                   string                `json:"price"`
+		OrigQty                 string                `json:"origQty"`
+		ExecutedQty             string                `json:"executedQty"`
+		CummulativeQuoteQty     string                `json:"cummulativeQuoteQty"`
+		Status                  enums.OrderStatusType `json:"status"`
+		TimeInForce             enums.TimeInForceType `json:"timeInForce"`
+		Type                    enums.OrderType       `json:"type"`
+		Side                    enums.SideType        `json:"side"`
+		WorkingTime             int64                 `json:"workingTime"`
+		SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"`
+		StopPrice               string                `json:"stopPrice,omitempty"`
 	} `json:"orderReports"`
 }
 

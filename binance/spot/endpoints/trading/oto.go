@@ -103,7 +103,7 @@ type otoResponse struct {
 		ExecutedQty             string                `json:"executedQty"`
 		CummulativeQuoteQty     string                `json:"cummulativeQuoteQty"`
 		Status                  enums.OrderStatusType `json:"status"`
-		TimeInForce             string                `json:"timeInForce"`
+		TimeInForce             enums.TimeInForceType `json:"timeInForce"`
 		Type                    enums.OrderType       `json:"type"`
 		Side                    enums.SideType        `json:"side"`
 		StopPrice               string                `json:"stopPrice,omitempty"`
