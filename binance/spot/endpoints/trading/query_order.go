@@ -22,7 +22,7 @@ type queryOrderRequest struct {
 	symbol            string
 	orderId           *int64
 	origClientOrderId *string
-	recvWindow        *int64
+	recvWindow        int64
 	timestamp         int64
 }
 
@@ -74,7 +74,7 @@ func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) Query
 }
 
 func (o *queryOrderRequest) SetRecvWindow(recvWindow int64) QueryOrder {
-	o.recvWindow = &recvWindow
+	o.recvWindow = recvWindow
 	return o
 }
 
