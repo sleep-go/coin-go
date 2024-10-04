@@ -25,8 +25,8 @@ const (
 	ApiTradingAllOrders = "/api/v3/allOrders"
 
 	// ApiTradingOrderList
-	//取消订单列表 (TRADE)
 	//查询订单列表 (USER_DATA)
+	//根据提供的可选参数检索特定的订单列表。
 	ApiTradingOrderList = "/api/v3/orderList"
 
 	// ApiTradingOrderListOCO 发送新 one-cancels-the-other (OCO) 订单，激活其中一个订单会立即取消另一个订单。

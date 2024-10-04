@@ -25,8 +25,11 @@ type (
 	// OrderStatusType 订单状态
 	OrderStatusType string
 
-	// OrderListStatusType 订单组（order list）状态 （状态类型集 listStatusType）
-	OrderListStatusType string
+	// ListStatusType 订单组（order list）状态 （状态类型集 ListStatusType）:
+	ListStatusType string
+
+	// ListOrderStatusType 订单组（order list）中的订单状态 （订单状态集 listOrderStatus）:
+	ListOrderStatusType string
 
 	CancelRestrictionsType string
 
@@ -162,14 +165,22 @@ const (
 	// OrderStatusTypeExpiredInMatch 表示订单由于 STP 而过期。（例如，带有 EXPIRE_TAKER 的订单与账簿上同属相同帐户或相同 tradeGroupId 的现有订单匹配）
 	OrderStatusTypeExpiredInMatch OrderStatusType = "EXPIRED_IN_MATCH"
 )
+const (
+	// ListStatusTypeResponse 在 ListStatus 用于响应失败的操作时会被使用。（例如，下订单组或取消订单组）
+	ListStatusTypeResponse = "RESPONSE"
+	// ListStatusTypeExecStarted 订单组已被下达或订单组状态有更新。
+	ListStatusTypeExecStarted = "EXEC_STARTED"
+	// ListStatusTypeAllDone 订单组执行结束，因此不再处于活动状态。
+	ListStatusTypeAllDone = "ALL_DONE"
+)
 
 const (
-	// OrderListStatusTypeExecuting 订单组已被下达或订单组状态有更新。
-	OrderListStatusTypeExecuting OrderListStatusType = "EXECUTING"
-	// OrderListStatusTypeAllDone 订单组执行结束，因此不再处于活动状态。
-	OrderListStatusTypeAllDone OrderListStatusType = "ALL_DONE"
-	// OrderListStatusTypeReject 在 ListStatus 用于响应在下单阶段或取消订单组期间的失败操作时会被使用
-	OrderListStatusTypeReject OrderListStatusType = "REJECT"
+	// ListOrderStatusTypeExecuting 订单组已被下达或订单组状态有更新。
+	ListOrderStatusTypeExecuting ListOrderStatusType = "EXECUTING"
+	// ListOrderStatusTypeAllDone 订单组执行结束，因此不再处于活动状态。
+	ListOrderStatusTypeAllDone ListOrderStatusType = "ALL_DONE"
+	// ListOrderStatusTypeReject 在 ListStatus 用于响应在下单阶段或取消订单组期间的失败操作时会被使用
+	ListOrderStatusTypeReject ListOrderStatusType = "REJECT"
 )
 
 const (

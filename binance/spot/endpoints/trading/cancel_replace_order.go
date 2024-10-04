@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/duke-git/lancet/v2/netutil"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -55,11 +56,13 @@ type cancelReplaceRequest struct {
 	orderRateLimitExceededMode enums.OrderRateLimitExceededModeType
 }
 
-type Data struct {
+type cancelReplaceResponse struct {
+	Code           int64  `json:"code,omitempty"`
+	Msg            string `json:"msg,omitempty"`
 	CancelResult   string `json:"cancelResult,omitempty"`
 	NewOrderResult string `json:"newOrderResult,omitempty"`
 	CancelResponse *struct {
-		Code                    int64  `json:"code,omitempty"`
+		Code                    int    `json:"code,omitempty"`
 		Msg                     string `json:"msg,omitempty"`
 		Symbol                  string `json:"symbol,omitempty"`
 		OrigClientOrderId       string `json:"origClientOrderId,omitempty"`
@@ -76,7 +79,7 @@ type Data struct {
 		Side                    string `json:"side,omitempty"`
 		SelfTradePreventionMode string `json:"selfTradePreventionMode,omitempty"`
 	} `json:"cancelResponse,omitempty"`
-	NewOrderResponse struct {
+	NewOrderResponse *struct {
 		Code                    int64    `json:"code,omitempty"`
 		Msg                     string   `json:"msg,omitempty"`
 		Symbol                  string   `json:"symbol,omitempty"`
@@ -94,12 +97,48 @@ type Data struct {
 		Side                    string   `json:"side,omitempty"`
 		Fills                   []string `json:"fills,omitempty"`
 		SelfTradePreventionMode string   `json:"selfTradePreventionMode,omitempty"`
-	} `json:"newOrderResponse"`
-}
-type cancelReplaceResponse struct {
-	Code  int64  `json:"code,omitempty"`
-	Msg   string `json:"msg,omitempty"`
-	*Data `json:"data,omitempty"`
+	} `json:"newOrderResponse,omitempty"`
+	Data *struct {
+		CancelResult   string `json:"cancelResult,omitempty"`
+		NewOrderResult string `json:"newOrderResult,omitempty"`
+		CancelResponse *struct {
+			Code                    int64  `json:"code,omitempty"`
+			Msg                     string `json:"msg,omitempty"`
+			Symbol                  string `json:"symbol,omitempty"`
+			OrigClientOrderId       string `json:"origClientOrderId,omitempty"`
+			OrderId                 int64  `json:"orderId,omitempty"`
+			OrderListId             int64  `json:"orderListId,omitempty"`
+			ClientOrderId           string `json:"clientOrderId,omitempty"`
+			Price                   string `json:"price,omitempty"`
+			OrigQty                 string `json:"origQty,omitempty"`
+			ExecutedQty             string `json:"executedQty,omitempty"`
+			CumulativeQuoteQty      string `json:"cumulativeQuoteQty,omitempty"`
+			Status                  string `json:"status,omitempty"`
+			TimeInForce             string `json:"timeInForce,omitempty"`
+			Type                    string `json:"type,omitempty"`
+			Side                    string `json:"side,omitempty"`
+			SelfTradePreventionMode string `json:"selfTradePreventionMode,omitempty"`
+		} `json:"cancelResponse,omitempty"`
+		NewOrderResponse struct {
+			Code                    int64    `json:"code,omitempty"`
+			Msg                     string   `json:"msg,omitempty"`
+			Symbol                  string   `json:"symbol,omitempty"`
+			OrderId                 int64    `json:"orderId,omitempty"`
+			OrderListId             int64    `json:"orderListId,omitempty"`
+			ClientOrderId           string   `json:"clientOrderId,omitempty"`
+			TransactTime            uint64   `json:"transactTime,omitempty"`
+			Price                   string   `json:"price,omitempty"`
+			OrigQty                 string   `json:"origQty,omitempty"`
+			ExecutedQty             string   `json:"executedQty,omitempty"`
+			CumulativeQuoteQty      string   `json:"cumulativeQuoteQty,omitempty"`
+			Status                  string   `json:"status,omitempty"`
+			TimeInForce             string   `json:"timeInForce,omitempty"`
+			Type                    string   `json:"type,omitempty"`
+			Side                    string   `json:"side,omitempty"`
+			Fills                   []string `json:"fills,omitempty"`
+			SelfTradePreventionMode string   `json:"selfTradePreventionMode,omitempty"`
+		} `json:"newOrderResponse"`
+	} `json:"data,omitempty"`
 }
 
 func NewCancelReplace(client *binance.Client, symbol string) CancelReplace {
@@ -307,67 +346,37 @@ func (c *cancelReplaceRequest) SetTimestamp(timestamp int64) CancelReplace {
 func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodPost,
-		Path:   consts.ApiTradingOrder,
+		Path:   consts.ApiTradingCancelReplace,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)
 	req.SetParam("side", c.side)
 	req.SetParam("type", c._type)
-	if c.timeInForce != "" {
-		req.SetForm("timeInForce", c.timeInForce)
-	}
+	req.SetOptionalParam("timeInForce", c.timeInForce)
 	req.SetParam("quantity", c.quantity)
-	if c.quoteOrderQty != nil {
-		req.SetParam("quoteOrderQty", c.quoteOrderQty)
-	}
-	if c.price != nil {
-		req.SetParam("price", c.price)
-	}
-	if c.newClientOrderId != nil {
-		req.SetParam("newClientOrderId", c.newClientOrderId)
-	}
-	if c.strategyId != nil {
-		req.SetParam("strategyId", c.strategyId)
-	}
-	if c.stopPrice != nil {
-		req.SetParam("stopPrice", c.stopPrice)
-	}
-	if c.trailingDelta != nil {
-		req.SetParam("trailingDelta", c.trailingDelta)
-	}
-	if c.icebergQty != nil {
-		req.SetParam("icebergQty", c.icebergQty)
-	}
-	if c.newOrderRespType != "" {
-		req.SetParam("newOrderRespType", c.newOrderRespType)
-	}
-	if c.selfTradePreventionMode != "" {
-		req.SetParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	}
-	if c.recvWindow > 0 {
-		req.SetParam("recvWindow", c.recvWindow)
-	}
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	req.SetOptionalParam("recvWindow", c.recvWindow)
 	req.SetParam("timestamp", c.timestamp)
-	if c.cancelNewClientOrderId != nil {
-		req.SetParam("cancelNewClientOrderId", c.cancelNewClientOrderId)
-	}
-	if c.cancelOrigClientOrderId != nil {
-		req.SetParam("cancelOrigClientOrderId", c.cancelOrigClientOrderId)
-	}
-	if c.cancelOrderId != nil {
-		req.SetParam("cancelOrderId", c.cancelOrderId)
-	}
-	if c.cancelRestrictions != "" {
-		req.SetParam("cancelRestrictions", c.cancelRestrictions)
-	}
-	if c.orderRateLimitExceededMode != "" {
-		req.SetParam("orderRateLimitExceededMode", c.orderRateLimitExceededMode)
-	}
+	req.SetOptionalParam("cancelNewClientOrderId", c.cancelNewClientOrderId)
+	req.SetOptionalParam("cancelReplaceMode", c.cancelReplaceMode)
+	req.SetOptionalParam("cancelOrigClientOrderId", c.cancelOrigClientOrderId)
+	req.SetOptionalParam("cancelOrderId", c.cancelOrderId)
+	req.SetOptionalParam("cancelRestrictions", c.cancelRestrictions)
+	req.SetOptionalParam("orderRateLimitExceededMode", c.orderRateLimitExceededMode)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("cancelReplaceRequest response err:%v", err)
 		return nil, err
 	}
+	//因为这个返回值跟其他普通错误时返回不通结构，所以单独处理
 	err = netutil.ParseHttpResponse(resp, &body)
 	if err != nil {
 		c.Debugf("ParseHttpResponse err:%v", err.Error())

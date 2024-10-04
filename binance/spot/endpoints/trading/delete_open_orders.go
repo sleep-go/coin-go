@@ -40,8 +40,8 @@ type deleteOpenOrdersResponse struct {
 	Side                    enums.SideType            `json:"side,omitempty"`
 	SelfTradePreventionMode enums.StpModeType         `json:"selfTradePreventionMode,omitempty"`
 	ContingencyType         enums.ContingencyType     `json:"contingencyType,omitempty"`
-	ListStatusType          enums.OrderListStatusType `json:"listStatusType,omitempty"`
-	ListOrderStatus         enums.OrderListStatusType `json:"listOrderStatus,omitempty"`
+	ListStatusType          enums.ListOrderStatusType `json:"listStatusType,omitempty"`
+	ListOrderStatus         enums.ListOrderStatusType `json:"listOrderStatus,omitempty"`
 	ListClientOrderId       string                    `json:"listClientOrderId,omitempty"`
 	TransactionTime         int64                     `json:"transactionTime,omitempty"`
 	Orders                  []struct {

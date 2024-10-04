@@ -247,6 +247,11 @@ func TestAllOrders(t *testing.T) {
 }
 func TestCancelReplace(t *testing.T) {
 	res, err := trading.NewCancelReplace(client, BTCUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetQuantity("0.0001").
+		SetCancelReplaceMode(enums.CancelReplaceModeTypeStopOnFailure).
+		SetCancelOrderId(123).
+		SetType(enums.OrderTypeMarket).
 		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
@@ -360,4 +365,33 @@ func TestUserDataStream(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+func TestOCO(t *testing.T) {
+	res, err := trading.NewOco(client, BTCUSDT).
+		SetSide(enums.SideTypeSell).
+		SetQuantity("1").
+		SetBelowType(enums.OrderTypeStopLossLimit).
+		SetBelowPrice("1").
+		SetBelowStopPrice("1").
+		SetBelowTrailingDelta(1).
+		SetBelowTimeInForce(enums.TimeInForceTypeGTC).
+		SetAboveType(enums.OrderTypeStopLossLimit).
+		SetAbovePrice("1").
+		SetAboveTrailingDelta(1).
+		SetAboveTimeInForce(enums.TimeInForceTypeIOC).
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestOrderList(t *testing.T) {
+	res, err := trading.NewOrderList(client).
+		SetOrderListId(123456).
+		SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
 }

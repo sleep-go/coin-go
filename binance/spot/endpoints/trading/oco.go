@@ -1,8 +1,13 @@
 package trading
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 // OCO 发送新 one-cancels-the-other (OCO) 订单，激活其中一个订单会立即取消另一个订单。
@@ -14,6 +19,32 @@ import (
 // 如果 OCO 订单方向是 BUY：LIMIT_MAKER price < 最后交易价格 < stopPrice
 // OCO 将2 个订单添加到未成交订单计数，EXCHANGE_MAX_ORDERS 过滤器和 MAX_NUM_ORDERS 过滤器中。
 type OCO interface {
+	SetListClientOrderId(listClientOrderId string) OCO
+	SetSide(side enums.SideType) OCO
+	SetQuantity(quantity string) OCO
+	SetAboveType(aboveType enums.OrderType) OCO
+	SetAboveClientOrderId(aboveClientOrderId string) OCO
+	SetAboveIcebergQty(aboveIcebergQty int64) OCO
+	SetAbovePrice(abovePrice string) OCO
+	SetAboveStopPrice(aboveStopPrice string) OCO
+	SetAboveTrailingDelta(aboveTrailingDelta int64) OCO
+	SetAboveTimeInForce(aboveTimeInForce enums.TimeInForceType) OCO
+	SetAboveStrategyId(aboveStrategyId int64) OCO
+	SetAboveStrategyType(aboveStrategyType int64) OCO
+	SetBelowType(belowType enums.OrderType) OCO
+	SetBelowClientOrderId(belowClientOrderId string) OCO
+	SetBelowIcebergQty(belowIcebergQty int64) OCO
+	SetBelowPrice(belowPrice string) OCO
+	SetBelowStopPrice(belowStopPrice string) OCO
+	SetBelowTrailingDelta(belowTrailingDelta int64) OCO
+	SetBelowTimeInForce(belowTimeInForce enums.TimeInForceType) OCO
+	SetBelowStrategyId(belowStrategyId int64) OCO
+	SetBelowStrategyType(belowStrategyType int64) OCO
+	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) OCO
+	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) OCO
+	SetRecvWindow(recvWindow int64) OCO
+	SetTimestamp(timestamp int64) OCO
+	Call(ctx context.Context) (body *ocoResponse, err error)
 }
 
 type ocoRequest struct {
@@ -31,12 +62,12 @@ type ocoRequest struct {
 	abovePrice         *string
 	//如果 aboveType 是 STOP_LOSS 或 STOP_LOSS_LIMIT 才能使用。
 	//必须指定 aboveStopPrice 或 aboveTrailingDelta 或两者。
-	aboveStopPrice     *string         //如果 aboveType 是 STOP_LOSS 或 STOP_LOSS_LIMIT 才能使用。必须指定 aboveStopPrice 或 aboveTrailingDelta 或两者。
-	aboveTrailingDelta *int64          //请看 追踪止盈止损(Trailing Stop)订单常见问题。
-	aboveTimeInForce   *string         //如果 aboveType 是 STOP_LOSS_LIMIT，则为必填项。
-	aboveStrategyId    *int64          //订单策略中上方订单的 ID。
-	aboveStrategyType  *int64          //上方订单策略的任意数值。小于 1000000 的值被保留，无法使用。
-	belowType          enums.OrderType //支持值：STOP_LOSS_LIMIT, STOP_LOSS, LIMIT_MAKER。
+	aboveStopPrice     *string                //如果 aboveType 是 STOP_LOSS 或 STOP_LOSS_LIMIT 才能使用。必须指定 aboveStopPrice 或 aboveTrailingDelta 或两者。
+	aboveTrailingDelta *int64                 //请看 追踪止盈止损(Trailing Stop)订单常见问题。
+	aboveTimeInForce   *enums.TimeInForceType //如果 aboveType 是 STOP_LOSS_LIMIT，则为必填项。
+	aboveStrategyId    *int64                 //订单策略中上方订单的 ID。
+	aboveStrategyType  *int64                 //上方订单策略的任意数值。小于 1000000 的值被保留，无法使用。
+	belowType          enums.OrderType        //支持值：STOP_LOSS_LIMIT, STOP_LOSS, LIMIT_MAKER。
 	belowClientOrderId *string
 	belowIcebergQty    *int64 //请注意，只有当 belowTimeInForce 为 GTC 时才能使用。
 	belowPrice         *string
@@ -84,4 +115,173 @@ type ocoResponse struct {
 		IcebergQty              string                `json:"icebergQty,omitempty"`
 		SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"`
 	} `json:"orderReports"`
+}
+
+func (o *ocoRequest) SetListClientOrderId(listClientOrderId string) OCO {
+	o.listClientOrderId = listClientOrderId
+	return o
+}
+
+func (o *ocoRequest) SetSide(side enums.SideType) OCO {
+	o.side = side
+	return o
+}
+
+func (o *ocoRequest) SetQuantity(quantity string) OCO {
+	o.quantity = &quantity
+	return o
+}
+
+func (o *ocoRequest) SetAboveType(aboveType enums.OrderType) OCO {
+	o.aboveType = aboveType
+	return o
+}
+
+func (o *ocoRequest) SetAboveClientOrderId(aboveClientOrderId string) OCO {
+	o.aboveClientOrderId = &aboveClientOrderId
+	return o
+}
+
+func (o *ocoRequest) SetAboveIcebergQty(aboveIcebergQty int64) OCO {
+	o.aboveIcebergQty = &aboveIcebergQty
+	return o
+}
+
+func (o *ocoRequest) SetAbovePrice(abovePrice string) OCO {
+	o.abovePrice = &abovePrice
+	return o
+}
+
+func (o *ocoRequest) SetAboveStopPrice(aboveStopPrice string) OCO {
+	o.aboveStopPrice = &aboveStopPrice
+	return o
+}
+
+func (o *ocoRequest) SetAboveTrailingDelta(aboveTrailingDelta int64) OCO {
+	o.aboveTrailingDelta = &aboveTrailingDelta
+	return o
+}
+
+func (o *ocoRequest) SetAboveTimeInForce(aboveTimeInForce enums.TimeInForceType) OCO {
+	o.aboveTimeInForce = &aboveTimeInForce
+	return o
+}
+
+func (o *ocoRequest) SetAboveStrategyId(aboveStrategyId int64) OCO {
+	o.aboveStrategyId = &aboveStrategyId
+	return o
+}
+
+func (o *ocoRequest) SetAboveStrategyType(aboveStrategyType int64) OCO {
+	o.aboveStrategyType = &aboveStrategyType
+	return o
+}
+
+func (o *ocoRequest) SetBelowType(belowType enums.OrderType) OCO {
+	o.belowType = belowType
+	return o
+}
+
+func (o *ocoRequest) SetBelowClientOrderId(belowClientOrderId string) OCO {
+	o.belowClientOrderId = &belowClientOrderId
+	return o
+}
+
+func (o *ocoRequest) SetBelowIcebergQty(belowIcebergQty int64) OCO {
+	o.belowIcebergQty = &belowIcebergQty
+	return o
+}
+
+func (o *ocoRequest) SetBelowPrice(belowPrice string) OCO {
+	o.belowPrice = &belowPrice
+	return o
+}
+
+func (o *ocoRequest) SetBelowStopPrice(belowStopPrice string) OCO {
+	o.belowStopPrice = &belowStopPrice
+	return o
+}
+
+func (o *ocoRequest) SetBelowTrailingDelta(belowTrailingDelta int64) OCO {
+	o.belowTrailingDelta = &belowTrailingDelta
+	return o
+}
+
+func (o *ocoRequest) SetBelowTimeInForce(belowTimeInForce enums.TimeInForceType) OCO {
+	o.belowTimeInForce = belowTimeInForce
+	return o
+}
+
+func (o *ocoRequest) SetBelowStrategyId(belowStrategyId int64) OCO {
+	o.belowStrategyId = &belowStrategyId
+	return o
+}
+
+func (o *ocoRequest) SetBelowStrategyType(belowStrategyType int64) OCO {
+	o.belowStrategyType = &belowStrategyType
+	return o
+}
+
+func (o *ocoRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) OCO {
+	o.newOrderRespType = newOrderRespType
+	return o
+}
+
+func (o *ocoRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) OCO {
+	o.selfTradePreventionMode = selfTradePreventionMode
+	return o
+}
+
+func (o *ocoRequest) SetRecvWindow(recvWindow int64) OCO {
+	o.recvWindow = recvWindow
+	return o
+}
+
+func (o *ocoRequest) SetTimestamp(timestamp int64) OCO {
+	o.timestamp = timestamp
+	return o
+}
+
+func NewOco(client *binance.Client, symbol string) OCO {
+	return &ocoRequest{Client: client, symbol: symbol}
+}
+
+func (o *ocoRequest) Call(ctx context.Context) (body *ocoResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodPost,
+		Path:   consts.ApiTradingOrderListOCO,
+	}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", o.symbol)
+	req.SetOptionalParam("listClientOrderId", o.listClientOrderId)
+	req.SetParam("side", o.side)
+	req.SetParam("quantity", o.quantity)
+	req.SetParam("aboveType", o.aboveType)
+	req.SetOptionalParam("aboveClientOrderId", o.aboveClientOrderId)
+	req.SetOptionalParam("aboveIcebergQty", o.aboveIcebergQty)
+	req.SetOptionalParam("abovePrice", o.abovePrice)
+	req.SetOptionalParam("aboveStopPrice", o.aboveStopPrice)
+	req.SetOptionalParam("aboveTrailingDelta", o.aboveTrailingDelta)
+	req.SetOptionalParam("aboveTimeInForce", o.aboveTimeInForce)
+	req.SetOptionalParam("aboveStrategyId", o.aboveStrategyId)
+	req.SetOptionalParam("aboveStrategyType", o.aboveStrategyType)
+	req.SetParam("belowType", o.belowType)
+	req.SetOptionalParam("belowClientOrderId", o.belowClientOrderId)
+	req.SetOptionalParam("belowIcebergQty", o.belowIcebergQty)
+	req.SetOptionalParam("belowPrice", o.belowPrice)
+	req.SetOptionalParam("belowStopPrice", o.belowStopPrice)
+	req.SetOptionalParam("belowTrailingDelta", o.belowTrailingDelta)
+	req.SetOptionalParam("belowTimeInForce", o.belowTimeInForce)
+	req.SetOptionalParam("belowStrategyId", o.belowStrategyId)
+	req.SetOptionalParam("belowStrategyType", o.belowStrategyType)
+	req.SetOptionalParam("newOrderRespType", o.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", o.selfTradePreventionMode)
+	req.SetOptionalParam("recvWindow", o.recvWindow)
+	req.SetParam("timestamp", o.timestamp)
+	resp, err := o.Do(ctx, req)
+	if err != nil {
+		o.Debugf("queryOrderRequest response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[*ocoResponse](resp)
 }
