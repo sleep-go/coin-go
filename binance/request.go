@@ -53,9 +53,8 @@ func (r *Request) SetParam(key string, value any) *Request {
 	return r
 }
 func (r *Request) SetOptionalParam(key string, value any) *Request {
-	// 如果 value 为 nil，直接返回
-	if value == nil {
-		return r
+	if r.query == nil {
+		r.query = url.Values{}
 	}
 	// 使用反射获取实际的值
 	v := reflect.ValueOf(value)
@@ -67,7 +66,7 @@ func (r *Request) SetOptionalParam(key string, value any) *Request {
 		}
 		// 获取指针指向的实际值
 		value = v.Elem().Interface()
-		if value == 0 {
+		if value == 0 || value == "" {
 			return r
 		}
 	case reflect.String:
@@ -80,43 +79,6 @@ func (r *Request) SetOptionalParam(key string, value any) *Request {
 		}
 	case reflect.Float32, reflect.Float64:
 		if v.Float() == 0 {
-			return r
-		}
-	default:
-		// 设置查询参数
-		r.query.Set(key, fmt.Sprintf("%v", value))
-	}
-	return r
-}
-
-func (r *Request) SetOptionalParam2(key string, value any) *Request {
-	// 如果 value 为 nil，直接返回
-	if value == nil {
-		return r
-	}
-	// 使用反射获取实际的值
-	v := reflect.ValueOf(value)
-	switch v.Kind() {
-	case reflect.Ptr:
-		if v.IsNil() {
-			return r
-		}
-		// 获取指针指向的实际值
-		value = v.Elem().Interface()
-	case reflect.String:
-		if v.String() == "" {
-			return r
-		}
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		if v.Int() == 0 {
-			return r
-		}
-	case reflect.Float32, reflect.Float64:
-		if v.Float() == 0 {
-			return r
-		}
-	case reflect.Bool:
-		if !v.Bool() {
 			return r
 		}
 	default:

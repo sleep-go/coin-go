@@ -216,6 +216,16 @@ func TestQueryOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestOpenOrders(t *testing.T) {
+	res, err := trading.NewQueryOrder(client, BTCUSDT).
+		SetTimestamp(time.Now().UnixMilli()).
+		CallOpenOrders(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Printf("%+v\n", res)
+}
 func TestCreateOrder(t *testing.T) {
 	res, err := trading.NewOrder(client, BTCUSDT).
 		SetQuantity("1").
@@ -223,6 +233,13 @@ func TestCreateOrder(t *testing.T) {
 		SetSide(enums.SideTypeBuy).
 		SetTimestamp(time.Now().UnixMilli()).
 		CallTest(context.Background(), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestAllOrders(t *testing.T) {
+	res, err := trading.NewAllOrders(client, BTCUSDT, enums.Limit20).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

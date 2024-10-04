@@ -12,6 +12,7 @@ import (
 
 type QueryOrder interface {
 	Call(ctx context.Context) (body *queryOrderResponse, err error)
+	CallOpenOrders(ctx context.Context) (body []*queryOrderResponse, err error)
 	SetOrderId(orderId int64) QueryOrder
 	SetRecvWindow(recvWindow int64) QueryOrder
 	SetOrigClientOrderId(origClientOrderId string) QueryOrder
