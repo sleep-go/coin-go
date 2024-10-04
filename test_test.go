@@ -386,6 +386,26 @@ func TestOCO(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestOTO(t *testing.T) {
+	res, err := trading.NewOto(client, BTCUSDT).
+		SetWorkingType(enums.OrderTypeLimit).
+		SetWorkingSide(enums.SideTypeSell).
+		SetWorkingPrice("1").
+		SetWorkingQuantity("1").
+		SetPendingType(enums.OrderTypeStopLossLimit).
+		SetPendingSide(enums.SideTypeSell).
+		SetPendingQuantity("1").
+		SetPendingPrice("1").
+		SetPendingTrailingDelta("1").
+		SetWorkingTimeInForce(enums.TimeInForceTypeGTC).
+		SetPendingTimeInForce(enums.TimeInForceTypeGTC).
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
 func TestOrderList(t *testing.T) {
 	res, err := trading.NewOrderList(client).
 		SetOrderListId(123456).
