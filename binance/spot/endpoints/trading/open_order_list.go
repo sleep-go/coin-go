@@ -11,6 +11,7 @@ import (
 )
 
 type OpenOrderList interface {
+	SetOrderListId(orderListId int64) OpenOrderList
 	SetRecvWindow(recvWindow int64) OpenOrderList
 	SetTimestamp(timestamp int64) OpenOrderList
 	Call(ctx context.Context) (body []*openOrderListResponse, err error)
@@ -18,9 +19,11 @@ type OpenOrderList interface {
 
 type openOrderListRequest struct {
 	*binance.Client
-	recvWindow int64
-	timestamp  int64
+	orderListId *int64
+	recvWindow  int64
+	timestamp   int64
 }
+
 type openOrderListResponse struct {
 	OrderListId       int                       `json:"orderListId"`
 	ContingencyType   enums.ContingencyType     `json:"contingencyType"`
@@ -36,11 +39,14 @@ type openOrderListResponse struct {
 	} `json:"orders"`
 }
 
+func (o *openOrderListRequest) SetOrderListId(orderListId int64) OpenOrderList {
+	o.orderListId = &orderListId
+	return o
+}
 func (o *openOrderListRequest) SetTimestamp(timestamp int64) OpenOrderList {
 	o.timestamp = timestamp
 	return o
 }
-
 func (o *openOrderListRequest) SetRecvWindow(recvWindow int64) OpenOrderList {
 	o.recvWindow = recvWindow
 	return o
@@ -57,6 +63,7 @@ func (o *openOrderListRequest) Call(ctx context.Context) (body []*openOrderListR
 		Path:   consts.ApiTradingOrderList,
 	}
 	req.SetNeedSign(true)
+	req.SetOptionalParam("orderListId", o.orderListId)
 	req.SetOptionalParam("recvWindow", o.recvWindow)
 	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)

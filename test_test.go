@@ -432,3 +432,12 @@ func TestOrderList(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestOpenOrderList(t *testing.T) {
+	res, err := trading.NewOpenOrderList(client).
+		SetOrderListId(31).
+		SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
