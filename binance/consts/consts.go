@@ -15,5 +15,16 @@ const (
 	REST_API4     = "https://api4.binance.com"
 	REST_DATA_API = "https://data-api.binance.vision"
 
+	WS_STREAM  = "wss://stream.binance.com:443"
+	WS_STREAM2 = "wss://stream.binance.com:9443"
+	// WS_TEST_STREAM 测试网 Stream base URL
+	WS_TEST_STREAM = "wss://testnet.binance.vision/ws"
+
+	WS_API  = "wss://ws-api.binance.com:443/ws-api/v3"
+	WS_API2 = "wss://ws-api.binance.com:9443/ws-api/v3"
+
+	// STREAM_TEST_API 现货测试网的 base URL
+	STREAM_TEST_API = "wss://testnet.binance.vision/ws-api/v3"
+
 	TESTNET = "https://testnet.binance.vision"
 )
