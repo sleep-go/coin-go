@@ -1,4 +1,4 @@
-package trading
+package account
 
 import (
 	"context"
@@ -75,7 +75,7 @@ func (o *allOrderListRequest) SetRecvWindow(recvWindow int64) AllOrderList {
 func (o *allOrderListRequest) Call(ctx context.Context) (body []*allOrderListResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingAllOrderList,
+		Path:   consts.ApiAccountAllOrderList,
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("fromId", o.fromId)

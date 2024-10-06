@@ -100,7 +100,7 @@ func NewOrderList(client *binance.Client) OrderList {
 func (o *orderListRequest) Call(ctx context.Context) (body *orderListResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingOrderList,
+		Path:   consts.ApiOrderList,
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("orderListId", o.orderListId)
@@ -123,7 +123,7 @@ func (o *orderListRequest) Call(ctx context.Context) (body *orderListResponse, e
 func (o *orderListRequest) CallDelete(ctx context.Context) (body *deleteOrderListResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
-		Path:   consts.ApiTradingOrderList,
+		Path:   consts.ApiOrderList,
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("orderListId", o.orderListId)

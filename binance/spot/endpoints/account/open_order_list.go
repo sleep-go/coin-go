@@ -1,4 +1,4 @@
-package trading
+package account
 
 import (
 	"context"
@@ -60,7 +60,7 @@ func NewOpenOrderList(client *binance.Client) OpenOrderList {
 func (o *openOrderListRequest) Call(ctx context.Context) (body []*openOrderListResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingOrderList,
+		Path:   consts.ApiTradingOpenOrderList,
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("orderListId", o.orderListId)

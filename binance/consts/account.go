@@ -22,4 +22,12 @@ const (
 	// ApiAccountCommission 查询佣金费率 (USER_DATA)
 	// 获取当前账户的佣金费率。
 	ApiAccountCommission = "/api/v3/account/commission"
+
+	// ApiTradingOpenOrderList 查询订单列表挂单 (USER_DATA)
+	ApiTradingOpenOrderList = "/api/v3/openOrderList"
+
+	// ApiAccountAllOrderList 查询所有订单列表 (USER_DATA)
+	//根据提供的可选参数检索所有的订单列表。
+	//请注意，startTime和endTime之间的时间不能超过 24 小时。
+	ApiAccountAllOrderList = "/api/v3/allOrderList"
 )

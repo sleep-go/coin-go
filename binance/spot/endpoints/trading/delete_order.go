@@ -90,7 +90,7 @@ func (d *deleteOrderRequest) SetTimestamp(timestamp int64) DeleteOrder {
 func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
-		Path:   consts.ApiTradingOrder,
+		Path:   consts.ApiOrder,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)

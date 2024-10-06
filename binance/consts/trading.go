@@ -1,19 +1,19 @@
 package consts
 
 const (
-	// ApiTradingOrder
+	// ApiOrder
 	//POST 下单 (TRADE)
 	//GET 查询订单 (USER_DATA)
 	//DELETE 撤销订单 (TRADE)
-	ApiTradingOrder = "/api/v3/order"
+	ApiOrder = "/api/v3/order"
 
 	// ApiTradingOrderTest 测试下单接口 (TRADE),用于测试订单请求，但不会提交到撮合引擎
 	ApiTradingOrderTest = "/api/v3/order/test"
 
-	// ApiTradingOpenOrders
+	// ApiOpenOrders
 	//查看账户当前挂单 (USER_DATA)
 	//撤销单一交易对的所有挂单 (TRADE)
-	ApiTradingOpenOrders = "/api/v3/openOrders"
+	ApiOpenOrders = "/api/v3/openOrders"
 
 	// ApiTradingCancelReplace 撤消挂单再下单 (TRADE)
 	//撤消挂单并在同个交易对上重新下单。
@@ -24,10 +24,10 @@ const (
 	// ApiTradingAllOrders 查询所有订单（包括历史订单） (USER_DATA)
 	ApiTradingAllOrders = "/api/v3/allOrders"
 
-	// ApiTradingOrderList
+	// ApiOrderList
 	//查询订单列表 (USER_DATA)
 	//根据提供的可选参数检索特定的订单列表。
-	ApiTradingOrderList = "/api/v3/orderList"
+	ApiOrderList = "/api/v3/orderList"
 
 	// ApiTradingOrderListOCO 发送新 one-cancels-the-other (OCO) 订单，激活其中一个订单会立即取消另一个订单。
 	//OCO 有 2 legs，称为 上方 leg 和 下方 leg。
@@ -56,11 +56,10 @@ const (
 	//OTOCO 在未成交订单计数，EXCHANGE_MAX_NUM_ORDERS 过滤器和 MAX_NUM_ORDERS 过滤器的基础上添加3个订单。
 	ApiTradingOrderListOTOCO = "/api/v3/orderList/otoco"
 
-	// ApiTradingAllOrderList 查询所有订单列表 (USER_DATA)
-	//根据提供的可选参数检索所有的订单列表。
-	//请注意，startTime和endTime之间的时间不能超过 24 小时。
-	ApiTradingAllOrderList = "/api/v3/allOrderList"
+	// ApiTradingSorOrder 下 SOR 订单 (TRADE)
+	ApiTradingSorOrder = "/api/v3/sor/order"
 
-	// ApiTradingOpenOrderList 查询订单列表挂单 (USER_DATA)
-	ApiTradingOpenOrderList = "/api/v3/openOrderList"
+	// ApiTradingSorOrderTest 测试 SOR 下单接口 (TRADE)
+	//用于测试使用智能订单路由 (SOR) 的订单请求，但不会提交到撮合引擎
+	ApiTradingSorOrderTest = "/api/v3/sor/order/test"
 )

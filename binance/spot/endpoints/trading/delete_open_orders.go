@@ -86,7 +86,7 @@ func NewDeleteOpenOrders(client *binance.Client, symbol string) DeleteOpenOrders
 func (d *deleteOpenOrdersRequest) Call(ctx context.Context) (body []*deleteOpenOrdersResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
-		Path:   consts.ApiTradingOpenOrders,
+		Path:   consts.ApiOpenOrders,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)

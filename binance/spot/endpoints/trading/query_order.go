@@ -90,7 +90,7 @@ func (o *queryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
 func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingOrder,
+		Path:   consts.ApiOrder,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", o.symbol)
@@ -108,7 +108,7 @@ func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse,
 func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiTradingOpenOrders,
+		Path:   consts.ApiOpenOrders,
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("symbol", o.symbol)

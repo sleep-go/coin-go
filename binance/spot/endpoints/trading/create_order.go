@@ -241,7 +241,7 @@ func (c *createOrderRequest) SetTimestamp(timestamp int64) CreateOrder {
 func (c *createOrderRequest) Call(ctx context.Context) (body *createOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodPost,
-		Path:   consts.ApiTradingOrder,
+		Path:   consts.ApiOrder,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)

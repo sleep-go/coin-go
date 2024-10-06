@@ -433,9 +433,34 @@ func TestOrderList(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestOpenOrderList(t *testing.T) {
-	res, err := trading.NewOpenOrderList(client).
+	res, err := account.NewOpenOrderList(client).
 		SetOrderListId(31).
 		SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestSor(t *testing.T) {
+	res, err := trading.NewSor(client, BTCUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.0001").
+		SetTimestamp(time.Now().UnixMilli()).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestSorTest(t *testing.T) {
+	res, err := trading.NewSor(client, BTCUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.0001").
+		SetComputeCommissionRates(true).
+		SetTimestamp(time.Now().UnixMilli()).
+		CallTest(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
