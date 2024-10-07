@@ -1,11 +1,12 @@
 package binance
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/sleep-go/coin-go/binance/consts"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/gorilla/websocket"
+	"github.com/sleep-go/coin-go/binance/consts"
 )
 
 type messageHandler func(messageType int, msg []byte)
@@ -15,10 +16,15 @@ type Handler[T any] func(event *T)
 type WsClient struct {
 	Endpoint   string
 	IsCombined bool
+	IsFast     bool // 更新速度更快： 100ms
 	conn       *websocket.Conn
 }
 
-func NewWsClient(isCombined bool, baseURL ...string) *WsClient {
+func (c *WsClient) Close() error {
+	return c.conn.Close()
+}
+
+func NewWsClient(isCombined, isFast bool, baseURL ...string) *WsClient {
 	// 将默认基本 URL 设置为生产 WS URL
 	url := consts.WS_STREAM
 
@@ -35,6 +41,7 @@ func NewWsClient(isCombined bool, baseURL ...string) *WsClient {
 	return &WsClient{
 		Endpoint:   url,
 		IsCombined: isCombined,
+		IsFast:     isFast,
 	}
 }
 
