@@ -1,6 +1,8 @@
 module github.com/sleep-go/coin-go
 
-go 1.22
+go 1.22.0
+
+toolchain go1.23.1
 
 require (
 	github.com/duke-git/lancet/v2 v2.3.2
@@ -12,6 +14,9 @@ require (
 
 require (
 	golang.org/x/exp v0.0.0-20221208152030-732eee02a75a // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )

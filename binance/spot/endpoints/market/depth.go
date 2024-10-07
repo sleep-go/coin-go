@@ -114,8 +114,8 @@ func wsDepth[T StreamDepthEvent | WsDepthEvent](c *binance.WsClient, symbols []s
 }
 
 type StreamDepthLevelsEvent struct {
-	Stream string              `json:"stream"`
-	Data   *WsDepthLevelsEvent `json:"data"`
+	Stream string             `json:"stream"`
+	Data   WsDepthLevelsEvent `json:"data"`
 }
 type WsDepthLevelsEvent struct {
 	depthResponse

@@ -2,7 +2,9 @@ package market
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -26,14 +28,14 @@ type aggTradesRequest struct {
 	endTime   *int64          //返回该时刻为止的成交记录
 }
 type aggTradesResponse struct {
-	A  int    `json:"a"` //归集成交ID
-	P  string `json:"p"` // 成交价
-	Q  string `json:"q"` // 成交量
-	F  int    `json:"f"` // 被归集的首个成交ID
-	L  int    `json:"l"` // 被归集的末个成交ID
-	T  int64  `json:"T"` // 成交时间
-	M  bool   `json:"m"` // 是否为主动卖出单
-	M1 bool   `json:"M"` // 是否为最优撮合单(可忽略，目前总为最优撮合)
+	AggTradeID            int    `json:"a"` //归集成交ID
+	Price                 string `json:"p"` // 成交价
+	Quantity              string `json:"q"` // 成交量
+	FirstBreakdownTradeID int    `json:"f"` // 被归集的首个成交ID
+	LastBreakdownTradeID  int    `json:"l"` // 被归集的末个成交ID
+	TradeTime             int64  `json:"T"` // 成交时间
+	IsBuyerMaker          bool   `json:"m"` // 是否为主动卖出单
+	Placeholder           bool   `json:"M"` // 是否为最优撮合单(可忽略，目前总为最优撮合)
 }
 
 func NewAggTrades(client *binance.Client, symbol string, limit enums.LimitType) AggTrades {
@@ -79,4 +81,47 @@ func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse,
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*aggTradesResponse](resp)
+}
+
+type StreamAggTradeEvent struct {
+	Stream string          `json:"stream"`
+	Data   WsAggTradeEvent `json:"data"`
+}
+type WsAggTradeEvent struct {
+	Event  string `json:"e"` // 事件类型
+	Time   int64  `json:"E"` // 事件时间
+	Symbol string `json:"s"` // 交易对
+	aggTradesResponse
+	//AggTradeID            int64  `json:"a"` // 归集交易ID
+	//Price                 string `json:"p"` // 成交价格
+	//Quantity              string `json:"q"` // 成交数量
+	//FirstBreakdownTradeID int64  `json:"f"` // 被归集的首个交易ID
+	//LastBreakdownTradeID  int64  `json:"l"` // 被归集的末次交易ID
+	//TradeTime             int64  `json:"T"` // 成交时间
+	//IsBuyerMaker          bool   `json:"m"` //  买方是否是做市方。如true，则此次成交是一个主动卖出单，否则是一个主动买入单。
+	//Placeholder           bool   `json:"M"` //  请忽略该字段 add this field to avoid case insensitive unmarshaling
+}
+
+// NewWsAggTrade 归集交易
+// 归集交易与逐笔交易的区别在于，同一个taker在同一价格与多个maker成交时，会被归集为一笔成交。
+// Stream 名称: <symbol>@aggTrade
+// 更新速度: 实时
+func NewWsAggTrade(c *binance.WsClient, symbols []string, handler binance.Handler[WsAggTradeEvent], exception binance.ErrorHandler) error {
+	return wsAggTrade(c, symbols, handler, exception)
+}
+
+// NewStreamAggTrade 归集交易
+// 归集交易与逐笔交易的区别在于，同一个taker在同一价格与多个maker成交时，会被归集为一笔成交。
+// Stream 名称: <symbol>@aggTrade
+// 更新速度: 实时
+func NewStreamAggTrade(c *binance.WsClient, symbols []string, handler binance.Handler[StreamAggTradeEvent], exception binance.ErrorHandler) error {
+	return wsAggTrade(c, symbols, handler, exception)
+}
+func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.Endpoint
+	for _, s := range symbols {
+		endpoint += fmt.Sprintf("%s@aggTrade", strings.ToLower(s)) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	return wsHandler(c, endpoint, handler, exception)
 }

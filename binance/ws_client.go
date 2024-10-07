@@ -64,6 +64,7 @@ func (c *WsClient) WsServe(endpoint string, handler messageHandler, exception Er
 				return
 			}
 			handler(mt, message)
+			log.Println("read:", mt, string(message))
 		}
 	}()
 	stopCh := make(chan os.Signal, 1)

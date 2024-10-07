@@ -2,7 +2,9 @@ package market
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -59,4 +61,50 @@ func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err e
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*tradesResponse](resp)
+}
+
+type StreamTradeEvent struct {
+	Stream string       `json:"stream"`
+	Data   WsTradeEvent `json:"data"`
+}
+type WsTradeEvent struct {
+	Event    string `json:"e"` // 事件类型
+	Time     int64  `json:"E"` // 事件时间
+	Symbol   string `json:"s"` // 交易对
+	TradeID  int64  `json:"t"` // 交易ID
+	Price    string `json:"p"` // 成交价格
+	Quantity string `json:"q"` // 成交数量
+	//BuyerOrderId  int64  `json:"b"`
+	//SellerOrderId int64  `json:"a"`
+	TradeTime    int64 `json:"T"` // 成交时间
+	IsBuyerMaker bool  `json:"m"` // 买方是否是做市方。如true，则此次成交是一个主动卖出单，否则是一个主动买入单。
+	Placeholder  bool  `json:"M"` // 请忽略该字段
+}
+
+// NewWsTrade 逐笔交易
+// 逐笔交易推送每一笔成交的信息。成交，或者说交易的定义是仅有一个吃单者与一个挂单者相互交易。
+//
+// Stream 名称: <symbol>@trade
+//
+// 更新速度: 实时
+func NewWsTrade(c *binance.WsClient, symbols []string, handler binance.Handler[WsTradeEvent], exception binance.ErrorHandler) error {
+	return wsTrade(c, symbols, handler, exception)
+}
+
+// NewStreamTrade 逐笔交易
+// 逐笔交易推送每一笔成交的信息。成交，或者说交易的定义是仅有一个吃单者与一个挂单者相互交易。
+//
+// Stream 名称: <symbol>@trade
+//
+// 更新速度: 实时
+func NewStreamTrade(c *binance.WsClient, symbols []string, handler binance.Handler[StreamTradeEvent], exception binance.ErrorHandler) error {
+	return wsTrade(c, symbols, handler, exception)
+}
+func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.Endpoint
+	for _, s := range symbols {
+		endpoint += fmt.Sprintf("%s@trade", strings.ToLower(s)) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	return wsHandler(c, endpoint, handler, exception)
 }
