@@ -2,7 +2,10 @@ package market
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -29,6 +32,28 @@ type depthResponse struct {
 	Asks         [][]string `json:"asks"`
 }
 
+type StreamDepthEvent struct {
+	Stream string `json:"stream"`
+	Data   struct {
+		Event         string     `json:"e"`
+		Time          int64      `json:"E"`
+		Symbol        string     `json:"s"`
+		FirstUpdateID int        `json:"U"`
+		LastUpdateID  int        `json:"u"`
+		Bids          [][]string `json:"b"`
+		Asks          [][]string `json:"a"`
+	} `json:"data"`
+}
+type WsDepthEvent struct {
+	Event string     `json:"e"`
+	E1    int64      `json:"E"`
+	S     string     `json:"s"`
+	U     int        `json:"U"`
+	U1    int        `json:"u"`
+	B     [][]string `json:"b"`
+	A     [][]string `json:"a"`
+}
+
 // NewDepth 深度信息
 func NewDepth(c *binance.Client, symbol string, limit enums.LimitType) Depth {
 	return &depthRequest{
@@ -36,6 +61,31 @@ func NewDepth(c *binance.Client, symbol string, limit enums.LimitType) Depth {
 		Symbol: symbol,
 		limit:  limit,
 	}
+}
+
+func newWsDepth[T WsDepthEvent | StreamDepthEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.Endpoint
+	for _, s := range symbols {
+		endpoint += fmt.Sprintf("%s@depth", strings.ToLower(s)) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	fmt.Println(endpoint)
+	wsHandler := func(mt int, msg []byte) {
+		event := new(T)
+		err := json.Unmarshal(msg, &event)
+		if err != nil {
+			exception(mt, err)
+			return
+		}
+		handler(event)
+	}
+	return c.WsServe(endpoint, wsHandler, exception)
+}
+func NewWsDepth(c *binance.WsClient, symbols []string, handler binance.Handler[WsDepthEvent], exception binance.ErrorHandler) error {
+	return newWsDepth[WsDepthEvent](c, symbols, handler, exception)
+}
+func NewStreamDepth(c *binance.WsClient, symbols []string, handler binance.Handler[StreamDepthEvent], exception binance.ErrorHandler) error {
+	return newWsDepth[StreamDepthEvent](c, symbols, handler, exception)
 }
 
 // Call 深度信息

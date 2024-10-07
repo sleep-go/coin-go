@@ -1,22 +1,21 @@
 package binance
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"log"
+	"os"
+	"os/signal"
 )
 
-type MessageHandler func(messageType int, msg []byte)
+type messageHandler func(messageType int, msg []byte)
 type ErrorHandler func(messageType int, err error)
 
+type Handler[T any] func(event *T)
 type WsClient struct {
-	Endpoint       string
-	IsCombined     bool
-	MessageHandler func(messageType int, msg []byte)
-	ErrorHandler   func(messageType int, err error)
-	conn           *websocket.Conn
+	Endpoint   string
+	IsCombined bool
+	conn       *websocket.Conn
 }
 
 func NewWsClient(isCombined bool, baseURL ...string) *WsClient {
@@ -39,30 +38,42 @@ func NewWsClient(isCombined bool, baseURL ...string) *WsClient {
 	}
 }
 
-func (c *WsClient) Connection() *WsClient {
-	conn, _, err := websocket.DefaultDialer.Dial(c.Endpoint, nil)
-	if err != nil {
-		panic(err)
-	}
-	c.conn = conn
-	return c
-}
-func (c *WsClient) WsDepth(symbols []string) (*WsClient, error) {
-	endpoint := c.Endpoint
-	for _, s := range symbols {
-		endpoint += fmt.Sprintf("%s@depth", strings.ToLower(s)) + "/"
-	}
-	endpoint = endpoint[:len(endpoint)-1]
+func (c *WsClient) WsServe(endpoint string, handler messageHandler, exception ErrorHandler) error {
 	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer conn.Close()
+	conn.SetReadLimit(655350)
 	c.conn = conn
-	mt, msg, err := c.conn.ReadMessage()
-	if err != nil {
-		c.ErrorHandler(mt, err)
-		return nil, err
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			mt, message, err := conn.ReadMessage()
+			if err != nil {
+				exception(mt, err)
+				log.Println("read:", err)
+				return
+			}
+			handler(mt, message)
+		}
+	}()
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, os.Interrupt)
+	for {
+		select {
+		case <-done:
+			log.Println("websocket closed")
+			return nil
+		case <-stopCh:
+			log.Println("stopCh")
+			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Println("write close:", err)
+				exception(websocket.CloseMessage, err)
+				return err
+			}
+		}
 	}
-	c.MessageHandler(mt, msg)
-	return c, nil
 }
