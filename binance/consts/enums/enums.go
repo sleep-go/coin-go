@@ -238,4 +238,9 @@ const (
 	//EXPIRED - 订单已根据 Time In Force 参数的规则取消（e.g. 没有成交的 LIMIT FOK 订单或部分成交的 LIMIT IOC 订单）或者被交易所取消（e.g. 强平或维护期间取消的订单）。
 	//TRADE_PREVENTION - 订单因 STP 触发而过期。
 	AccountDataEventTypeListStatus AccountDataEventType = "listStatus"
+	// AccountDataEventTypeListenKeyExpired Listen Key 已过期
+	//当监听 listen key 过期时会发送此事件。此后不会再发送任何事件，直到创建新的 listenKey。
+	//
+	//正常关闭流时不会推送该事件。
+	AccountDataEventTypeListenKeyExpired AccountDataEventType = "listenKeyExpired"
 )

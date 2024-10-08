@@ -115,6 +115,7 @@ type WsAccountDataEvent struct {
 	*BalanceUpdateEvent
 	*OrderUpdateEvent
 	*OCOUpdateEvent
+	*ExpiredEvent
 }
 
 // Balance 账户更新
@@ -189,6 +190,10 @@ type OCOOrder struct {
 	Symbol        string `json:"s"`
 	OrderId       int64  `json:"i"`
 	ClientOrderId string `json:"c"`
+}
+
+type ExpiredEvent struct {
+	ListenKey string `json:"listenKey"`
 }
 
 // NewWsUserData 账户更新

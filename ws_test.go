@@ -252,6 +252,8 @@ func TestWsUserData(t *testing.T) {
 				fmt.Println(event.OrderUpdateEvent)
 			case enums.AccountDataEventTypeListStatus:
 				fmt.Println(event.OCOUpdateEvent)
+			case enums.AccountDataEventTypeListenKeyExpired:
+				fmt.Println(event.ListenKey)
 			}
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)
