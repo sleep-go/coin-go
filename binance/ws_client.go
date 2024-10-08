@@ -69,6 +69,7 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 			log.Println("read:", mt, string(message))
 		}
 	}()
+	log.Println("ws connected")
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, os.Interrupt)
 	for {

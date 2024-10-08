@@ -1,12 +1,16 @@
 package coin_go
 
 import (
+	"context"
 	"fmt"
 	"testing"
+
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/stream"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
 )
@@ -190,6 +194,63 @@ func TestWsBookTicker(t *testing.T) {
 	} else {
 		err = ticker.NewWsBookTicker(wsClient, []string{BTCUSDT, ETHUSDT}, func(event ticker.WsBookTickerEvent) {
 			fmt.Println(event)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+func TestWsAvgTicker(t *testing.T) {
+	if wsClient.IsCombined {
+		err = market.NewStreamAvgPrice(wsClient, []string{BTCUSDT, ETHUSDT}, func(event market.StreamAvgPriceEvent) {
+			fmt.Println(event.Stream, event.Data)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	} else {
+		err = market.NewWsAvgPrice(wsClient, []string{BTCUSDT, ETHUSDT}, func(event market.WsAvgPriceEvent) {
+			fmt.Println(event)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+func TestWsUserData(t *testing.T) {
+	res, err := stream.NewUserDataStream(client).CallCreate(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+	if wsClient.IsCombined {
+		err = account.NewStreamUserData(wsClient, res.ListenKey, func(event account.StreamAccountUpdateEvent) {
+			fmt.Println(event.Stream, event.Data)
+			switch event.Data.Event {
+			case enums.AccountDataEventTypeOutboundAccountPosition:
+				fmt.Println(event.Data.UpdateTime, event.Data.BalanceListEvent)
+			case enums.AccountDataEventTypeBalanceUpdate:
+				fmt.Println(event.Data.BalanceUpdateEvent)
+			case enums.AccountDataEventTypeExecutionReport:
+				fmt.Println(event.Data.OrderUpdateEvent)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	} else {
+		err = account.NewWsUserData(wsClient, res.ListenKey, func(event account.WsAccountDataEvent) {
+			fmt.Println(event.Event, event.Time)
+			switch event.Event {
+			case enums.AccountDataEventTypeOutboundAccountPosition:
+				fmt.Println(event.UpdateTime, event.BalanceListEvent)
+			case enums.AccountDataEventTypeBalanceUpdate:
+				fmt.Println(event.BalanceUpdateEvent)
+			case enums.AccountDataEventTypeExecutionReport:
+				fmt.Println(event.OrderUpdateEvent)
+			}
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)
 		})

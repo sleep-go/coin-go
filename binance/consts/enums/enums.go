@@ -47,6 +47,9 @@ type (
 	// CancelReplaceModeType 指定类型：STOP_ON_FAILURE - 如果撤消订单失败将不会继续重新下单。
 	//ALLOW_FAILURE - 不管撤消订单是否成功都会继续重新下单。
 	CancelReplaceModeType string
+
+	// AccountDataEventType 账户信息推送事件
+	AccountDataEventType string
 )
 
 func (f TimeInForceType) String() string {
@@ -217,4 +220,10 @@ const (
 const (
 	OrderRateLimitExceededModeTypeDoNothing  OrderRateLimitExceededModeType = "DO_NOTHING"
 	OrderRateLimitExceededModeTypeCancelOnly OrderRateLimitExceededModeType = "CANCEL_ONLY"
+)
+
+const (
+	AccountDataEventTypeOutboundAccountPosition AccountDataEventType = "outboundAccountPosition"
+	AccountDataEventTypeBalanceUpdate           AccountDataEventType = "balanceUpdate"
+	AccountDataEventTypeExecutionReport         AccountDataEventType = "executionReport"
 )
