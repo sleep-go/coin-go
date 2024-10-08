@@ -53,27 +53,25 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 	if err != nil {
 		panic(err)
 	}
+	handler(websocket.CloseMessage, []byte{})
 	defer conn.Close()
 	conn.SetReadLimit(655350)
 	c.conn = conn
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		c.keepAlive(time.Minute)
-		go func() {
-			for {
-				mt, message, err := conn.ReadMessage()
-				if err != nil {
-					exception(mt, err)
-					log.Println("read:", err)
-					return
-				}
-				handler(mt, message)
-				log.Println("read:", mt, string(message))
+		go c.keepAlive(time.Minute)
+		for {
+			mt, message, err := conn.ReadMessage()
+			if err != nil {
+				exception(mt, err)
+				log.Println("read:", err)
+				return
 			}
-		}()
+			handler(mt, message)
+			log.Println("read:", mt, string(message))
+		}
 	}()
-	log.Println("ws connected")
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, os.Interrupt)
 	for {

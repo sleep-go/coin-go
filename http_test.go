@@ -37,7 +37,7 @@ func init() {
 	API_KEY := strings.TrimSpace(string(file))
 	PRIVATE_KEY_PATH := "./test-prv-key.pem"
 	fmt.Println(API_KEY)
-	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH, consts.TESTNET)
+	client = binance.NewED25519Client(API_KEY, PRIVATE_KEY_PATH, consts.REST_API_TEST)
 	client.Debug = true
 }
 func TestPing(t *testing.T) {

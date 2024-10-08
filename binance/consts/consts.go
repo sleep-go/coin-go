@@ -6,7 +6,7 @@ package consts
 // 所有时间、时间戳均为UNIX时间，单位为毫秒。
 // 对于仅发送公开市场数据的 API，您可以使用接口的 base URL https://data-api.binance.vision 。请参考 Market Data Only_CN 页面。
 const (
-	NAME          = "exchange-go"
+	NAME          = "coin-go"
 	REST_API      = "https://api.binance.com"
 	REST_API_GCP  = "https://api-gcp.binance.com"
 	REST_API1     = "https://api1.binance.com"
@@ -14,17 +14,16 @@ const (
 	REST_API3     = "https://api3.binance.com"
 	REST_API4     = "https://api4.binance.com"
 	REST_DATA_API = "https://data-api.binance.vision"
+	REST_API_TEST = "https://testnet.binance.vision"
 
 	WS_STREAM  = "wss://stream.binance.com:443"
 	WS_STREAM2 = "wss://stream.binance.com:9443"
 	// WS_TEST_STREAM 测试网 Stream base URL
-	WS_TEST_STREAM = "wss://testnet.binance.vision"
+	WS_STREAM_TEST = "wss://testnet.binance.vision"
 
 	WS_API  = "wss://ws-api.binance.com:443/ws-api/v3"
 	WS_API2 = "wss://ws-api.binance.com:9443/ws-api/v3"
 
-	// STREAM_TEST_API 现货测试网的 base URL
-	STREAM_TEST_API = "wss://testnet.binance.vision/ws-api/v3"
-
-	TESTNET = "https://testnet.binance.vision"
+	// WS_API_TEST 现货测试网的 base URL
+	WS_API_TEST = "wss://testnet.binance.vision/ws-api/v3"
 )
