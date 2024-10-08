@@ -109,10 +109,10 @@ type StreamAccountUpdateEvent struct {
 }
 type BalanceListEvent []WsAccountUpdate
 type WsAccountDataEvent struct {
-	Event            enums.AccountDataEventType `json:"e"` // 事件类型
-	Time             int64                      `json:"E"` // 事件时间
-	UpdateTime       int64                      `json:"u"` // 账户末次更新时间戳
-	BalanceListEvent `json:"B"`
+	Event             enums.AccountDataEventType `json:"e"` // 事件类型
+	Time              int64                      `json:"E"` // 事件时间
+	UpdateTime        int64                      `json:"u"` // 账户末次更新时间戳
+	*BalanceListEvent `json:"B"`
 	*BalanceUpdateEvent
 	*OrderUpdateEvent
 }
