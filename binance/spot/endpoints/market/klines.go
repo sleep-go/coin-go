@@ -2,7 +2,9 @@ package market
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -119,4 +121,58 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*klinesResponse](resp)
+}
+
+type StreamKlineEvent struct {
+	Stream string       `json:"stream"`
+	Data   WsKlineEvent `json:"data"`
+}
+type WsKlineEvent struct {
+	Event  string  `json:"e"`
+	Time   int64   `json:"E"`
+	Symbol string  `json:"s"`
+	Kline  WsKline `json:"k"`
+}
+type WsKline struct {
+	StartTime            int64  `json:"t"`
+	EndTime              int64  `json:"T"`
+	Symbol               string `json:"s"`
+	Interval             string `json:"i"`
+	FirstTradeID         int64  `json:"f"`
+	LastTradeID          int64  `json:"L"`
+	Open                 string `json:"o"`
+	Close                string `json:"c"`
+	High                 string `json:"h"`
+	Low                  string `json:"l"`
+	Volume               string `json:"v"`
+	TradeNum             int64  `json:"n"`
+	IsFinal              bool   `json:"x"`
+	QuoteVolume          string `json:"q"`
+	ActiveBuyVolume      string `json:"V"`
+	ActiveBuyQuoteVolume string `json:"Q"`
+}
+
+func NewWsKline(c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[WsKlineEvent], exception binance.ErrorHandler) error {
+	return wsKline(c, symbolsInterval, handler, exception)
+}
+func NewStreamKline(c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[StreamKlineEvent], exception binance.ErrorHandler) error {
+	return wsKline(c, symbolsInterval, handler, exception)
+}
+
+// wsKLines UTC K线
+// K线stream逐秒推送所请求的K线种类(最新一根K线)的更新。此更新是基于 UTC+0 时区的。
+//
+// 订阅Kline需要提供间隔参数，最短为分钟线，最长为月线。支持以下间隔:
+//
+// m -> 分钟; h -> 小时; d -> 天; w -> 周; M -> 月
+func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.Endpoint
+	for symbol, interval := range symbolsInterval {
+		endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), interval) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	if c.Timezone != "" {
+		endpoint = fmt.Sprintf("%s@%s", endpoint, c.Timezone)
+	}
+	return wsHandler(c, endpoint, handler, exception)
 }

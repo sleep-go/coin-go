@@ -13,7 +13,8 @@ import (
 var wsClient *binance.WsClient
 
 func init() {
-	wsClient = binance.NewWsClient(false, true, consts.WS_TEST_STREAM)
+	wsClient = binance.NewWsClient(true, true, consts.WS_TEST_STREAM)
+	wsClient.Timezone = "+08:00"
 }
 
 func TestDepthWs(t *testing.T) {
@@ -98,6 +99,30 @@ func TestWsTrade(t *testing.T) {
 		err = market.NewWsTrade(wsClient, []string{BTCUSDT}, func(event *market.WsTradeEvent) {
 			fmt.Printf("%+v\n", event)
 		}, func(messageType int, err error) {})
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestWsKline(t *testing.T) {
+	var err error
+	if wsClient.IsCombined {
+		err = market.NewStreamKline(wsClient, map[string]enums.KlineIntervalType{
+			BTCUSDT: enums.KlineIntervalType1d,
+		}, func(event *market.StreamKlineEvent) {
+			fmt.Println(event.Stream, event.Data)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	} else {
+		err = market.NewWsKline(wsClient, map[string]enums.KlineIntervalType{
+			BTCUSDT: enums.KlineIntervalType1d,
+		}, func(event *market.WsKlineEvent) {
+			fmt.Println(event)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
 	}
 	if err != nil {
 		t.Fatal(err)

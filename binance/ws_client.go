@@ -17,6 +17,7 @@ type WsClient struct {
 	Endpoint   string
 	IsCombined bool
 	IsFast     bool // 更新速度更快： 100ms
+	Timezone   string
 	conn       *websocket.Conn
 }
 
