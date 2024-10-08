@@ -116,6 +116,9 @@ type WsAccountDataEvent struct {
 	*BalanceUpdateEvent
 	*OrderUpdateEvent
 }
+
+// WsAccountUpdate 账户更新
+// 每当帐户余额发生更改时，都会发送一个事件outboundAccountPosition，其中包含可能由生成余额变动的事件而变动的资产。
 type WsAccountUpdate struct {
 	Asset  string `json:"a"`
 	Free   string `json:"f"`
@@ -123,7 +126,10 @@ type WsAccountUpdate struct {
 }
 
 // BalanceUpdateEvent 余额更新
-// 通过balanceUpdate事件进行更新。
+// 当下列情形发生时更新:
+//
+// 账户发生充值或提取
+// 交易账户之间发生划转(例如 现货向杠杆账户划转)
 type BalanceUpdateEvent struct {
 	Asset           string `json:"a"`
 	Change          string `json:"d"`
