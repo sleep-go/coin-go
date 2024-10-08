@@ -106,5 +106,5 @@ func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.WsClient, symbols []s
 		endpoint += fmt.Sprintf("%s@trade", strings.ToLower(s)) + "/"
 	}
 	endpoint = endpoint[:len(endpoint)-1]
-	return wsHandler(c, endpoint, handler, exception)
+	return binance.WsHandler(c, endpoint, handler, exception)
 }

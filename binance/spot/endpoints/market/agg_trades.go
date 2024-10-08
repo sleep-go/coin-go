@@ -123,5 +123,5 @@ func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.WsClient, sy
 		endpoint += fmt.Sprintf("%s@aggTrade", strings.ToLower(s)) + "/"
 	}
 	endpoint = endpoint[:len(endpoint)-1]
-	return wsHandler(c, endpoint, handler, exception)
+	return binance.WsHandler(c, endpoint, handler, exception)
 }

@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -12,7 +13,7 @@ import (
 type messageHandler func(messageType int, msg []byte)
 type ErrorHandler func(messageType int, err error)
 
-type Handler[T any] func(event *T)
+type Handler[T any] func(event T)
 type WsClient struct {
 	Endpoint   string
 	IsCombined bool
@@ -46,7 +47,7 @@ func NewWsClient(isCombined, isFast bool, baseURL ...string) *WsClient {
 	}
 }
 
-func (c *WsClient) WsServe(endpoint string, handler messageHandler, exception ErrorHandler) error {
+func (c *WsClient) serve(endpoint string, handler messageHandler, exception ErrorHandler) error {
 	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if err != nil {
 		panic(err)
@@ -85,4 +86,18 @@ func (c *WsClient) WsServe(endpoint string, handler messageHandler, exception Er
 			}
 		}
 	}
+}
+
+func WsHandler[T any](c *WsClient, endpoint string, handler Handler[T], exception ErrorHandler) error {
+	log.Println(endpoint)
+	h := func(mt int, msg []byte) {
+		event := new(T)
+		err := json.Unmarshal(msg, &event)
+		if err != nil {
+			exception(mt, err)
+			return
+		}
+		handler(*event)
+	}
+	return c.serve(endpoint, h, exception)
 }

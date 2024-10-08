@@ -174,5 +174,5 @@ func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.WsClient, symbolsInte
 	if c.Timezone != "" {
 		endpoint = fmt.Sprintf("%s@%s", endpoint, c.Timezone)
 	}
-	return wsHandler(c, endpoint, handler, exception)
+	return binance.WsHandler(c, endpoint, handler, exception)
 }

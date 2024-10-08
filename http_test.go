@@ -24,6 +24,7 @@ var client *binance.Client
 
 const (
 	BTCUSDT = "BTCUSDT"
+	ETHUSDT = "ETHUSDT"
 )
 
 func init() {
@@ -149,7 +150,7 @@ func TestHr24(t *testing.T) {
 	}
 }
 func TestTradingDay(t *testing.T) {
-	res, err := ticker.NewTradingDay(client, []string{"ETHUSDT", "BNBBTC"}, "8", enums.TickerTypeFull).Call(context.Background())
+	res, err := ticker.NewTradingDay(client, []string{BTCUSDT}, "+8:00", enums.TickerTypeFull).Call(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())
 		return
