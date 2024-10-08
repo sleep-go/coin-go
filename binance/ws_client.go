@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -58,16 +59,19 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		for {
-			mt, message, err := conn.ReadMessage()
-			if err != nil {
-				exception(mt, err)
-				log.Println("read:", err)
-				return
+		c.keepAlive(time.Minute)
+		go func() {
+			for {
+				mt, message, err := conn.ReadMessage()
+				if err != nil {
+					exception(mt, err)
+					log.Println("read:", err)
+					return
+				}
+				handler(mt, message)
+				log.Println("read:", mt, string(message))
 			}
-			handler(mt, message)
-			log.Println("read:", mt, string(message))
-		}
+		}()
 	}()
 	log.Println("ws connected")
 	stopCh := make(chan os.Signal, 1)
@@ -88,7 +92,30 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 		}
 	}
 }
+func (c *WsClient) keepAlive(timeout time.Duration) {
+	ticker := time.NewTicker(timeout)
 
+	lastResponse := time.Now()
+	c.conn.SetPongHandler(func(msg string) error {
+		lastResponse = time.Now()
+		return nil
+	})
+
+	go func() {
+		defer ticker.Stop()
+		for {
+			deadline := time.Now().Add(10 * time.Second)
+			err := c.conn.WriteControl(websocket.PingMessage, []byte{}, deadline)
+			if err != nil {
+				return
+			}
+			<-ticker.C
+			if time.Since(lastResponse) > timeout {
+				return
+			}
+		}
+	}()
+}
 func WsHandler[T any](c *WsClient, endpoint string, handler Handler[T], exception ErrorHandler) error {
 	log.Println(endpoint)
 	h := func(mt int, msg []byte) {
