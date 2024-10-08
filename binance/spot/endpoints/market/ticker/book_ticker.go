@@ -60,3 +60,44 @@ func (b *bookTickerRequest) Call(ctx context.Context) (body []*bookTickerRespons
 	}
 	return body, nil
 }
+
+type StreamBookTickerEvent struct {
+	Stream string            `json:"stream"`
+	Data   WsBookTickerEvent `json:"data"`
+}
+type WsBookTickerEvent struct {
+	UpdateID     int64  `json:"u"`
+	Symbol       string `json:"s"`
+	BestBidPrice string `json:"b"`
+	BestBidQty   string `json:"B"`
+	BestAskPrice string `json:"a"`
+	BestAskQty   string `json:"A"`
+}
+
+// NewWsBookTicker 按Symbol的最优挂单信息
+// 实时推送指定交易对最优挂单信息 多个 <symbol>@bookTicker 可以订阅在一个WebSocket连接上
+//
+// Stream 名称: <symbol>@bookTicker
+//
+// 更新速度: 实时
+func NewWsBookTicker(c *binance.WsClient, symbols []string, handler binance.Handler[WsBookTickerEvent], exception binance.ErrorHandler) error {
+	return bookTicker(c, symbols, handler, exception)
+}
+
+// NewStreamBookTicker 按Symbol的最优挂单信息
+// 实时推送指定交易对最优挂单信息 多个 <symbol>@bookTicker 可以订阅在一个WebSocket连接上
+//
+// Stream 名称: <symbol>@bookTicker
+//
+// 更新速度: 实时
+func NewStreamBookTicker(c *binance.WsClient, symbols []string, handler binance.Handler[StreamBookTickerEvent], exception binance.ErrorHandler) error {
+	return bookTicker(c, symbols, handler, exception)
+}
+func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.Endpoint
+	for _, s := range symbols {
+		endpoint += fmt.Sprintf("%s@bookTicker", strings.ToLower(s)) + "/"
+	}
+	endpoint = endpoint[:len(endpoint)-1]
+	return binance.WsHandler(c, endpoint, handler, exception)
+}

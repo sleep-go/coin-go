@@ -15,7 +15,7 @@ var err error
 var wsClient *binance.WsClient
 
 func init() {
-	wsClient = binance.NewWsClient(true, true, consts.WS_TEST_STREAM)
+	wsClient = binance.NewWsClient(false, true, consts.WS_TEST_STREAM)
 }
 
 func TestDepthWs(t *testing.T) {
@@ -171,6 +171,24 @@ func TestAllTicker(t *testing.T) {
 		})
 	} else {
 		err = ticker.NewWsTicker(wsClient, []string{BTCUSDT, ETHUSDT}, func(event ticker.WsTickerEvent) {
+			fmt.Println(event)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+func TestWsBookTicker(t *testing.T) {
+	if wsClient.IsCombined {
+		err = ticker.NewStreamBookTicker(wsClient, []string{BTCUSDT, ETHUSDT}, func(event ticker.StreamBookTickerEvent) {
+			fmt.Println(event.Stream, event.Data)
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+	} else {
+		err = ticker.NewWsBookTicker(wsClient, []string{BTCUSDT, ETHUSDT}, func(event ticker.WsBookTickerEvent) {
 			fmt.Println(event)
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)
