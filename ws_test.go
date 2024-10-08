@@ -231,7 +231,7 @@ func TestWsUserData(t *testing.T) {
 			fmt.Println(event.Stream, event.Data)
 			switch event.Data.Event {
 			case enums.AccountDataEventTypeOutboundAccountPosition:
-				fmt.Println(event.Data.UpdateTime, event.Data.BalanceListEvent)
+				fmt.Println(event.Data.UpdateTime, event.Data.Balances)
 			case enums.AccountDataEventTypeBalanceUpdate:
 				fmt.Println(event.Data.BalanceUpdateEvent)
 			case enums.AccountDataEventTypeExecutionReport:
@@ -245,11 +245,13 @@ func TestWsUserData(t *testing.T) {
 			fmt.Println(event.Event, event.Time)
 			switch event.Event {
 			case enums.AccountDataEventTypeOutboundAccountPosition:
-				fmt.Println(event.UpdateTime, event.BalanceListEvent)
+				fmt.Println(event.UpdateTime, event.Balances)
 			case enums.AccountDataEventTypeBalanceUpdate:
 				fmt.Println(event.BalanceUpdateEvent)
 			case enums.AccountDataEventTypeExecutionReport:
 				fmt.Println(event.OrderUpdateEvent)
+			case enums.AccountDataEventTypeListStatus:
+				fmt.Println(event.OCOUpdateEvent)
 			}
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)

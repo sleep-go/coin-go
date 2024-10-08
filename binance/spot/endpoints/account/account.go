@@ -106,19 +106,20 @@ type StreamAccountUpdateEvent struct {
 	Stream string             `json:"stream"`
 	Data   WsAccountDataEvent `json:"data"`
 }
-type BalanceListEvent []WsAccountUpdate
 type WsAccountDataEvent struct {
-	Event             enums.AccountDataEventType `json:"e"` // 事件类型
-	Time              int64                      `json:"E"` // 事件时间
-	UpdateTime        int64                      `json:"u"` // 账户末次更新时间戳
-	*BalanceListEvent `json:"B"`
+	Event           enums.AccountDataEventType `json:"e"` // 事件类型
+	Time            int64                      `json:"E"` // 事件时间
+	UpdateTime      int64                      `json:"u"` // 账户末次更新时间戳
+	TransactionTime int64                      `json:"T"`
+	Balances        []Balance                  `json:"B"`
 	*BalanceUpdateEvent
 	*OrderUpdateEvent
+	*OCOUpdateEvent
 }
 
-// WsAccountUpdate 账户更新
+// Balance 账户更新
 // 每当帐户余额发生更改时，都会发送一个事件outboundAccountPosition，其中包含可能由生成余额变动的事件而变动的资产。
-type WsAccountUpdate struct {
+type Balance struct {
 	Asset  string `json:"a"`
 	Free   string `json:"f"`
 	Locked string `json:"l"`
@@ -130,13 +131,13 @@ type WsAccountUpdate struct {
 // 账户发生充值或提取
 // 交易账户之间发生划转(例如 现货向杠杆账户划转)
 type BalanceUpdateEvent struct {
-	Asset           string `json:"a"`
-	Change          string `json:"d"`
-	TransactionTime int64  `json:"T"`
+	Asset  string `json:"a"`
+	Change string `json:"d"`
 }
 
 // OrderUpdateEvent 订单更新
 // 订单通过executionReport事件进行更新。
+// 备注: 通过将Z除以z可以找到平均价格。
 type OrderUpdateEvent struct {
 	Symbol                  string                `json:"s"`
 	ClientOrderId           string                `json:"c"`
@@ -172,6 +173,22 @@ type OrderUpdateEvent struct {
 	StrategyType            int64                 `json:"J"` // Strategy Type
 	WorkingTime             int64                 `json:"W"` // Working Time
 	SelfTradePreventionMode enums.StpModeType     `json:"V"`
+}
+
+type OCOUpdateEvent struct {
+	Symbol          string                    `json:"s"`
+	OrderListId     int64                     `json:"g"`
+	ContingencyType enums.ContingencyType     `json:"c"`
+	ListStatusType  enums.ListStatusType      `json:"l"`
+	ListOrderStatus enums.ListOrderStatusType `json:"L"`
+	RejectReason    string                    `json:"r"`
+	ClientOrderId   string                    `json:"C"` // List Client Order ID
+	Orders          []OCOOrder                `json:"O"`
+}
+type OCOOrder struct {
+	Symbol        string `json:"s"`
+	OrderId       int64  `json:"i"`
+	ClientOrderId string `json:"c"`
 }
 
 // NewWsUserData 账户更新
