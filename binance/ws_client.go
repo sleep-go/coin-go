@@ -53,7 +53,6 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 	if err != nil {
 		panic(err)
 	}
-	handler(websocket.CloseMessage, []byte{})
 	defer conn.Close()
 	conn.SetReadLimit(655350)
 	c.conn = conn
@@ -72,23 +71,25 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 			log.Println("read:", mt, string(message))
 		}
 	}()
+	return c.waitClose(done, exception)
+}
+func (c *WsClient) waitClose(done chan struct{}, exception ErrorHandler) error {
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, os.Interrupt)
-	for {
-		select {
-		case <-done:
-			log.Println("websocket closed")
-			return nil
-		case <-stopCh:
-			log.Println("stopCh")
-			err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				exception(websocket.CloseMessage, err)
-				return err
-			}
+	select {
+	case <-done:
+		log.Println("websocket closed")
+		return nil
+	case <-stopCh:
+		log.Println("stopCh")
+		err := c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		if err != nil {
+			log.Println("write close:", err)
+			exception(websocket.CloseMessage, err)
+			return err
 		}
 	}
+	return nil
 }
 func (c *WsClient) keepAlive(timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
