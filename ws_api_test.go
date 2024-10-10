@@ -230,3 +230,33 @@ func TestWsApiHr24(t *testing.T) {
 		}
 	}
 }
+func TestWsApiTradingDay(t *testing.T) {
+	defer close(done)
+	tradingDay := ticker.NewWsApiTradingDay(wsApiClient)
+	go func() {
+		err := tradingDay.Receive(func(event ticker.WsApiTradingDayResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				for _, res := range event.Result {
+					fmt.Println(res)
+				}
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	for {
+		time.Sleep(2 * time.Second)
+		err := tradingDay.SetSymbols([]string{BTCUSDT, ETHUSDT}).
+			SetTimeZone("+08:00").
+			SetType(enums.TickerTypeFull).
+			Send()
+		if err != nil {
+			continue
+		}
+	}
+}

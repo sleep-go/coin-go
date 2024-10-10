@@ -77,3 +77,63 @@ func (t *tradingDayRequest) Call(ctx context.Context) (body []*tradingDayRespons
 	}
 	return utils.ParseHttpResponse[[]*tradingDayResponse](resp)
 }
+
+// ****************************** Websocket Api *******************************
+
+type WsApiTradingDay interface {
+	binance.WsApi[WsApiTradingDayResponse]
+	SetSymbols(symbols []string) WsApiTradingDay
+	SetTimeZone(timeZone string) WsApiTradingDay
+	SetType(_type enums.TickerType) WsApiTradingDay
+}
+type WsApiTradingDayResponse struct {
+	binance.WsApiResponse
+	Result []*tradingDayResponse `json:"result"`
+}
+
+// NewWsApiTradingDay 交易日行情(Ticker)
+// 交易日价格变动统计。
+//
+// 权重:
+//
+// 每个交易对占用4个权重.
+//
+// 当请求中的交易对数量超过50，此请求的权重将限制在200。
+func NewWsApiTradingDay(c *binance.Client) WsApiTradingDay {
+	return &tradingDayRequest{
+		Client: c,
+	}
+}
+func (t *tradingDayRequest) SetSymbols(symbols []string) WsApiTradingDay {
+	t.symbols = symbols
+	return t
+}
+
+func (t *tradingDayRequest) SetType(_type enums.TickerType) WsApiTradingDay {
+	t._type = _type
+	return t
+}
+
+// SetTimeZone 注意:
+//
+// timeZone支持的值包括：
+// 小时和分钟（例如 -1:00，05:45）
+// 仅小时（例如 0，8，4）
+func (t *tradingDayRequest) SetTimeZone(timeZone string) WsApiTradingDay {
+	t.timeZone = timeZone
+	return t
+}
+func (t *tradingDayRequest) Receive(handler binance.Handler[WsApiTradingDayResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
+}
+
+func (t *tradingDayRequest) Send() error {
+	req := &binance.Request{Path: "ticker.tradingDay"}
+	if len(t.symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
+		req.SetParam("symbols", result)
+	}
+	req.SetOptionalParam("timeZone", t.timeZone)
+	req.SetOptionalParam("type", t._type.String())
+	return t.SendMessage(req)
+}
