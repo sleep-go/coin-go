@@ -14,9 +14,11 @@ import (
 
 type AggTrades interface {
 	Call(ctx context.Context) (body []*aggTradesResponse, err error)
-	SetFromId(fromId uint64) AggTrades
-	SetStartTime(startTime int64) AggTrades
-	SetEndTime(endTime int64) AggTrades
+	SetSymbol(symbol string) *aggTradesRequest
+	SetLimit(limit enums.LimitType) *aggTradesRequest
+	SetFromId(fromId uint64) *aggTradesRequest
+	SetStartTime(startTime int64) *aggTradesRequest
+	SetEndTime(endTime int64) *aggTradesRequest
 }
 
 type aggTradesRequest struct {
@@ -27,6 +29,17 @@ type aggTradesRequest struct {
 	startTime *int64          //从该时刻之后的成交记录开始返回结果
 	endTime   *int64          //返回该时刻为止的成交记录
 }
+
+func (a *aggTradesRequest) SetSymbol(symbol string) *aggTradesRequest {
+	a.symbol = symbol
+	return a
+}
+
+func (a *aggTradesRequest) SetLimit(limit enums.LimitType) *aggTradesRequest {
+	a.limit = limit
+	return a
+}
+
 type aggTradesResponse struct {
 	AggTradeID            int    `json:"a"` //归集成交ID
 	Price                 string `json:"p"` // 成交价
@@ -42,17 +55,17 @@ func NewAggTrades(client *binance.Client, symbol string, limit enums.LimitType) 
 	return &aggTradesRequest{Client: client, symbol: symbol, limit: limit}
 }
 
-func (a *aggTradesRequest) SetFromId(fromId uint64) AggTrades {
+func (a *aggTradesRequest) SetFromId(fromId uint64) *aggTradesRequest {
 	a.fromId = &fromId
 	return a
 }
 
-func (a *aggTradesRequest) SetStartTime(startTime int64) AggTrades {
+func (a *aggTradesRequest) SetStartTime(startTime int64) *aggTradesRequest {
 	a.startTime = &startTime
 	return a
 }
 
-func (a *aggTradesRequest) SetEndTime(endTime int64) AggTrades {
+func (a *aggTradesRequest) SetEndTime(endTime int64) *aggTradesRequest {
 	a.endTime = &endTime
 	return a
 }
@@ -66,15 +79,9 @@ func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse,
 	}
 	req.SetParam("symbol", a.symbol)
 	req.SetParam("limit", a.limit)
-	if a.fromId != nil {
-		req.SetParam("fromId", *a.fromId)
-	}
-	if a.startTime != nil {
-		req.SetParam("startTime", *a.startTime)
-	}
-	if a.endTime != nil {
-		req.SetParam("endTime", *a.endTime)
-	}
+	req.SetOptionalParam("fromId", a.fromId)
+	req.SetOptionalParam("startTime", a.startTime)
+	req.SetOptionalParam("endTime", a.endTime)
 	resp, err := a.Do(ctx, req)
 	if err != nil {
 		a.Debugf("response err:%v", err)
@@ -82,6 +89,8 @@ func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse,
 	}
 	return utils.ParseHttpResponse[[]*aggTradesResponse](resp)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamAggTradeEvent struct {
 	Stream string          `json:"stream"`
@@ -92,14 +101,6 @@ type WsAggTradeEvent struct {
 	Time   int64  `json:"E"` // 事件时间
 	Symbol string `json:"s"` // 交易对
 	aggTradesResponse
-	//AggTradeID            int64  `json:"a"` // 归集交易ID
-	//Price                 string `json:"p"` // 成交价格
-	//Quantity              string `json:"q"` // 成交数量
-	//FirstBreakdownTradeID int64  `json:"f"` // 被归集的首个交易ID
-	//LastBreakdownTradeID  int64  `json:"l"` // 被归集的末次交易ID
-	//TradeTime             int64  `json:"T"` // 成交时间
-	//IsBuyerMaker          bool   `json:"m"` //  买方是否是做市方。如true，则此次成交是一个主动卖出单，否则是一个主动买入单。
-	//Placeholder           bool   `json:"M"` //  请忽略该字段 add this field to avoid case insensitive unmarshaling
 }
 
 // NewWsAggTrade 归集交易
@@ -124,4 +125,52 @@ func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.Client, symb
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiAggTradesResponse struct {
+	binance.WsApiResponse
+	Result []*aggTradesResponse `json:"result"`
+}
+type WsApiAggTrades interface {
+	binance.WsApi[WsApiAggTradesResponse]
+	AggTrades
+}
+
+// NewWsApiAggTrades 归集交易
+// 一个 归集交易 (aggtrade) 代表一个或多个单独的交易。 同时间，同 taker 订单和同价格的执行交易会被聚合为一条归集交易。
+//
+// 如果需要访问实时交易活动，请考虑使用 WebSocket Streams：
+//
+// <symbol>@aggTrade
+// 如果需要历史总交易数据，可以使用 data.binance.vision。
+func NewWsApiAggTrades(c *binance.Client) WsApiAggTrades {
+	return &aggTradesRequest{Client: c}
+}
+
+func (a *aggTradesRequest) Receive(handler binance.Handler[WsApiAggTradesResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(a.Client, a.BaseURL, handler, exception)
+}
+
+// Send 归集交易
+// 备注：
+//
+// 如果指定了 fromId，则返回归集交易 ID >= fromId 的 aggtrades。
+//
+// 使用 fromId 和 limit 会对所有 aggtrades 进行分页。
+//
+// 如果指定了 startTime 和/或 endTime，响应中的 aggtrades 会按照执行时间 (T) 过滤。
+//
+// fromId 不能与 startTime 和 endTime 一起使用。
+//
+// 如果未指定条件，则返回最近的归集交易。
+func (a *aggTradesRequest) Send() error {
+	req := &binance.Request{Path: "trades.aggregate"}
+	req.SetParam("symbol", a.symbol)
+	req.SetParam("limit", a.limit)
+	req.SetOptionalParam("fromId", a.fromId)
+	req.SetOptionalParam("startTime", a.startTime)
+	req.SetOptionalParam("endTime", a.endTime)
+	return a.SendMessage(req)
 }

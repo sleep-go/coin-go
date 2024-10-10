@@ -86,3 +86,63 @@ func TestWsApiTrades(t *testing.T) {
 		}
 	}
 }
+func TestWsApiHistory(t *testing.T) {
+	defer close(done)
+	historyTrades := market.NewWsApiHistoryTrades(wsApiClient)
+	go func() {
+		err := historyTrades.Receive(func(event market.WsApiHistoryTradesResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				for _, res := range event.Result {
+					fmt.Println(res)
+				}
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+		}
+	}()
+	time.Sleep(2 * time.Second)
+	err := historyTrades.
+		SetSymbol(BTCUSDT).
+		SetLimit(enums.Limit5).
+		SetFromId(1).
+		Send()
+	if err != nil {
+		return
+	}
+	time.Sleep(2 * time.Second)
+}
+func TestWsApiAggTrades(t *testing.T) {
+	defer close(done)
+	aggTrades := market.NewWsApiAggTrades(wsApiClient)
+	go func() {
+		err := aggTrades.Receive(func(event market.WsApiAggTradesResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				for _, res := range event.Result {
+					fmt.Println(res)
+				}
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+		}
+	}()
+	time.Sleep(2 * time.Second)
+	err := aggTrades.
+		SetSymbol(BTCUSDT).
+		SetLimit(enums.Limit5).
+		//SetFromId(1).
+		SetStartTime(time.Now().UnixMilli() - 60*60*60).
+		SetEndTime(time.Now().UnixMilli()).
+		Send()
+	if err != nil {
+		return
+	}
+	time.Sleep(2 * time.Second)
+}
