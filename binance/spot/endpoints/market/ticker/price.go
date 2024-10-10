@@ -19,6 +19,7 @@ type priceRequest struct {
 	*binance.Client
 	symbols []string
 }
+
 type priceResponse struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
@@ -45,4 +46,43 @@ func (t *priceRequest) Call(ctx context.Context) (body []*priceResponse, err err
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*priceResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiTickerPrice interface {
+	binance.WsApi[WsApiTickerPriceResponse]
+	SetSymbols(symbols []string) WsApiTickerPrice
+}
+type WsApiTickerPriceResponse struct {
+	binance.WsApiResponse
+	Result []*priceResponse `json:"result"`
+}
+
+// NewWsApiTickerPrice 最新价格
+// 获取交易对最新价格
+//
+// 如果需要访问实时价格更新，请考虑使用 WebSocket Streams:
+//
+// <symbol>@aggTrade
+// <symbol>@trade
+func NewWsApiTickerPrice(c *binance.Client) WsApiTickerPrice {
+	return &priceRequest{Client: c}
+}
+
+func (t *priceRequest) SetSymbols(symbols []string) WsApiTickerPrice {
+	t.symbols = symbols
+	return t
+}
+func (t *priceRequest) Receive(handler binance.Handler[WsApiTickerPriceResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
+}
+
+func (t *priceRequest) Send() error {
+	req := &binance.Request{Path: "ticker.price"}
+	if len(t.symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
+		req.SetParam("symbols", result)
+	}
+	return t.SendMessage(req)
 }
