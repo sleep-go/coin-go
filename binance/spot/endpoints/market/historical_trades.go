@@ -67,13 +67,13 @@ func (t *historyTradesRequest) Call(ctx context.Context) (body []*tradesResponse
 
 // ****************************** Websocket Api *******************************
 
-type WsApiHistoryTradesResponse struct {
-	binance.WsApiResponse
-	Result []*tradesResponse `json:"result"`
-}
 type WsApiHistoryTrades interface {
 	binance.WsApi[WsApiHistoryTradesResponse]
 	HistoryTrades
+}
+type WsApiHistoryTradesResponse struct {
+	binance.WsApiResponse
+	Result []*tradesResponse `json:"result"`
 }
 
 func NewWsApiHistoryTrades(c *binance.Client) WsApiHistoryTrades {

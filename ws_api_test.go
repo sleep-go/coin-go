@@ -11,6 +11,7 @@ import (
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
 )
 
 var wsApiClient *binance.Client
@@ -197,6 +198,33 @@ func TestWsApiAvgPrice(t *testing.T) {
 	for {
 		time.Sleep(2 * time.Second)
 		err := avgPrice.SetSymbol(BTCUSDT).Send()
+		if err != nil {
+			continue
+		}
+	}
+}
+func TestWsApiHr24(t *testing.T) {
+	defer close(done)
+	hr24 := ticker.NewWsApiHr24(wsApiClient)
+	go func() {
+		err := hr24.Receive(func(event ticker.WsApiHr24Response) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Println(event.Result, event.RateLimits)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	for {
+		time.Sleep(2 * time.Second)
+		err := hr24.SetSymbols([]string{BTCUSDT, ETHUSDT}).
+			SetType(enums.TickerTypeFull).
+			Send()
 		if err != nil {
 			continue
 		}
