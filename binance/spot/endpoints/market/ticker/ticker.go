@@ -22,9 +22,11 @@ import (
 // 比如, 结束时间 closeTime 是 1641287867099 (January 04, 2022 09:17:47:099 UTC) , windowSize 为 1d. 那么开始时间 openTime 则为 1641201420000 (January 3, 2022, 09:17:00 UTC)
 type Ticker interface {
 	Call(ctx context.Context) (body []*tickerResponse, err error)
-	SetMinute(m uint8) Ticker
-	SetHour(h uint8) Ticker
-	SetDay(d uint8) Ticker
+	SetSymbols(symbols []string) *tickerRequest
+	SetType(_type enums.TickerType) *tickerRequest
+	SetMinute(m uint8) *tickerRequest
+	SetHour(h uint8) *tickerRequest
+	SetDay(d uint8) *tickerRequest
 }
 type tickerRequest struct {
 	*binance.Client
@@ -61,7 +63,16 @@ func NewTicker(client *binance.Client, symbols []string, _type enums.TickerType)
 	return &tickerRequest{Client: client, symbols: symbols, _type: _type}
 }
 
-func (t *tickerRequest) SetMinute(m uint8) Ticker {
+func (t *tickerRequest) SetSymbols(symbols []string) *tickerRequest {
+	t.symbols = symbols
+	return t
+}
+
+func (t *tickerRequest) SetType(_type enums.TickerType) *tickerRequest {
+	t._type = _type
+	return t
+}
+func (t *tickerRequest) SetMinute(m uint8) *tickerRequest {
 	if m > 59 {
 		m = 59
 	} else if m < 1 {
@@ -70,7 +81,7 @@ func (t *tickerRequest) SetMinute(m uint8) Ticker {
 	t.windowSize = fmt.Sprintf("%dm", m)
 	return t
 }
-func (t *tickerRequest) SetHour(h uint8) Ticker {
+func (t *tickerRequest) SetHour(h uint8) *tickerRequest {
 	if h > 23 {
 		h = 23
 	} else if h < 1 {
@@ -79,7 +90,7 @@ func (t *tickerRequest) SetHour(h uint8) Ticker {
 	t.windowSize = fmt.Sprintf("%dh", h)
 	return t
 }
-func (t *tickerRequest) SetDay(d uint8) Ticker {
+func (t *tickerRequest) SetDay(d uint8) *tickerRequest {
 	if d > 7 {
 		d = 7
 	} else if d < 1 {
@@ -107,6 +118,8 @@ func (t *tickerRequest) Call(ctx context.Context) (body []*tickerResponse, err e
 	}
 	return utils.ParseHttpResponse[[]*tickerResponse](resp)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamMiniTickerEvent struct {
 	Stream string            `json:"stream"`
@@ -261,4 +274,52 @@ func allTicker[T []WsTickerEvent | StreamAllTickerEvent](c *binance.Client, hand
 	endpoint := c.BaseURL
 	endpoint += "!ticker@arr"
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiTicker interface {
+	binance.WsApi[WsApiTickerResponse]
+	Ticker
+}
+type WsApiTickerResponse struct {
+	binance.WsApiResponse
+	Result []*tickerResponse `json:"result"`
+}
+
+// NewWsApiTicker 滚动窗口价格变动统计
+// 使用自定义窗口获取滚动窗口价格变化统计信息。
+//
+// 这个请求类似于 ticker.24hr，但统计数据是使用指定的任意窗口按需计算的。
+//
+// 注意： 窗口大小精度限制为1分钟。 虽然 closeTime 是请求的当前时间，openTime 总是从分钟边界开始。 因此，有效窗口可能比请求的 windowSize 宽59999毫秒。
+// 如果您需要持续监控交易统计，请考虑使用 WebSocket Streams:
+//
+// <symbol>@ticker_<window_size> 或者 !ticker_<window-size>@arr
+//
+// 窗口计算示例
+//
+// 例如，对 "windowSize": "7d" 的请求可能会导致以下窗口：
+//
+// "openTime": 1659580020000,
+// "closeTime": 1660184865291,
+//
+// 请求的时间 - closeTime - 是 1660184865291（2022年8月11日 02:27:45.291）。 请求的窗口大小应将 openTime 设置为7天之前 – 8月4日，02:27:45.291 – 但由于精度有限，它最终会提前一点：1659580020000（2022年8月4日 02:27:00），正好在一分钟开始。
+func NewWsApiTicker(c *binance.Client) WsApiTicker {
+	return &tickerRequest{Client: c}
+}
+
+func (t *tickerRequest) Receive(handler binance.Handler[WsApiTickerResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
+}
+
+func (t *tickerRequest) Send() error {
+	req := &binance.Request{Path: "ticker"}
+	if len(t.symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
+		req.SetParam("symbols", result)
+	}
+	req.SetOptionalParam("windowSize", t.windowSize)
+	req.SetOptionalParam("type", t._type)
+	return t.SendMessage(req)
 }
