@@ -63,6 +63,8 @@ func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err e
 	return utils.ParseHttpResponse[[]*tradesResponse](resp)
 }
 
+// ****************************** Websocket 行情推送 *******************************
+
 type StreamTradeEvent struct {
 	Stream string       `json:"stream"`
 	Data   WsTradeEvent `json:"data"`
@@ -107,4 +109,46 @@ func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.Client, symbols []str
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiTrades interface {
+	binance.WsApi[WsApiTradesResponse]
+	SetSymbol(symbol string) WsApiTrades
+	SetLimit(limit enums.LimitType) WsApiTrades
+}
+type WsApiTradesResponse struct {
+	binance.WsApiResponse
+	Result []*tradesResponse `json:"result"`
+}
+
+// NewWsApiTrades 最近的交易
+// 获取最近的交易
+//
+// 如果您需要访问实时交易活动，请考虑使用 WebSocket Streams：
+//
+// <symbol>@trade
+func NewWsApiTrades(c *binance.Client) WsApiTrades {
+	return &tradesRequest{
+		Client: c,
+	}
+}
+func (t *tradesRequest) SetSymbol(symbol string) WsApiTrades {
+	t.symbol = symbol
+	return t
+}
+
+func (t *tradesRequest) SetLimit(limit enums.LimitType) WsApiTrades {
+	t.limit = limit
+	return t
+}
+func (t *tradesRequest) Receive(handler binance.Handler[WsApiTradesResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
+}
+func (t *tradesRequest) Send() error {
+	req := &binance.Request{Path: "trades.recent"}
+	req.SetParam("symbol", t.symbol)
+	req.SetParam("limit", t.limit)
+	return t.SendMessage(req)
 }

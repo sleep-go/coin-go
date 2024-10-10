@@ -12,14 +12,32 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/errors"
 )
 
+type WsApi[T any] interface {
+	Receive(handler Handler[T], exception ErrorHandler) error
+	Send() error
+}
+type WsApiResponse struct {
+	Id         string         `json:"id"`
+	Status     int            `json:"status"`
+	Error      *errors.Status `json:"error"`
+	RateLimits []RateLimits   `json:"rateLimits"`
+}
+type RateLimits struct {
+	RateLimitType string `json:"rateLimitType"`
+	Interval      string `json:"interval"`
+	IntervalNum   int    `json:"intervalNum"`
+	Limit         int    `json:"limit"`
+	Count         int    `json:"count"`
+}
 type messageHandler func(messageType int, msg []byte)
 type ErrorHandler func(messageType int, err error)
 
 type Handler[T any] func(event T)
 
-func NewWsClient(apiKey string, isCombined, isFast bool, baseURL ...string) *Client {
+func NewWsClient(isCombined, isFast bool, baseURL ...string) *Client {
 	// 将默认基本 URL 设置为生产 WS URL
 	url := consts.WS_STREAM
 	if len(baseURL) > 0 {
@@ -35,8 +53,25 @@ func NewWsClient(apiKey string, isCombined, isFast bool, baseURL ...string) *Cli
 		BaseURL:    url,
 		IsCombined: isCombined,
 		IsFast:     isFast,
-		APIKey:     apiKey,
-		conn:       nil,
+		Logger:     log.New(LogLevel, "[INFO] ", log.LstdFlags),
+		dialer: &websocket.Dialer{
+			Proxy:             http.ProxyFromEnvironment,
+			HandshakeTimeout:  45 * time.Second,
+			EnableCompression: false,
+		},
+	}
+}
+func NewWsApiClient(apiKey string, baseURL ...string) *Client {
+	// 将默认基本 URL 设置为生产 WS URL
+	url := consts.WS_API2
+	if len(baseURL) > 0 {
+		url = baseURL[0]
+	}
+	// 根据客户端是否用于组合流附加到 baseURL
+	return &Client{
+		BaseURL: url,
+		APIKey:  apiKey,
+		Logger:  log.New(LogLevel, "[INFO] ", log.LstdFlags),
 		dialer: &websocket.Dialer{
 			Proxy:             http.ProxyFromEnvironment,
 			HandshakeTimeout:  45 * time.Second,
@@ -93,13 +128,11 @@ func (c *Client) waitClose(done chan struct{}, exception ErrorHandler) error {
 }
 func (c *Client) keepAlive(timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
-
 	lastResponse := time.Now()
 	c.conn.SetPongHandler(func(msg string) error {
 		lastResponse = time.Now()
 		return nil
 	})
-
 	go func() {
 		defer ticker.Stop()
 		for {
@@ -115,16 +148,6 @@ func (c *Client) keepAlive(timeout time.Duration) {
 		}
 	}()
 }
-func (c *Client) Close() error {
-	return c.conn.Close()
-}
-
-type wsReqMsg struct {
-	Id     string `json:"id"`
-	Method string `json:"method"`
-	Params any    `json:"params"`
-}
-
 func (c *Client) SendMessage(r *Request) error {
 	//获取 query url
 	queryString := r.query.Encode()
@@ -135,7 +158,7 @@ func (c *Client) SendMessage(r *Request) error {
 		//获取 query url
 		queryString = r.query.Encode()
 		//设置签名参数
-		raw := fmt.Sprintf("%s%s", queryString)
+		raw := fmt.Sprintf("%s", queryString)
 		if c.SecretKey != "" {
 			r.SetParam("signature", signPayload(raw, c.SecretKey))
 		} else if c.PrivateKey != nil {
@@ -144,7 +167,6 @@ func (c *Client) SendMessage(r *Request) error {
 			c.Println("signature is empty")
 		}
 	}
-	c.Debugf("query:%s", r.query.Encode())
 	params := make(map[string]any)
 	for k, v := range r.query {
 		params[k] = v[0]
@@ -154,7 +176,21 @@ func (c *Client) SendMessage(r *Request) error {
 		Method: r.Path,
 		Params: params,
 	}
+	marshal, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	c.Debugf("%s", marshal)
 	return c.conn.WriteJSON(msg)
+}
+func (c *Client) Close() error {
+	return c.conn.Close()
+}
+
+type wsReqMsg struct {
+	Id     string `json:"id"`
+	Method string `json:"method"`
+	Params any    `json:"params"`
 }
 
 func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception ErrorHandler) error {

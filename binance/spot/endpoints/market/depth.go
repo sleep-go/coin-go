@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sleep-go/coin-go/pkg/errors"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -27,6 +25,7 @@ type depthRequest struct {
 	symbol string
 	limit  enums.LimitType
 }
+
 type depthResponse struct {
 	LastUpdateId int        `json:"lastUpdateId"`
 	Bids         [][]string `json:"bids"`
@@ -136,14 +135,13 @@ func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.Cli
 // ****************************** Websocket Api *******************************
 
 type WsApiDepth interface {
-	Receive(handler binance.Handler[WsApiDepthResponse], exception binance.ErrorHandler) error
-	Send() error
+	binance.WsApi[WsApiDepthResponse]
+	SetSymbol(symbol string) WsApiDepth
+	SetLimit(limit enums.LimitType) WsApiDepth
 }
 type WsApiDepthResponse struct {
-	Id     string         `json:"id"`
-	Status int            `json:"status"`
+	binance.WsApiResponse
 	Result *depthResponse `json:"result"`
-	Error  *errors.Status `json:"error"`
 }
 
 // NewWsApiDepth 获取当前深度信息。
@@ -155,12 +153,19 @@ type WsApiDepthResponse struct {
 // <symbol>@depth<levels>
 // <symbol>@depth
 // 如果需要维护本地orderbook，您可以将 depth 请求与 <symbol>@depth streams 一起使用。
-func NewWsApiDepth(c *binance.Client, symbol string, limit enums.LimitType) WsApiDepth {
+func NewWsApiDepth(c *binance.Client) WsApiDepth {
 	return &depthRequest{
 		Client: c,
-		symbol: symbol,
-		limit:  limit,
 	}
+}
+func (d *depthRequest) SetSymbol(symbol string) WsApiDepth {
+	d.symbol = symbol
+	return d
+}
+
+func (d *depthRequest) SetLimit(limit enums.LimitType) WsApiDepth {
+	d.limit = limit
+	return d
 }
 func (d *depthRequest) Receive(handler binance.Handler[WsApiDepthResponse], exception binance.ErrorHandler) error {
 	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
@@ -169,5 +174,5 @@ func (d *depthRequest) Send() error {
 	req := &binance.Request{Path: "depth"}
 	req.SetParam("symbol", d.symbol)
 	req.SetParam("limit", d.limit)
-	return d.Client.SendMessage(req)
+	return d.SendMessage(req)
 }
