@@ -17,10 +17,10 @@ type Klines interface {
 	// CallUI 请求参数与响应和k线接口相同。
 	// uiKlines 返回修改后的k线数据，针对k线图的呈现进行了优化。
 	CallUI(ctx context.Context) (body []*klinesResponse, err error)
-	SetInterval(interval enums.KlineIntervalType) Klines
-	SetStartTime(startTime int64) Klines
-	SetEndTime(endTime int64) Klines
-	SetTimeZone(timeZone string) Klines
+	SetInterval(interval enums.KlineIntervalType) *klinesRequest
+	SetStartTime(startTime int64) *klinesRequest
+	SetEndTime(endTime int64) *klinesRequest
+	SetTimeZone(timeZone string) *klinesRequest
 }
 type klinesRequest struct {
 	*binance.Client
@@ -30,6 +30,16 @@ type klinesRequest struct {
 	startTime *int64
 	endTime   *int64
 	timeZone  string
+}
+
+func (k *klinesRequest) SetSymbol(symbol string) *klinesRequest {
+	k.symbol = symbol
+	return k
+}
+
+func (k *klinesRequest) SetLimit(limit enums.LimitType) *klinesRequest {
+	k.limit = limit
+	return k
 }
 
 // [
@@ -57,22 +67,22 @@ func NewKlines(client *binance.Client, symbol string, limit enums.LimitType) Kli
 }
 
 // SetInterval k线间隔 必传
-func (k *klinesRequest) SetInterval(interval enums.KlineIntervalType) Klines {
+func (k *klinesRequest) SetInterval(interval enums.KlineIntervalType) *klinesRequest {
 	k.interval = interval
 	return k
 }
 
-func (k *klinesRequest) SetStartTime(startTime int64) Klines {
+func (k *klinesRequest) SetStartTime(startTime int64) *klinesRequest {
 	k.startTime = &startTime
 	return k
 }
 
-func (k *klinesRequest) SetEndTime(endTime int64) Klines {
+func (k *klinesRequest) SetEndTime(endTime int64) *klinesRequest {
 	k.endTime = &endTime
 	return k
 }
 
-func (k *klinesRequest) SetTimeZone(timeZone string) Klines {
+func (k *klinesRequest) SetTimeZone(timeZone string) *klinesRequest {
 	k.timeZone = timeZone
 	return k
 }
@@ -93,7 +103,7 @@ func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err e
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)
-	req.SetOptionalParam("interval", string(k.interval))
+	req.SetOptionalParam("interval", k.interval)
 	req.SetOptionalParam("startTime", k.startTime)
 	req.SetOptionalParam("endTime", k.endTime)
 	req.SetOptionalParam("timeZone", k.timeZone)
@@ -111,7 +121,7 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)
-	req.SetOptionalParam("interval", string(k.interval))
+	req.SetOptionalParam("interval", k.interval)
 	req.SetOptionalParam("startTime", k.startTime)
 	req.SetOptionalParam("endTime", k.endTime)
 	req.SetOptionalParam("timeZone", k.timeZone)
@@ -122,6 +132,8 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 	}
 	return utils.ParseHttpResponse[[]*klinesResponse](resp)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamKlineEvent struct {
 	Stream string       `json:"stream"`
@@ -175,4 +187,66 @@ func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.Client, symbolsInterv
 		endpoint = fmt.Sprintf("%s@%s", endpoint, c.Timezone)
 	}
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiKlines interface {
+	binance.WsApi[WsApiKlinesResponse]
+	SetSymbol(symbol string) *klinesRequest
+	SetLimit(limit enums.LimitType) *klinesRequest
+	SendUI() error
+}
+type WsApiKlinesResponse struct {
+	binance.WsApiResponse
+	Result []*klinesResponse `json:"result"`
+}
+
+// NewWsApiKlines K线数据
+// 获取K线数据。
+//
+// Klines 由其开盘时间和收盘时间为唯一标识。
+//
+// 如果您需要访问实时 kline 更新，请考虑使用 WebSocket Streams：
+//
+// <symbol>@kline_<interval>
+// 如果需要历史K线数据，可以使用 data.binance.vision。
+func NewWsApiKlines(c *binance.Client) WsApiKlines {
+	return &klinesRequest{Client: c}
+}
+
+func (k *klinesRequest) Receive(handler binance.Handler[WsApiKlinesResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(k.Client, k.BaseURL, handler, exception)
+
+}
+
+// Send 备注:
+// method: klines or uiKlines
+//
+// 如果没有指定 startTime，endTime，则返回最近的klines。
+// timeZone支持的值包括：
+// 小时和分钟（例如 -1:00，05:45）
+// 仅小时（例如 0，8，4）
+// 接受的值范围严格为 [-12:00 到 +14:00]（包括边界）
+// 如果提供了timeZone，K线间隔将在该时区中解释，而不是在UTC中。
+// 请注意，无论timeZone如何，startTime和endTime始终以UTC时区解释。
+func (k *klinesRequest) Send() error {
+	req := &binance.Request{Path: "klines"}
+	req.SetParam("symbol", k.symbol)
+	req.SetOptionalParam("limit", k.limit)
+	req.SetOptionalParam("interval", k.interval)
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	return k.SendMessage(req)
+}
+func (k *klinesRequest) SendUI() error {
+	req := &binance.Request{Path: "uiKlines"}
+	req.SetParam("symbol", k.symbol)
+	req.SetOptionalParam("limit", k.limit)
+	req.SetOptionalParam("interval", k.interval)
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	return k.SendMessage(req)
 }

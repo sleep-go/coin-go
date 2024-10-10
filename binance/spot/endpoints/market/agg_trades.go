@@ -129,13 +129,13 @@ func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.Client, symb
 
 // ****************************** Websocket Api *******************************
 
-type WsApiAggTradesResponse struct {
-	binance.WsApiResponse
-	Result []*aggTradesResponse `json:"result"`
-}
 type WsApiAggTrades interface {
 	binance.WsApi[WsApiAggTradesResponse]
 	AggTrades
+}
+type WsApiAggTradesResponse struct {
+	binance.WsApiResponse
+	Result []*aggTradesResponse `json:"result"`
 }
 
 // NewWsApiAggTrades 归集交易

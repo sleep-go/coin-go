@@ -146,3 +146,35 @@ func TestWsApiAggTrades(t *testing.T) {
 	}
 	time.Sleep(2 * time.Second)
 }
+func TestWsApiKline(t *testing.T) {
+	defer close(done)
+	klines := market.NewWsApiKlines(wsApiClient)
+	go func() {
+		err := klines.Receive(func(event market.WsApiKlinesResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				for _, res := range event.Result {
+					fmt.Println(res)
+				}
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+		}
+	}()
+	for {
+		time.Sleep(2 * time.Second)
+		err := klines.
+			SetSymbol(BTCUSDT).
+			SetLimit(enums.Limit5).
+			SetInterval(enums.KlineIntervalType1d).
+			SetTimeZone("+08:00").
+			SetEndTime(time.Now().UnixMilli()).
+			Send()
+		if err != nil {
+			continue
+		}
+	}
+}
