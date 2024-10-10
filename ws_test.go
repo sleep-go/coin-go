@@ -3,7 +3,10 @@ package coin_go
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -18,7 +21,14 @@ var err error
 var wsClient *binance.Client
 
 func init() {
-	wsClient = binance.NewWsClient("", true, true, consts.WS_STREAM_TEST)
+	// 设置身份验证
+	file, err := os.ReadFile("./.test.env")
+	if err != nil {
+		panic(err)
+		return
+	}
+	API_KEY := strings.TrimSpace(string(file))
+	wsClient = binance.NewWsClient(API_KEY, true, true, consts.WS_STREAM_TEST)
 }
 
 func TestDepthWs(t *testing.T) {
@@ -263,6 +273,32 @@ func TestWsUserData(t *testing.T) {
 	}
 }
 
-func TestWsDepth(t *testing.T) {
-	market.NewWsApiDepth("ETCUSDT", enums.Limit20).Send()
+func TestWsApiDepth(t *testing.T) {
+	done := make(chan struct{}, 1)
+	defer close(done)
+	wsApiDepth := market.NewWsApiDepth(wsClient, BTCUSDT, enums.Limit5)
+	go func() {
+		wsClient.BaseURL = consts.WS_API_TEST
+		err := wsApiDepth.Receive(func(event market.WsApiDepthResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Println(event.Result)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+			<-done
+		})
+		if err != nil {
+			panic(err)
+			return
+		}
+	}()
+	for i := 0; i < 5; i++ {
+		time.Sleep(2 * time.Second)
+		err := wsApiDepth.Send()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }

@@ -2,12 +2,14 @@ package binance
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
@@ -16,28 +18,13 @@ type messageHandler func(messageType int, msg []byte)
 type ErrorHandler func(messageType int, err error)
 
 type Handler[T any] func(event T)
-type WsClient struct {
-	Endpoint   string
-	IsCombined bool
-	IsFast     bool // 更新速度更快： 100ms
-	Timezone   string
-	apiKey     string
-	conn       *websocket.Conn
-	dialer     *websocket.Dialer
-}
-
-func (c *Client) Close() error {
-	return c.conn.Close()
-}
 
 func NewWsClient(apiKey string, isCombined, isFast bool, baseURL ...string) *Client {
 	// 将默认基本 URL 设置为生产 WS URL
 	url := consts.WS_STREAM
-
 	if len(baseURL) > 0 {
 		url = baseURL[0]
 	}
-
 	// 根据客户端是否用于组合流附加到 baseURL
 	if isCombined {
 		url += "/stream?streams="
@@ -128,17 +115,48 @@ func (c *Client) keepAlive(timeout time.Duration) {
 		}
 	}()
 }
-func (c *Client) SendMessage(msg any) error {
+func (c *Client) Close() error {
+	return c.conn.Close()
+}
+
+type wsReqMsg struct {
+	Id     string `json:"id"`
+	Method string `json:"method"`
+	Params any    `json:"params"`
+}
+
+func (c *Client) SendMessage(r *Request) error {
+	//获取 query url
+	queryString := r.query.Encode()
+	if r.needSign {
+		r.SetParam("apiKey", c.APIKey)
+		r.SetOptionalParam("recvWindow", c.TimeOffset)
+		r.SetParam("timestamp", time.Now().UnixMilli())
+		//获取 query url
+		queryString = r.query.Encode()
+		//设置签名参数
+		raw := fmt.Sprintf("%s%s", queryString)
+		if c.SecretKey != "" {
+			r.SetParam("signature", signPayload(raw, c.SecretKey))
+		} else if c.PrivateKey != nil {
+			r.SetParam("signature", signPayload(raw, c.PrivateKey))
+		} else {
+			c.Println("signature is empty")
+		}
+	}
+	c.Debugf("query:%s", r.query.Encode())
+	params := make(map[string]any)
+	for k, v := range r.query {
+		params[k] = v[0]
+	}
+	msg := &wsReqMsg{
+		Id:     uuid.New().String(),
+		Method: r.Path,
+		Params: params,
+	}
 	return c.conn.WriteJSON(msg)
 }
-func (c *Client) makeParams(msg map[string]any) (params map[string]any) {
-	for k, v := range msg {
-		params[k] = v
-	}
-	params["timestamp"] = time.Now().UnixMilli()
-	params["apiKey"] = c.APIKey
-	return params
-}
+
 func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception ErrorHandler) error {
 	log.Println(endpoint)
 	h := func(mt int, msg []byte) {

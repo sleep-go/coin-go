@@ -2,10 +2,11 @@ package market
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/sleep-go/coin-go/pkg/errors"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -15,16 +16,15 @@ import (
 
 type Depth interface {
 	Call(ctx context.Context) (body *depthResponse, err error)
-	Send()
 }
 
 // 名称	类型	是否必须	描述
-// Symbol	STRING	YES
+// symbol	STRING	YES
 // limit	INT	NO	默认 100; 最大 5000. 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
 // 如果 limit > 5000, 最多返回5000条数据.
 type depthRequest struct {
 	*binance.Client
-	Symbol string
+	symbol string
 	limit  enums.LimitType
 }
 type depthResponse struct {
@@ -37,15 +37,7 @@ type depthResponse struct {
 func NewDepth(c *binance.Client, symbol string, limit enums.LimitType) Depth {
 	return &depthRequest{
 		Client: c,
-		Symbol: symbol,
-		limit:  limit,
-	}
-}
-
-// NewWsApiDepth 深度信息
-func NewWsApiDepth(symbol string, limit enums.LimitType) Depth {
-	return &depthRequest{
-		Symbol: symbol,
+		symbol: symbol,
 		limit:  limit,
 	}
 }
@@ -59,7 +51,7 @@ func (d *depthRequest) Call(ctx context.Context) (body *depthResponse, err error
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketDepth,
 	}
-	req.SetParam("symbol", d.Symbol)
+	req.SetParam("symbol", d.symbol)
 	req.SetParam("limit", d.limit)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
@@ -68,6 +60,8 @@ func (d *depthRequest) Call(ctx context.Context) (body *depthResponse, err error
 	}
 	return utils.ParseHttpResponse[*depthResponse](resp)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamDepthEvent struct {
 	Stream string        `json:"stream"`
@@ -139,15 +133,41 @@ func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.Cli
 	return binance.WsHandler(c, endpoint, handler, exception)
 }
 
-// websocket api
+// ****************************** Websocket Api *******************************
 
-func (d *depthRequest) Send() {
-	fmt.Println(d.Symbol)
-	req := new(map[string]any)
+type WsApiDepth interface {
+	Receive(handler binance.Handler[WsApiDepthResponse], exception binance.ErrorHandler) error
+	Send() error
+}
+type WsApiDepthResponse struct {
+	Id     string         `json:"id"`
+	Status int            `json:"status"`
+	Result *depthResponse `json:"result"`
+	Error  *errors.Status `json:"error"`
+}
 
-	bytes, err := json.Marshal(req)
-	if err != nil {
-		panic(err)
+// NewWsApiDepth 获取当前深度信息。
+//
+// 请注意，此请求返回有限的市场深度。
+//
+// 如果需要持续监控深度信息更新，请考虑使用 WebSocket Streams：
+//
+// <symbol>@depth<levels>
+// <symbol>@depth
+// 如果需要维护本地orderbook，您可以将 depth 请求与 <symbol>@depth streams 一起使用。
+func NewWsApiDepth(c *binance.Client, symbol string, limit enums.LimitType) WsApiDepth {
+	return &depthRequest{
+		Client: c,
+		symbol: symbol,
+		limit:  limit,
 	}
-	fmt.Printf("%s\n", bytes)
+}
+func (d *depthRequest) Receive(handler binance.Handler[WsApiDepthResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
+}
+func (d *depthRequest) Send() error {
+	req := &binance.Request{Path: "depth"}
+	req.SetParam("symbol", d.symbol)
+	req.SetParam("limit", d.limit)
+	return d.Client.SendMessage(req)
 }
