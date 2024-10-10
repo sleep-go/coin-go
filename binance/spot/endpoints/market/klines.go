@@ -152,10 +152,10 @@ type WsKline struct {
 	ActiveBuyQuoteVolume string `json:"Q"`
 }
 
-func NewWsKline(c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[WsKlineEvent], exception binance.ErrorHandler) error {
+func NewWsKline(c *binance.Client, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[WsKlineEvent], exception binance.ErrorHandler) error {
 	return wsKline(c, symbolsInterval, handler, exception)
 }
-func NewStreamKline(c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[StreamKlineEvent], exception binance.ErrorHandler) error {
+func NewStreamKline(c *binance.Client, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[StreamKlineEvent], exception binance.ErrorHandler) error {
 	return wsKline(c, symbolsInterval, handler, exception)
 }
 
@@ -165,8 +165,8 @@ func NewStreamKline(c *binance.WsClient, symbolsInterval map[string]enums.KlineI
 // 订阅Kline需要提供间隔参数，最短为分钟线，最长为月线。支持以下间隔:
 //
 // m -> 分钟; h -> 小时; d -> 天; w -> 周; M -> 月
-func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.WsClient, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.Client, symbolsInterval map[string]enums.KlineIntervalType, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for symbol, interval := range symbolsInterval {
 		endpoint += fmt.Sprintf("%s@kline_%s", strings.ToLower(symbol), interval) + "/"
 	}

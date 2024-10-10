@@ -198,17 +198,17 @@ type ExpiredEvent struct {
 
 // NewWsUserData 账户更新
 // 每当帐户余额发生更改时，都会发送一个事件outboundAccountPosition，其中包含可能由生成余额变动的事件而变动的资产。
-func NewWsUserData(c *binance.WsClient, listenKey string, handler binance.Handler[WsAccountDataEvent], exception binance.ErrorHandler) error {
+func NewWsUserData(c *binance.Client, listenKey string, handler binance.Handler[WsAccountDataEvent], exception binance.ErrorHandler) error {
 	return userData(c, listenKey, handler, exception)
 }
 
 // NewStreamUserData 账户更新
 // 每当帐户余额发生更改时，都会发送一个事件outboundAccountPosition，其中包含可能由生成余额变动的事件而变动的资产。
-func NewStreamUserData(c *binance.WsClient, listenKey string, handler binance.Handler[StreamAccountUpdateEvent], exception binance.ErrorHandler) error {
+func NewStreamUserData(c *binance.Client, listenKey string, handler binance.Handler[StreamAccountUpdateEvent], exception binance.ErrorHandler) error {
 	return userData(c, listenKey, handler, exception)
 }
 
-func userData[T WsAccountDataEvent | StreamAccountUpdateEvent](c *binance.WsClient, listenKey string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint + listenKey
+func userData[T WsAccountDataEvent | StreamAccountUpdateEvent](c *binance.Client, listenKey string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL + listenKey
 	return binance.WsHandler(c, endpoint, handler, exception)
 }

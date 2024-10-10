@@ -215,7 +215,7 @@ func TestQueryOrder(t *testing.T) {
 		SetOrderId(30102167318).
 		//SetOrderId，SetOrigClientOrderId 二选一
 		//SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
-		SetTimestamp(time.Now().UnixMilli()).
+		//SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -225,7 +225,7 @@ func TestQueryOrder(t *testing.T) {
 }
 func TestOpenOrders(t *testing.T) {
 	res, err := trading.NewQueryOrder(client, BTCUSDT).
-		SetTimestamp(time.Now().UnixMilli()).
+		//SetTimestamp(time.Now().UnixMilli()).
 		CallOpenOrders(context.Background())
 	if err != nil {
 		t.Fatal(err)

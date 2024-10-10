@@ -15,10 +15,10 @@ import (
 )
 
 var err error
-var wsClient *binance.WsClient
+var wsClient *binance.Client
 
 func init() {
-	wsClient = binance.NewWsClient(true, true, consts.WS_STREAM_TEST)
+	wsClient = binance.NewWsClient("", true, true, consts.WS_STREAM_TEST)
 }
 
 func TestDepthWs(t *testing.T) {
@@ -261,4 +261,8 @@ func TestWsUserData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestWsDepth(t *testing.T) {
+	market.NewWsApiDepth("ETCUSDT", enums.Limit20).Send()
 }

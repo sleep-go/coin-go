@@ -66,7 +66,7 @@ type WsBookTickerEvent struct {
 // Stream 名称: <symbol>@bookTicker
 //
 // 更新速度: 实时
-func NewWsBookTicker(c *binance.WsClient, symbols []string, handler binance.Handler[WsBookTickerEvent], exception binance.ErrorHandler) error {
+func NewWsBookTicker(c *binance.Client, symbols []string, handler binance.Handler[WsBookTickerEvent], exception binance.ErrorHandler) error {
 	return bookTicker(c, symbols, handler, exception)
 }
 
@@ -76,11 +76,11 @@ func NewWsBookTicker(c *binance.WsClient, symbols []string, handler binance.Hand
 // Stream 名称: <symbol>@bookTicker
 //
 // 更新速度: 实时
-func NewStreamBookTicker(c *binance.WsClient, symbols []string, handler binance.Handler[StreamBookTickerEvent], exception binance.ErrorHandler) error {
+func NewStreamBookTicker(c *binance.Client, symbols []string, handler binance.Handler[StreamBookTickerEvent], exception binance.ErrorHandler) error {
 	return bookTicker(c, symbols, handler, exception)
 }
-func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@bookTicker", strings.ToLower(s)) + "/"
 	}

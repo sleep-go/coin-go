@@ -106,7 +106,7 @@ type WsAggTradeEvent struct {
 // 归集交易与逐笔交易的区别在于，同一个taker在同一价格与多个maker成交时，会被归集为一笔成交。
 // Stream 名称: <symbol>@aggTrade
 // 更新速度: 实时
-func NewWsAggTrade(c *binance.WsClient, symbols []string, handler binance.Handler[WsAggTradeEvent], exception binance.ErrorHandler) error {
+func NewWsAggTrade(c *binance.Client, symbols []string, handler binance.Handler[WsAggTradeEvent], exception binance.ErrorHandler) error {
 	return wsAggTrade(c, symbols, handler, exception)
 }
 
@@ -114,11 +114,11 @@ func NewWsAggTrade(c *binance.WsClient, symbols []string, handler binance.Handle
 // 归集交易与逐笔交易的区别在于，同一个taker在同一价格与多个maker成交时，会被归集为一笔成交。
 // Stream 名称: <symbol>@aggTrade
 // 更新速度: 实时
-func NewStreamAggTrade(c *binance.WsClient, symbols []string, handler binance.Handler[StreamAggTradeEvent], exception binance.ErrorHandler) error {
+func NewStreamAggTrade(c *binance.Client, symbols []string, handler binance.Handler[StreamAggTradeEvent], exception binance.ErrorHandler) error {
 	return wsAggTrade(c, symbols, handler, exception)
 }
-func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@aggTrade", strings.ToLower(s)) + "/"
 	}

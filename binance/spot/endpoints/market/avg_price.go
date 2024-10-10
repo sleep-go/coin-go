@@ -64,7 +64,7 @@ type WsAvgPriceEvent struct {
 // Stream 名称: <symbol>@avgPrice
 //
 // 更新速度: 1000ms
-func NewStreamAvgPrice(c *binance.WsClient, symbols []string, handler binance.Handler[StreamAvgPriceEvent], exception binance.ErrorHandler) error {
+func NewStreamAvgPrice(c *binance.Client, symbols []string, handler binance.Handler[StreamAvgPriceEvent], exception binance.ErrorHandler) error {
 	return avgPrice(c, symbols, handler, exception)
 }
 
@@ -74,11 +74,11 @@ func NewStreamAvgPrice(c *binance.WsClient, symbols []string, handler binance.Ha
 // Stream 名称: <symbol>@avgPrice
 //
 // 更新速度: 1000ms
-func NewWsAvgPrice(c *binance.WsClient, symbols []string, handler binance.Handler[WsAvgPriceEvent], exception binance.ErrorHandler) error {
+func NewWsAvgPrice(c *binance.Client, symbols []string, handler binance.Handler[WsAvgPriceEvent], exception binance.ErrorHandler) error {
 	return avgPrice(c, symbols, handler, exception)
 }
-func avgPrice[T WsAvgPriceEvent | StreamAvgPriceEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func avgPrice[T WsAvgPriceEvent | StreamAvgPriceEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@avgPrice", strings.ToLower(s)) + "/"
 	}

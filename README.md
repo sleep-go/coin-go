@@ -25,35 +25,50 @@ go get github.com/sleep-go/coin-go
 演示代码
 
 ```go
-func TestNewExchangeInfo(t *testing.T) {
-client := binance.NewClient(
-"vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
-"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
-consts.REST_API,
+package main
+
+import (
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/sleep-go/coin-go/binance"
+	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 )
-client.Debug = true
-response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
-if err != nil {
-t.Fatal(err)
-return
-}
-fmt.Println(response)
+
+func TestNewExchangeInfo(t *testing.T) {
+	client := binance.NewClient(
+		"vmPUZE6mv9SD5VNHk4HlWFsOr6aKE2zvsw0MuIgwCIPy6utIco14y7Ju91duEh8A",
+		"NhqPtmdSJYdKjVHjA7PZj4Mge3R5YNiP1e3UZjInClVN65XAbvqqM6A7H5fATj0j",
+		consts.REST_API,
+	)
+	client.Debug = true
+	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT"}, nil).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(response)
 }
 
 func TestAggTrades(t *testing.T) {
-res, err := market.NewAggTrades(client, "BTCUSDT", 1).
-SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
-SetEndTime(time.Now().UnixMilli()).
-SetFromId(3031206).
-Call(context.Background())
-if err != nil {
-t.Fatal(err.Error())
-return
+	res, err := market.NewAggTrades(client, "BTCUSDT", enums.Limit10).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetFromId(3031206).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, r := range res {
+		fmt.Println(r)
+	}
 }
-for _, r := range res {
-fmt.Println(r)
-}
-}
+
 ```
 
 # 目前支持的交易所
@@ -64,9 +79,9 @@ fmt.Println(r)
 |---------------------------------|-----|
 | 现货交易(REST接口 通用接口)               | 完成  |
 | 现货交易(REST接口 行情接口)               | 完成  |
-| 现货交易(REST接口 账户接口)               | 未完成 |
-| 现货交易(Web Socket 行情接口)           | 未完成 |
-| 现货交易(WebSocket 账户接口)            | 未完成 |
+| 现货交易(REST接口 账户接口)               | 完成  |
+| 现货交易(Web Socket 行情接口)           | 完成  |
+| 现货交易(WebSocket 账户接口)            | 完成  |
 | 现货交易(Binance 的公共 WebSocket API) | 未完成 |
 
 # 支持的功能

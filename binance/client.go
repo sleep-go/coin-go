@@ -12,7 +12,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
 
@@ -28,6 +30,11 @@ type Client struct {
 	TimeOffset int64
 	Debug      bool
 	PrivateKey crypto.Signer
+	conn       *websocket.Conn
+	dialer     *websocket.Dialer
+	IsCombined bool
+	IsFast     bool // 更新速度更快： 100ms
+	Timezone   string
 }
 
 // NewClient 创建客户端函数来初始化客户端
@@ -113,11 +120,16 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 	//获取body
 	bodyString := r.form.Encode()
 	if r.needSign {
+		r.SetOptionalParam("recvWindow", c.TimeOffset)
+		r.SetParam("timestamp", time.Now().UnixMilli())
+		//获取 query url
+		queryString = r.query.Encode()
+		//获取body
+		bodyString = r.form.Encode()
 		r.body = &bytes.Buffer{}
 		r.body = bytes.NewBufferString(bodyString)
 		//设置签名参数
 		raw := fmt.Sprintf("%s%s", queryString, bodyString)
-		//r.SetParam("timestamp", time.Now().UnixMilli()-c.TimeOffset)
 		if c.SecretKey != "" {
 			r.SetParam("signature", signPayload(raw, c.SecretKey))
 		} else if c.PrivateKey != nil {
@@ -140,7 +152,6 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 	req.Header = r.header
 	c.Debugf("r.fullURL:%s", r.fullURL)
 	c.Debugf("query:%s", r.query.Encode())
-	c.Debugf("form:%v", r.form)
 	return req, nil
 }
 

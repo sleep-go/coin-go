@@ -3,6 +3,7 @@ package binance
 import (
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -20,14 +21,16 @@ type WsClient struct {
 	IsCombined bool
 	IsFast     bool // 更新速度更快： 100ms
 	Timezone   string
+	apiKey     string
 	conn       *websocket.Conn
+	dialer     *websocket.Dialer
 }
 
-func (c *WsClient) Close() error {
+func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func NewWsClient(isCombined, isFast bool, baseURL ...string) *WsClient {
+func NewWsClient(apiKey string, isCombined, isFast bool, baseURL ...string) *Client {
 	// 将默认基本 URL 设置为生产 WS URL
 	url := consts.WS_STREAM
 
@@ -41,15 +44,25 @@ func NewWsClient(isCombined, isFast bool, baseURL ...string) *WsClient {
 	} else {
 		url += "/ws/"
 	}
-	return &WsClient{
-		Endpoint:   url,
+	return &Client{
+		BaseURL:    url,
 		IsCombined: isCombined,
 		IsFast:     isFast,
+		APIKey:     apiKey,
+		conn:       nil,
+		dialer: &websocket.Dialer{
+			Proxy:             http.ProxyFromEnvironment,
+			HandshakeTimeout:  45 * time.Second,
+			EnableCompression: false,
+		},
 	}
 }
 
-func (c *WsClient) serve(endpoint string, handler messageHandler, exception ErrorHandler) error {
-	conn, _, err := websocket.DefaultDialer.Dial(endpoint, nil)
+func (c *Client) serve(endpoint string, handler messageHandler, exception ErrorHandler) error {
+	if c.dialer == nil {
+		c.dialer = websocket.DefaultDialer
+	}
+	conn, _, err := c.dialer.Dial(endpoint, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +86,7 @@ func (c *WsClient) serve(endpoint string, handler messageHandler, exception Erro
 	}()
 	return c.waitClose(done, exception)
 }
-func (c *WsClient) waitClose(done chan struct{}, exception ErrorHandler) error {
+func (c *Client) waitClose(done chan struct{}, exception ErrorHandler) error {
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, os.Interrupt)
 	select {
@@ -91,7 +104,7 @@ func (c *WsClient) waitClose(done chan struct{}, exception ErrorHandler) error {
 	}
 	return nil
 }
-func (c *WsClient) keepAlive(timeout time.Duration) {
+func (c *Client) keepAlive(timeout time.Duration) {
 	ticker := time.NewTicker(timeout)
 
 	lastResponse := time.Now()
@@ -115,7 +128,18 @@ func (c *WsClient) keepAlive(timeout time.Duration) {
 		}
 	}()
 }
-func WsHandler[T any](c *WsClient, endpoint string, handler Handler[T], exception ErrorHandler) error {
+func (c *Client) SendMessage(msg any) error {
+	return c.conn.WriteJSON(msg)
+}
+func (c *Client) makeParams(msg map[string]any) (params map[string]any) {
+	for k, v := range msg {
+		params[k] = v
+	}
+	params["timestamp"] = time.Now().UnixMilli()
+	params["apiKey"] = c.APIKey
+	return params
+}
+func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception ErrorHandler) error {
 	log.Println(endpoint)
 	h := func(mt int, msg []byte) {
 		event := new(T)

@@ -6,6 +6,7 @@ toolchain go1.23.1
 
 require (
 	github.com/duke-git/lancet/v2 v2.3.2
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/spf13/cast v1.7.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142

@@ -162,7 +162,7 @@ type WsTickerEvent struct {
 // Stream 名称: <symbol>@miniTicker
 //
 // 更新速度: 1000ms
-func NewWsMiniTicker(c *binance.WsClient, symbols []string, handler binance.Handler[WsMiniTickerEvent], exception binance.ErrorHandler) error {
+func NewWsMiniTicker(c *binance.Client, symbols []string, handler binance.Handler[WsMiniTickerEvent], exception binance.ErrorHandler) error {
 	return miniTicker(c, symbols, handler, exception)
 }
 
@@ -172,11 +172,11 @@ func NewWsMiniTicker(c *binance.WsClient, symbols []string, handler binance.Hand
 // Stream 名称: <symbol>@miniTicker
 //
 // 更新速度: 1000ms
-func NewStreamMiniTicker(c *binance.WsClient, symbols []string, handler binance.Handler[StreamMiniTickerEvent], exception binance.ErrorHandler) error {
+func NewStreamMiniTicker(c *binance.Client, symbols []string, handler binance.Handler[StreamMiniTickerEvent], exception binance.ErrorHandler) error {
 	return miniTicker(c, symbols, handler, exception)
 }
-func miniTicker[T WsMiniTickerEvent | StreamMiniTickerEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func miniTicker[T WsMiniTickerEvent | StreamMiniTickerEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@miniTicker", strings.ToLower(s)) + "/"
 	}
@@ -190,7 +190,7 @@ func miniTicker[T WsMiniTickerEvent | StreamMiniTickerEvent](c *binance.WsClient
 // Stream名称: !miniTicker@arr
 //
 // 更新速度: 1000ms
-func NewWsAllMiniTicker(c *binance.WsClient, handler binance.Handler[[]WsMiniTickerEvent], exception binance.ErrorHandler) error {
+func NewWsAllMiniTicker(c *binance.Client, handler binance.Handler[[]WsMiniTickerEvent], exception binance.ErrorHandler) error {
 	return allMiniTicker(c, handler, exception)
 }
 
@@ -200,11 +200,11 @@ func NewWsAllMiniTicker(c *binance.WsClient, handler binance.Handler[[]WsMiniTic
 // Stream名称: !miniTicker@arr
 //
 // 更新速度: 1000ms
-func NewStreamAllMiniTicker(c *binance.WsClient, handler binance.Handler[StreamAllMiniTickerEvent], exception binance.ErrorHandler) error {
+func NewStreamAllMiniTicker(c *binance.Client, handler binance.Handler[StreamAllMiniTickerEvent], exception binance.ErrorHandler) error {
 	return allMiniTicker(c, handler, exception)
 }
-func allMiniTicker[T []WsMiniTickerEvent | StreamAllMiniTickerEvent](c *binance.WsClient, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func allMiniTicker[T []WsMiniTickerEvent | StreamAllMiniTickerEvent](c *binance.Client, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	endpoint += "!miniTicker@arr"
 	return binance.WsHandler(c, endpoint, handler, exception)
 }
@@ -215,7 +215,7 @@ func allMiniTicker[T []WsMiniTickerEvent | StreamAllMiniTickerEvent](c *binance.
 // Stream 名称: <symbol>@ticker
 //
 // 更新速度: 1000ms
-func NewWsTicker(c *binance.WsClient, symbols []string, handler binance.Handler[WsTickerEvent], exception binance.ErrorHandler) error {
+func NewWsTicker(c *binance.Client, symbols []string, handler binance.Handler[WsTickerEvent], exception binance.ErrorHandler) error {
 	return ticker(c, symbols, handler, exception)
 }
 
@@ -225,11 +225,11 @@ func NewWsTicker(c *binance.WsClient, symbols []string, handler binance.Handler[
 // Stream 名称: <symbol>@ticker
 //
 // 更新速度: 1000ms
-func NewStreamTicker(c *binance.WsClient, symbols []string, handler binance.Handler[StreamTickerEvent], exception binance.ErrorHandler) error {
+func NewStreamTicker(c *binance.Client, symbols []string, handler binance.Handler[StreamTickerEvent], exception binance.ErrorHandler) error {
 	return ticker(c, symbols, handler, exception)
 }
-func ticker[T WsTickerEvent | StreamTickerEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func ticker[T WsTickerEvent | StreamTickerEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@ticker", strings.ToLower(s)) + "/"
 	}
@@ -243,7 +243,7 @@ func ticker[T WsTickerEvent | StreamTickerEvent](c *binance.WsClient, symbols []
 // Stream 名称: !ticker@arr
 //
 // 更新速度: 1000ms
-func NewWsAllTicker(c *binance.WsClient, handler binance.Handler[[]WsTickerEvent], exception binance.ErrorHandler) error {
+func NewWsAllTicker(c *binance.Client, handler binance.Handler[[]WsTickerEvent], exception binance.ErrorHandler) error {
 	return allTicker(c, handler, exception)
 }
 
@@ -253,12 +253,12 @@ func NewWsAllTicker(c *binance.WsClient, handler binance.Handler[[]WsTickerEvent
 // Stream 名称: !ticker@arr
 //
 // 更新速度: 1000ms
-func NewStreamAllTicker(c *binance.WsClient, handler binance.Handler[StreamAllTickerEvent], exception binance.ErrorHandler) error {
+func NewStreamAllTicker(c *binance.Client, handler binance.Handler[StreamAllTickerEvent], exception binance.ErrorHandler) error {
 	return allTicker(c, handler, exception)
 }
 
-func allTicker[T []WsTickerEvent | StreamAllTickerEvent](c *binance.WsClient, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func allTicker[T []WsTickerEvent | StreamAllTickerEvent](c *binance.Client, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	endpoint += "!ticker@arr"
 	return binance.WsHandler(c, endpoint, handler, exception)
 }

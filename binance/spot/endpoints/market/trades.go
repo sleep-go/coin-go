@@ -87,7 +87,7 @@ type WsTradeEvent struct {
 // Stream 名称: <symbol>@trade
 //
 // 更新速度: 实时
-func NewWsTrade(c *binance.WsClient, symbols []string, handler binance.Handler[WsTradeEvent], exception binance.ErrorHandler) error {
+func NewWsTrade(c *binance.Client, symbols []string, handler binance.Handler[WsTradeEvent], exception binance.ErrorHandler) error {
 	return wsTrade(c, symbols, handler, exception)
 }
 
@@ -97,11 +97,11 @@ func NewWsTrade(c *binance.WsClient, symbols []string, handler binance.Handler[W
 // Stream 名称: <symbol>@trade
 //
 // 更新速度: 实时
-func NewStreamTrade(c *binance.WsClient, symbols []string, handler binance.Handler[StreamTradeEvent], exception binance.ErrorHandler) error {
+func NewStreamTrade(c *binance.Client, symbols []string, handler binance.Handler[StreamTradeEvent], exception binance.ErrorHandler) error {
 	return wsTrade(c, symbols, handler, exception)
 }
-func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		endpoint += fmt.Sprintf("%s@trade", strings.ToLower(s)) + "/"
 	}

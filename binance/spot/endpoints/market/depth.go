@@ -2,6 +2,7 @@ package market
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 type Depth interface {
 	Call(ctx context.Context) (body *depthResponse, err error)
+	Send()
 }
 
 // 名称	类型	是否必须	描述
@@ -35,6 +37,14 @@ type depthResponse struct {
 func NewDepth(c *binance.Client, symbol string, limit enums.LimitType) Depth {
 	return &depthRequest{
 		Client: c,
+		Symbol: symbol,
+		limit:  limit,
+	}
+}
+
+// NewWsApiDepth 深度信息
+func NewWsApiDepth(symbol string, limit enums.LimitType) Depth {
+	return &depthRequest{
 		Symbol: symbol,
 		limit:  limit,
 	}
@@ -75,17 +85,17 @@ type WsDepthEvent struct {
 
 // NewWsDepth 增量深度信息
 // 每秒推送orderbook的变化部分（如果有）
-func NewWsDepth(c *binance.WsClient, symbols []string, handler binance.Handler[*WsDepthEvent], exception binance.ErrorHandler) error {
+func NewWsDepth(c *binance.Client, symbols []string, handler binance.Handler[*WsDepthEvent], exception binance.ErrorHandler) error {
 	return wsDepth[*WsDepthEvent](c, symbols, handler, exception)
 }
 
 // NewStreamDepth 增量深度信息
 // // 每秒推送orderbook的变化部分（如果有）
-func NewStreamDepth(c *binance.WsClient, symbols []string, handler binance.Handler[*StreamDepthEvent], exception binance.ErrorHandler) error {
+func NewStreamDepth(c *binance.Client, symbols []string, handler binance.Handler[*StreamDepthEvent], exception binance.ErrorHandler) error {
 	return wsDepth[*StreamDepthEvent](c, symbols, handler, exception)
 }
-func wsDepth[T *StreamDepthEvent | *WsDepthEvent](c *binance.WsClient, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func wsDepth[T *StreamDepthEvent | *WsDepthEvent](c *binance.Client, symbols []string, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for _, s := range symbols {
 		if c.IsFast {
 			endpoint += fmt.Sprintf("%s@depth@100ms", strings.ToLower(s)) + "/"
@@ -107,17 +117,17 @@ type WsDepthLevelsEvent struct {
 
 // NewWsDepthLevels 有限档深度信息
 // 每秒推送有限档深度信息。levels 表示几档买卖单信息, 可选 5/10/20档
-func NewWsDepthLevels(c *binance.WsClient, symbolLevels map[string]enums.LimitType, handler binance.Handler[WsDepthLevelsEvent], exception binance.ErrorHandler) error {
+func NewWsDepthLevels(c *binance.Client, symbolLevels map[string]enums.LimitType, handler binance.Handler[WsDepthLevelsEvent], exception binance.ErrorHandler) error {
 	return wsDepthLevels[WsDepthLevelsEvent](c, symbolLevels, handler, exception)
 }
 
 // NewStreamDepthLevels 有限档深度信息
 // 每秒推送有限档深度信息。levels 表示几档买卖单信息, 可选 5/10/20档
-func NewStreamDepthLevels(c *binance.WsClient, symbolLevels map[string]enums.LimitType, handler binance.Handler[StreamDepthLevelsEvent], exception binance.ErrorHandler) error {
+func NewStreamDepthLevels(c *binance.Client, symbolLevels map[string]enums.LimitType, handler binance.Handler[StreamDepthLevelsEvent], exception binance.ErrorHandler) error {
 	return wsDepthLevels[StreamDepthLevelsEvent](c, symbolLevels, handler, exception)
 }
-func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.WsClient, symbolLevels map[string]enums.LimitType, handler binance.Handler[T], exception binance.ErrorHandler) error {
-	endpoint := c.Endpoint
+func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.Client, symbolLevels map[string]enums.LimitType, handler binance.Handler[T], exception binance.ErrorHandler) error {
+	endpoint := c.BaseURL
 	for s, l := range symbolLevels {
 		if c.IsFast {
 			endpoint += fmt.Sprintf("%s@depth%d@100ms", strings.ToLower(s), l) + "/"
@@ -127,4 +137,17 @@ func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.WsC
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// websocket api
+
+func (d *depthRequest) Send() {
+	fmt.Println(d.Symbol)
+	req := new(map[string]any)
+
+	bytes, err := json.Marshal(req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s\n", bytes)
 }
