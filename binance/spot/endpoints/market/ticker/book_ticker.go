@@ -19,6 +19,7 @@ type bookTickerRequest struct {
 	*binance.Client
 	symbols []string
 }
+
 type bookTickerResponse struct {
 	Symbol   string `json:"symbol"`
 	BidPrice string `json:"bidPrice"`
@@ -46,6 +47,8 @@ func (b *bookTickerRequest) Call(ctx context.Context) (body []*bookTickerRespons
 	}
 	return utils.ParseHttpResponse[[]*bookTickerResponse](res)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamBookTickerEvent struct {
 	Stream string            `json:"stream"`
@@ -86,4 +89,41 @@ func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.Client, 
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiBookTicker interface {
+	binance.WsApi[WsApiBookTickerResponse]
+	SetSymbols(symbols []string) *bookTickerRequest
+}
+type WsApiBookTickerResponse struct {
+	binance.WsApiResponse
+	Result []*bookTickerResponse `json:"result"`
+}
+
+// NewWsApiBookTicker 当前最优挂单
+// 在订单薄获取当前最优价格和数量。
+//
+// 如果您需要访问实时订单薄 ticker 更新，请考虑使用 WebSocket Streams:
+//
+// <symbol>@bookTicker
+func NewWsApiBookTicker(c *binance.Client) WsApiBookTicker {
+	return &bookTickerRequest{Client: c}
+}
+
+func (b *bookTickerRequest) SetSymbols(symbols []string) *bookTickerRequest {
+	b.symbols = symbols
+	return b
+}
+func (b *bookTickerRequest) Receive(handler binance.Handler[WsApiBookTickerResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(b.Client, b.BaseURL, handler, exception)
+}
+func (b *bookTickerRequest) Send() error {
+	req := &binance.Request{Path: "ticker.book"}
+	if len(b.symbols) > 0 {
+		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
+		req.SetParam("symbols", result)
+	}
+	return b.SendMessage(req)
 }

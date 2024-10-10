@@ -317,3 +317,30 @@ func TestWsApiTickerPrice(t *testing.T) {
 		}
 	}
 }
+func TestWsApiBookTicker(t *testing.T) {
+	defer close(done)
+	tk := ticker.NewWsApiBookTicker(wsApiClient)
+	go func() {
+		err := tk.Receive(func(event ticker.WsApiBookTickerResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				for _, res := range event.Result {
+					fmt.Println(res)
+				}
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	for {
+		time.Sleep(2 * time.Second)
+		err := tk.SetSymbols([]string{BTCUSDT, ETHUSDT}).Send()
+		if err != nil {
+			continue
+		}
+	}
+}
