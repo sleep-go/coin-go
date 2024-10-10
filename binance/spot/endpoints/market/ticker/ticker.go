@@ -2,15 +2,14 @@ package ticker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 // Ticker
@@ -101,25 +100,12 @@ func (t *tickerRequest) Call(ctx context.Context) (body []*tickerResponse, err e
 	}
 	req.SetParam("windowSize", t.windowSize)
 	req.SetParam("type", t._type.String())
-	res, err := t.Client.Do(ctx, req)
+	resp, err := t.Do(ctx, req)
 	if err != nil {
 		t.Debugf("response err:%v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Debugf("ReadAll err:%v", err)
-		return nil, err
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
-	}
-	err = json.Unmarshal(bytes, &body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*tickerResponse](resp)
 }
 
 type StreamMiniTickerEvent struct {

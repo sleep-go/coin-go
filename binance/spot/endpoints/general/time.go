@@ -2,12 +2,11 @@ package general
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Time interface {
@@ -32,16 +31,7 @@ func (t *timeRequest) Call(ctx context.Context) (body *timeResponse, err error) 
 		t.Debugf("pingRequest response err: %v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New(res.Status)
-	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		t.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*timeResponse](res)
 }
 
 type timeResponse struct {

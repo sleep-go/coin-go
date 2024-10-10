@@ -2,14 +2,13 @@ package general
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type ExchangeInfo interface {
@@ -114,19 +113,10 @@ func (ex *exchangeInfoRequest) Call(ctx context.Context) (body *exchangeInfoResp
 		result := fmt.Sprintf(`["%s"]`, strings.Join(ex.permissions, `","`))
 		r.SetParam("permissions", result)
 	}
-	res, err := ex.Client.Do(ctx, r)
+	resp, err := ex.Do(ctx, r)
 	if err != nil {
-		ex.Client.Debugf("exchangeInfoRequest response err:%v", err)
+		ex.Debugf("response err:%v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New(res.Status)
-	}
-	err = netutil.ParseHttpResponse(res, &body)
-	if err != nil {
-		ex.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*exchangeInfoResponse](resp)
 }

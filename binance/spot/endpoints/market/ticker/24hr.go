@@ -2,15 +2,14 @@ package ticker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Hr24 interface {
@@ -72,18 +71,5 @@ func (hr *hr24Request) Call(ctx context.Context) (body []*hr24Response, err erro
 		hr.Debugf("response err:%v", err)
 		return nil, err
 	}
-	defer res.Body.Close()
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		hr.Debugf("ReadAll err:%v", err)
-		return nil, err
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", bytes)
-	}
-	err = json.Unmarshal(bytes, &body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[[]*hr24Response](res)
 }

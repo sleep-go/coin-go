@@ -47,6 +47,13 @@ func TestPing(t *testing.T) {
 	}
 	fmt.Println(res)
 }
+func TestTime(t *testing.T) {
+	res, err := general.NewTime(client).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
+}
 func TestNewExchangeInfo(t *testing.T) {
 	response, err := general.NewExchangeInfo(client, []string{"ETHUSDT", BTCUSDT}, nil).Call(context.Background())
 	if err != nil {
