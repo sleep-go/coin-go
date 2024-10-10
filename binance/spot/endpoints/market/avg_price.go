@@ -14,14 +14,20 @@ import (
 type AvgPrice interface {
 	Call(ctx context.Context) (body *AvgPriceResponse, err error)
 }
-type AvgPriceRequest struct {
+type avgPriceRequest struct {
 	*binance.Client
 	symbol string
 }
 
+func (a *avgPriceRequest) SetSymbol(symbol string) *avgPriceRequest {
+	a.symbol = symbol
+	return a
+}
+
 // NewAvgPrice 当前平均价格
+// 获取交易对的当前平均价格
 func NewAvgPrice(client *binance.Client, symbol string) AvgPrice {
-	return &AvgPriceRequest{Client: client, symbol: symbol}
+	return &avgPriceRequest{Client: client, symbol: symbol}
 }
 
 type AvgPriceResponse struct {
@@ -31,19 +37,21 @@ type AvgPriceResponse struct {
 }
 
 // Call 当前平均价格
-func (k *AvgPriceRequest) Call(ctx context.Context) (body *AvgPriceResponse, err error) {
+func (a *avgPriceRequest) Call(ctx context.Context) (body *AvgPriceResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketAvgPrice,
 	}
-	req.SetParam("symbol", k.symbol)
-	resp, err := k.Do(ctx, req)
+	req.SetParam("symbol", a.symbol)
+	resp, err := a.Do(ctx, req)
 	if err != nil {
-		k.Debugf("response err:%v", err)
+		a.Debugf("response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*AvgPriceResponse](resp)
 }
+
+// ****************************** Websocket 行情推送 *******************************
 
 type StreamAvgPriceEvent struct {
 	Stream string          `json:"stream"`
@@ -84,4 +92,30 @@ func avgPrice[T WsAvgPriceEvent | StreamAvgPriceEvent](c *binance.Client, symbol
 	}
 	endpoint = endpoint[:len(endpoint)-1]
 	return binance.WsHandler(c, endpoint, handler, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiAvgPrice interface {
+	binance.WsApi[WsApiAvgPriceResponse]
+	SetSymbol(symbol string) *avgPriceRequest
+}
+type WsApiAvgPriceResponse struct {
+	binance.WsApiResponse
+	Result *AvgPriceResponse `json:"result"`
+}
+
+// NewWsApiAvgPrice 获取交易对的当前平均价格
+func NewWsApiAvgPrice(c *binance.Client) WsApiAvgPrice {
+	return &avgPriceRequest{Client: c}
+}
+
+func (a *avgPriceRequest) Receive(handler binance.Handler[WsApiAvgPriceResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(a.Client, a.BaseURL, handler, exception)
+}
+
+func (a *avgPriceRequest) Send() error {
+	req := &binance.Request{Path: "avgPrice"}
+	req.SetParam("symbol", a.symbol)
+	return a.SendMessage(req)
 }

@@ -13,10 +13,10 @@ import (
 )
 
 type Klines interface {
-	Call(ctx context.Context) (body []*klinesResponse, err error)
+	Call(ctx context.Context) (body []*KlinesResponse, err error)
 	// CallUI 请求参数与响应和k线接口相同。
 	// uiKlines 返回修改后的k线数据，针对k线图的呈现进行了优化。
-	CallUI(ctx context.Context) (body []*klinesResponse, err error)
+	CallUI(ctx context.Context) (body []*KlinesResponse, err error)
 	SetInterval(interval enums.KlineIntervalType) *klinesRequest
 	SetStartTime(startTime int64) *klinesRequest
 	SetEndTime(endTime int64) *klinesRequest
@@ -60,7 +60,7 @@ func (k *klinesRequest) SetLimit(limit enums.LimitType) *klinesRequest {
 //	]
 //
 // ]
-type klinesResponse [12]any
+type KlinesResponse [12]any
 
 func NewKlines(client *binance.Client, symbol string, limit enums.LimitType) Klines {
 	return &klinesRequest{Client: client, symbol: symbol, limit: limit}
@@ -96,7 +96,7 @@ func (k *klinesRequest) SetTimeZone(timeZone string) *klinesRequest {
 // 接受的值范围严格为 [-12:00 到 +14:00]（包括边界）
 // 如果提供了timeZone，K线间隔将在该时区中解释，而不是在UTC中。
 // 请注意，无论timeZone如何，startTime和endTime始终以UTC时区解释。
-func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err error) {
+func (k *klinesRequest) Call(ctx context.Context) (body []*KlinesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketKLines,
@@ -112,9 +112,9 @@ func (k *klinesRequest) Call(ctx context.Context) (body []*klinesResponse, err e
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	return utils.ParseHttpResponse[[]*klinesResponse](resp)
+	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
 }
-func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err error) {
+func (k *klinesRequest) CallUI(ctx context.Context) (body []*KlinesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
 		Path:   consts.ApiMarketUIKLines,
@@ -130,7 +130,7 @@ func (k *klinesRequest) CallUI(ctx context.Context) (body []*klinesResponse, err
 		k.Debugf("response err:%v", err)
 		return nil, err
 	}
-	return utils.ParseHttpResponse[[]*klinesResponse](resp)
+	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
 }
 
 // ****************************** Websocket 行情推送 *******************************
@@ -199,7 +199,7 @@ type WsApiKlines interface {
 }
 type WsApiKlinesResponse struct {
 	binance.WsApiResponse
-	Result []*klinesResponse `json:"result"`
+	Result []*KlinesResponse `json:"result"`
 }
 
 // NewWsApiKlines K线数据
@@ -217,7 +217,6 @@ func NewWsApiKlines(c *binance.Client) WsApiKlines {
 
 func (k *klinesRequest) Receive(handler binance.Handler[WsApiKlinesResponse], exception binance.ErrorHandler) error {
 	return binance.WsHandler(k.Client, k.BaseURL, handler, exception)
-
 }
 
 // Send 备注:

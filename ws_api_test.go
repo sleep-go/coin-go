@@ -178,3 +178,27 @@ func TestWsApiKline(t *testing.T) {
 		}
 	}
 }
+func TestWsApiAvgPrice(t *testing.T) {
+	defer close(done)
+	avgPrice := market.NewWsApiAvgPrice(wsApiClient)
+	go func() {
+		err := avgPrice.Receive(func(event market.WsApiAvgPriceResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Println(event.Result, event.RateLimits)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+		}
+	}()
+	for {
+		time.Sleep(2 * time.Second)
+		err := avgPrice.SetSymbol(BTCUSDT).Send()
+		if err != nil {
+			continue
+		}
+	}
+}
