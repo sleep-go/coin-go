@@ -87,46 +87,10 @@ func (r *Request) SetOptionalParam(key string, value any) *Request {
 	r.query.Set(key, fmt.Sprintf("%v", value))
 	return r
 }
-
-// SetForm set form with key/value to body string
-func (r *Request) SetForm(key string, value any) *Request {
-	if r.form == nil {
-		r.form = url.Values{}
-	}
-	// 使用反射获取实际的值，避免重复处理不同的指针类型
-	v := reflect.ValueOf(value)
-	if v.Kind() == reflect.Ptr {
-		// 如果是指针并且指向nil，则不设置参数
-		if v.IsNil() {
-			return r
-		}
-		// 获取指针指向的实际值
-		value = v.Elem().Interface()
-	}
-	// 设置查询参数
-	r.form.Set(key, fmt.Sprintf("%v", value))
+func (r *Request) Reset() *Request {
+	r.query = nil
 	return r
 }
-func (r *Request) SetOptionalForm(key string, value any) *Request {
-	// 如果 value 为 nil，直接返回
-	if value == nil {
-		return r
-	}
-	// 使用反射获取实际的值
-	v := reflect.ValueOf(value)
-	if v.Kind() == reflect.Ptr {
-		// 如果是指针并且指向 nil，则不设置参数
-		if v.IsNil() {
-			return r
-		}
-		// 获取指针指向的实际值
-		value = v.Elem().Interface()
-	}
-	// 设置查询参数
-	r.form.Set(key, fmt.Sprintf("%v", value))
-	return r
-}
-
 func signPayload(payload string, privateKey any) string {
 	switch privateKey.(type) {
 	case string:

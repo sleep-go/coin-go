@@ -365,15 +365,17 @@ func TestWsApiCreateOrder(t *testing.T) {
 		}
 	}()
 	//time.Sleep(2 * time.Second)
+	//{"id":"08fbb7b7-741d-4d14-b1aa-d5f8800d369a","status":200,"result":{"symbol":"ETHUSDT","orderId":4241828,"orderListId":-1,"clientOrderId":"fvh0x6K2e2s0Gk4oqw7seI","transactTime":1728615836724,"price":"2000.00000000","origQty":"0.01000000","executedQty":"0.00000000","cummulativeQuoteQty":"0.00000000","status":"NEW","timeInForce":"GTC","type":"LIMIT","side":"BUY","workingTime":1728615836724,"fills":[],"selfTradePreventionMode":"EXPIRE_MAKER"},"rateLimits":[{"rateLimitType":"ORDERS","interval":"SECOND","intervalNum":10,"limit":50,"count":1},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000,"count":5},{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000,"count":3}]}
 	//err = tk.SetSymbol(ETHUSDT).
 	//	SetSide(enums.SideTypeBuy).
-	//	SetTimeInForce(enums.TimeInForceTypeGTC).
 	//	SetQuantity("0.01").
+	//	SetTimeInForce(enums.TimeInForceTypeGTC).
 	//	SetPrice("2000").
 	//	SetType(enums.OrderTypeLimit).
 	//	Send()
 	time.Sleep(2 * time.Second)
 	//{"id":"b54b5319-5787-4f3b-89a1-b338755ce24c","status":200,"result":{"symbol":"BTCUSDT","orderId":4336196,"orderListId":-1,"clientOrderId":"fDBM0cAaaaGpcffPQ0Wuud","transactTime":1728614800782,"price":"0.00000000","origQty":"0.01000000","executedQty":"0.01000000","cummulativeQuoteQty":"605.00045610","status":"FILLED","timeInForce":"GTC","type":"MARKET","side":"BUY","workingTime":1728614800782,"fills":[{"price":"60500.04000000","qty":"0.00439000","commission":"0.00000000","commissionAsset":"BTC","tradeId":1043813},{"price":"60500.05000000","qty":"0.00561000","commission":"0.00000000","commissionAsset":"BTC","tradeId":1043814}],"selfTradePreventionMode":"EXPIRE_MAKER"},"rateLimits":[{"rateLimitType":"ORDERS","interval":"SECOND","intervalNum":10,"limit":50,"count":1},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000,"count":2},{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000,"count":3}]}
+
 	err = tk.SetSymbol(BTCUSDT).
 		SetSide(enums.SideTypeSell).
 		SetType(enums.OrderTypeMarket).
