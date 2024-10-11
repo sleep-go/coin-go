@@ -49,7 +49,7 @@ func NewWsClient(isCombined, isFast bool, baseURL ...string) *Client {
 	}
 }
 
-func (c *Client) serve(endpoint string, handler messageHandler, exception ErrorHandler) error {
+func (c *Client) Serve(endpoint string, handler messageHandler, exception ErrorHandler) error {
 	if c.dialer == nil {
 		c.dialer = websocket.DefaultDialer
 	}
@@ -138,5 +138,5 @@ func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception 
 		}
 		handler(*event)
 	}
-	return c.serve(endpoint, h, exception)
+	return c.Serve(endpoint, h, exception)
 }
