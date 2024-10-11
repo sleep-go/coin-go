@@ -282,3 +282,16 @@ func TestWsApiCancelReplace(t *testing.T) {
 		fmt.Println(res.Result)
 	}
 }
+func TestWsApiDeleteOpenOrders(t *testing.T) {
+	res, err := trading.NewWsApiDeleteOpenOrders(wsApiClient).SetSymbol(BTCUSDT).Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+	}
+}

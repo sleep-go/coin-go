@@ -12,17 +12,15 @@ import (
 
 // DeleteOpenOrders 撤销单一交易对下所有挂单。这也包括了来自订单列表的挂单。
 type DeleteOpenOrders interface {
-	SetRecvWindow(recvWindow int64) DeleteOpenOrders
-	SetTimestamp(timestamp int64) DeleteOpenOrders
+	SetSymbol(symbol string) *deleteOpenOrdersRequest
 	Call(ctx context.Context) (body []*deleteOpenOrdersResponse, err error)
 }
 
 type deleteOpenOrdersRequest struct {
 	*binance.Client
-	symbol     string
-	recvWindow int64
-	timestamp  int64
+	symbol string
 }
+
 type deleteOpenOrdersResponse struct {
 	Symbol                  string                    `json:"symbol"`
 	OrigClientOrderId       string                    `json:"origClientOrderId,omitempty"`
@@ -70,19 +68,14 @@ type deleteOpenOrdersResponse struct {
 	} `json:"orderReports,omitempty"`
 }
 
-func (d *deleteOpenOrdersRequest) SetRecvWindow(recvWindow int64) DeleteOpenOrders {
-	d.recvWindow = recvWindow
-	return d
-}
-
-func (d *deleteOpenOrdersRequest) SetTimestamp(timestamp int64) DeleteOpenOrders {
-	d.timestamp = timestamp
-	return d
-}
-
 func NewDeleteOpenOrders(client *binance.Client, symbol string) DeleteOpenOrders {
 	return &deleteOpenOrdersRequest{Client: client, symbol: symbol}
 }
+func (d *deleteOpenOrdersRequest) SetSymbol(symbol string) *deleteOpenOrdersRequest {
+	d.symbol = symbol
+	return d
+}
+
 func (d *deleteOpenOrdersRequest) Call(ctx context.Context) (body []*deleteOpenOrdersResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
@@ -90,14 +83,37 @@ func (d *deleteOpenOrdersRequest) Call(ctx context.Context) (body []*deleteOpenO
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)
-	if d.recvWindow > 0 {
-		req.SetParam("recvWindow", d.recvWindow)
-	}
-	req.SetParam("timestamp", d.timestamp)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
 		d.Debugf("deleteOpenOrdersRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*deleteOpenOrdersResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiDeleteOpenOrders interface {
+	binance.WsApi[*WsApiDeleteOpenOrdersResponse]
+	DeleteOpenOrders
+}
+
+// WsApiDeleteOpenOrdersResponse 订单和订单列表的撤销报告的格式与 order.cancel 中的格式相同。
+type WsApiDeleteOpenOrdersResponse struct {
+	binance.WsApiResponse
+	Result []*deleteOpenOrdersResponse `json:"result"`
+}
+
+// NewWsApiDeleteOpenOrders 撤销单一交易对的所有挂单 (TRADE)
+// 撤销单一交易对的所有挂单,包括交易组。
+func NewWsApiDeleteOpenOrders(c *binance.Client) WsApiDeleteOpenOrders {
+	return &deleteOpenOrdersRequest{Client: c}
+}
+
+// Send 撤销单一交易对的所有挂单 (TRADE)
+func (d *deleteOpenOrdersRequest) Send(ctx context.Context) (*WsApiDeleteOpenOrdersResponse, error) {
+	req := &binance.Request{Path: "openOrders.cancelAll"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", d.symbol)
+	return binance.WsApiHandler[*WsApiDeleteOpenOrdersResponse](ctx, d.Client, req)
 }
