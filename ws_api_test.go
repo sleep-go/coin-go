@@ -163,15 +163,17 @@ func TestWsApiTicker(t *testing.T) {
 	}
 }
 func TestWsApiTickerPrice(t *testing.T) {
-	res, err := ticker.NewWsApiTickerPrice(wsApiClient).
-		SetSymbols([]string{BTCUSDT, ETHUSDT}).Send(context.Background())
+	res, err := ticker.NewWsApiTickerPrice(wsApiClient).Send(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res.Error != nil {
 		fmt.Println(res.Error)
 	} else {
-		fmt.Println(res.Result)
+		fmt.Println(len(res.Result), res.Result)
+		for _, v := range res.Result {
+			fmt.Println(v.Symbol, v.Price)
+		}
 	}
 }
 func TestWsApiBookTicker(t *testing.T) {

@@ -169,7 +169,7 @@ func (d *depthRequest) SetLimit(limit enums.LimitType) WsApiDepth {
 }
 func (d *depthRequest) Send(ctx context.Context) (*WsApiDepthResponse, error) {
 	req := &binance.Request{Path: "depth"}
-	req.SetParam("symbol", d.symbol)
+	req.SetOptionalParam("symbol", d.symbol)
 	req.SetParam("limit", d.limit)
 	return binance.WsApiHandler[*WsApiDepthResponse](ctx, d.Client, req)
 }

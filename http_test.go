@@ -382,7 +382,6 @@ func TestOCO(t *testing.T) {
 		SetAbovePrice("1").
 		SetAboveTrailingDelta(1).
 		SetAboveTimeInForce(enums.TimeInForceTypeIOC).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
