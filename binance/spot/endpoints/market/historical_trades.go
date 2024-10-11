@@ -68,7 +68,7 @@ func (t *historyTradesRequest) Call(ctx context.Context) (body []*tradesResponse
 // ****************************** Websocket Api *******************************
 
 type WsApiHistoryTrades interface {
-	binance.WsApi[WsApiHistoryTradesResponse]
+	binance.WsApi[*WsApiHistoryTradesResponse]
 	HistoryTrades
 }
 type WsApiHistoryTradesResponse struct {
@@ -82,14 +82,10 @@ func NewWsApiHistoryTrades(c *binance.Client) WsApiHistoryTrades {
 	}
 }
 
-func (t *historyTradesRequest) Receive(handler binance.Handler[WsApiHistoryTradesResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
-}
-
-func (t *historyTradesRequest) Send() error {
+func (t *historyTradesRequest) Send(ctx context.Context) (*WsApiHistoryTradesResponse, error) {
 	req := &binance.Request{Path: "trades.historical"}
 	req.SetParam("symbol", t.symbol)
 	req.SetParam("fromId", t.fromId)
 	req.SetParam("limit", t.limit)
-	return t.SendMessage(req)
+	return binance.WsApiHandler[*WsApiHistoryTradesResponse](ctx, t.Client, req)
 }

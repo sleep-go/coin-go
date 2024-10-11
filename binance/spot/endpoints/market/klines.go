@@ -192,10 +192,10 @@ func wsKline[T WsKlineEvent | StreamKlineEvent](c *binance.Client, symbolsInterv
 // ****************************** Websocket Api *******************************
 
 type WsApiKlines interface {
-	binance.WsApi[WsApiKlinesResponse]
+	binance.WsApi[*WsApiKlinesResponse]
 	SetSymbol(symbol string) *klinesRequest
 	SetLimit(limit enums.LimitType) *klinesRequest
-	SendUI() error
+	SendUI(ctx context.Context) (*WsApiKlinesResponse, error)
 }
 type WsApiKlinesResponse struct {
 	binance.WsApiResponse
@@ -215,10 +215,6 @@ func NewWsApiKlines(c *binance.Client) WsApiKlines {
 	return &klinesRequest{Client: c}
 }
 
-func (k *klinesRequest) Receive(handler binance.Handler[WsApiKlinesResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(k.Client, k.BaseURL, handler, exception)
-}
-
 // Send 备注:
 // method: klines or uiKlines
 //
@@ -229,7 +225,7 @@ func (k *klinesRequest) Receive(handler binance.Handler[WsApiKlinesResponse], ex
 // 接受的值范围严格为 [-12:00 到 +14:00]（包括边界）
 // 如果提供了timeZone，K线间隔将在该时区中解释，而不是在UTC中。
 // 请注意，无论timeZone如何，startTime和endTime始终以UTC时区解释。
-func (k *klinesRequest) Send() error {
+func (k *klinesRequest) Send(ctx context.Context) (*WsApiKlinesResponse, error) {
 	req := &binance.Request{Path: "klines"}
 	req.SetParam("symbol", k.symbol)
 	req.SetOptionalParam("limit", k.limit)
@@ -237,9 +233,13 @@ func (k *klinesRequest) Send() error {
 	req.SetOptionalParam("startTime", k.startTime)
 	req.SetOptionalParam("endTime", k.endTime)
 	req.SetOptionalParam("timeZone", k.timeZone)
-	return k.SendMessage(req)
+	handler, err := binance.WsApiHandler[WsApiKlinesResponse](ctx, k.Client, req)
+	if err != nil {
+		return nil, err
+	}
+	return &handler, nil
 }
-func (k *klinesRequest) SendUI() error {
+func (k *klinesRequest) SendUI(ctx context.Context) (*WsApiKlinesResponse, error) {
 	req := &binance.Request{Path: "uiKlines"}
 	req.SetParam("symbol", k.symbol)
 	req.SetOptionalParam("limit", k.limit)
@@ -247,5 +247,5 @@ func (k *klinesRequest) SendUI() error {
 	req.SetOptionalParam("startTime", k.startTime)
 	req.SetOptionalParam("endTime", k.endTime)
 	req.SetOptionalParam("timeZone", k.timeZone)
-	return k.SendMessage(req)
+	return binance.WsApiHandler[*WsApiKlinesResponse](ctx, k.Client, req)
 }

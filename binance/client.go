@@ -22,19 +22,20 @@ var LogLevel = os.Stderr
 
 // Client define API client
 type Client struct {
-	APIKey     string
-	SecretKey  string
-	BaseURL    string
-	HTTPClient *http.Client
-	Logger     *log.Logger
-	TimeOffset int64
-	Debug      bool
-	PrivateKey crypto.Signer
-	conn       *websocket.Conn
-	dialer     *websocket.Dialer
-	IsCombined bool
-	IsFast     bool // 更新速度更快： 100ms
-	Timezone   string
+	APIKey         string
+	SecretKey      string
+	BaseURL        string
+	HTTPClient     *http.Client
+	Logger         *log.Logger
+	TimeOffset     int64
+	Debug          bool
+	PrivateKey     crypto.Signer
+	conn           *websocket.Conn
+	dialer         *websocket.Dialer
+	IsCombined     bool
+	IsFast         bool // 更新速度更快： 100ms
+	Timezone       string
+	ReqResponseMap map[string]chan []byte
 }
 
 // NewClient 创建客户端函数来初始化客户端

@@ -130,7 +130,7 @@ func wsAggTrade[T WsAggTradeEvent | StreamAggTradeEvent](c *binance.Client, symb
 // ****************************** Websocket Api *******************************
 
 type WsApiAggTrades interface {
-	binance.WsApi[WsApiAggTradesResponse]
+	binance.WsApi[*WsApiAggTradesResponse]
 	AggTrades
 }
 type WsApiAggTradesResponse struct {
@@ -149,10 +149,6 @@ func NewWsApiAggTrades(c *binance.Client) WsApiAggTrades {
 	return &aggTradesRequest{Client: c}
 }
 
-func (a *aggTradesRequest) Receive(handler binance.Handler[WsApiAggTradesResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(a.Client, a.BaseURL, handler, exception)
-}
-
 // Send 归集交易
 // 备注：
 //
@@ -165,12 +161,16 @@ func (a *aggTradesRequest) Receive(handler binance.Handler[WsApiAggTradesRespons
 // fromId 不能与 startTime 和 endTime 一起使用。
 //
 // 如果未指定条件，则返回最近的归集交易。
-func (a *aggTradesRequest) Send() error {
+func (a *aggTradesRequest) Send(ctx context.Context) (*WsApiAggTradesResponse, error) {
 	req := &binance.Request{Path: "trades.aggregate"}
 	req.SetParam("symbol", a.symbol)
 	req.SetParam("limit", a.limit)
 	req.SetOptionalParam("fromId", a.fromId)
 	req.SetOptionalParam("startTime", a.startTime)
 	req.SetOptionalParam("endTime", a.endTime)
-	return a.SendMessage(req)
+	handler, err := binance.WsApiHandler[WsApiAggTradesResponse](ctx, a.Client, req)
+	if err != nil {
+		return nil, err
+	}
+	return &handler, nil
 }

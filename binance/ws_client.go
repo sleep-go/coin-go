@@ -12,19 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/pkg/errors"
 )
 
-type WsApi[T any] interface {
-	Receive(handler Handler[T], exception ErrorHandler) error
-	Send() error
-}
-type WsApiResponse struct {
-	Id         string         `json:"id"`
-	Status     int            `json:"status"`
-	Error      *errors.Status `json:"error"`
-	RateLimits []RateLimits   `json:"rateLimits"`
-}
 type RateLimits struct {
 	RateLimitType string `json:"rateLimitType"`
 	Interval      string `json:"interval"`
@@ -54,92 +43,6 @@ func NewWsClient(isCombined, isFast bool, baseURL ...string) *Client {
 		IsCombined: isCombined,
 		IsFast:     isFast,
 		Logger:     log.New(LogLevel, "[INFO] ", log.LstdFlags),
-		dialer: &websocket.Dialer{
-			Proxy:             http.ProxyFromEnvironment,
-			HandshakeTimeout:  45 * time.Second,
-			EnableCompression: false,
-		},
-	}
-}
-func NewWsApiHMACClient(apiKey, secretKey string, baseURL ...string) *Client {
-	// 将默认基本 URL 设置为生产 WS URL
-	url := consts.WS_API2
-	if len(baseURL) > 0 {
-		url = baseURL[0]
-	}
-	prefix := "[INFO] "
-	switch LogLevel {
-	case os.Stderr:
-		prefix = "[ERROR] "
-	case os.Stdout:
-		prefix = "[INFO] "
-	}
-	// 根据客户端是否用于组合流附加到 baseURL
-	return &Client{
-		BaseURL:   url,
-		APIKey:    apiKey,
-		SecretKey: secretKey,
-		Logger:    log.New(LogLevel, prefix, log.LstdFlags),
-		dialer: &websocket.Dialer{
-			Proxy:             http.ProxyFromEnvironment,
-			HandshakeTimeout:  45 * time.Second,
-			EnableCompression: false,
-		},
-	}
-}
-func NewWsApiRSAClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
-	// 将默认基本 URL 设置为生产 WS URL
-	url := consts.WS_API2
-	if len(baseURL) > 0 {
-		url = baseURL[0]
-	}
-	prefix := "[INFO] "
-	switch LogLevel {
-	case os.Stderr:
-		prefix = "[ERROR] "
-	case os.Stdout:
-		prefix = "[INFO] "
-	}
-	privateKey, err := loadRsaPrivateKey(privateKeyPath)
-	if err != nil {
-		panic(err)
-	}
-	// 根据客户端是否用于组合流附加到 baseURL
-	return &Client{
-		BaseURL:    url,
-		APIKey:     apiKey,
-		PrivateKey: privateKey,
-		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
-		dialer: &websocket.Dialer{
-			Proxy:             http.ProxyFromEnvironment,
-			HandshakeTimeout:  45 * time.Second,
-			EnableCompression: false,
-		},
-	}
-}
-func NewWsApiED25519Client(apiKey, privateKeyPath string, baseURL ...string) *Client {
-	// 将默认基本 URL 设置为生产 WS URL
-	url := consts.WS_API2
-	if len(baseURL) > 0 {
-		url = baseURL[0]
-	}
-	prefix := "[INFO] "
-	switch LogLevel {
-	case os.Stderr:
-		prefix = "[ERROR] "
-	case os.Stdout:
-		prefix = "[INFO] "
-	}
-	privateKey, err := loadED25519PrivateKey(privateKeyPath)
-	if err != nil {
-		panic(err)
-	}
-	// 根据客户端是否用于组合流附加到 baseURL
-	return &Client{
-		BaseURL:    url,
-		APIKey:     apiKey,
-		PrivateKey: privateKey,
-		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 		dialer: &websocket.Dialer{
 			Proxy:             http.ProxyFromEnvironment,
 			HandshakeTimeout:  45 * time.Second,
@@ -216,7 +119,30 @@ func (c *Client) keepAlive(timeout time.Duration) {
 		}
 	}()
 }
-func (c *Client) SendMessage(r *Request) error {
+func (c *Client) Close() error {
+	return c.conn.Close()
+}
+
+type WsReqMsg struct {
+	Id     string `json:"id"`
+	Method string `json:"method"`
+	Params any    `json:"params"`
+}
+
+func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception ErrorHandler) error {
+	log.Println(endpoint)
+	h := func(mt int, msg []byte) {
+		event := new(T)
+		err := json.Unmarshal(msg, &event)
+		if err != nil {
+			exception(mt, err)
+			return
+		}
+		handler(*event)
+	}
+	return c.serve(endpoint, h, exception)
+}
+func (c *Client) SendMessage(r *Request) (err error) {
 	//获取 query url
 	queryString := r.query.Encode()
 	if r.needSign {
@@ -239,7 +165,7 @@ func (c *Client) SendMessage(r *Request) error {
 	for k, v := range r.query {
 		params[k] = v[0]
 	}
-	msg := &wsReqMsg{
+	msg := &WsReqMsg{
 		Id:     uuid.New().String(),
 		Method: r.Path,
 		Params: params,
@@ -250,27 +176,4 @@ func (c *Client) SendMessage(r *Request) error {
 	}
 	c.Debugf("%s", marshal)
 	return c.conn.WriteJSON(msg)
-}
-func (c *Client) Close() error {
-	return c.conn.Close()
-}
-
-type wsReqMsg struct {
-	Id     string `json:"id"`
-	Method string `json:"method"`
-	Params any    `json:"params"`
-}
-
-func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception ErrorHandler) error {
-	log.Println(endpoint)
-	h := func(mt int, msg []byte) {
-		event := new(T)
-		err := json.Unmarshal(msg, &event)
-		if err != nil {
-			exception(mt, err)
-			return
-		}
-		handler(*event)
-	}
-	return c.serve(endpoint, h, exception)
 }

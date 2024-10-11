@@ -113,28 +113,37 @@ func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOr
 // ****************************** Websocket Api *******************************
 
 type WsApiQueryOrder interface {
-	binance.WsApi[WsApiQueryOrderResponse]
+	binance.WsApi[*WsApiQueryOrderResponse]
 	QueryOrder
+	SendOpenOrders(ctx context.Context) (*WsApiOpenOrdersResponse, error)
 }
 type WsApiQueryOrderResponse struct {
 	binance.WsApiResponse
 	Result *queryOrderResponse `json:"result"`
+}
+type WsApiOpenOrdersResponse struct {
+	binance.WsApiResponse
+	Result []*queryOrderResponse `json:"result"`
 }
 
 func NewWsApiQueryOrder(c *binance.Client) WsApiQueryOrder {
 	return &queryOrderRequest{Client: c}
 }
 
-func (o *queryOrderRequest) Receive(handler binance.Handler[WsApiQueryOrderResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(o.Client, o.BaseURL, handler, exception)
-}
-
 // Send 下新的订单 (TRADE)
-func (o *queryOrderRequest) Send() error {
+func (o *queryOrderRequest) Send(ctx context.Context) (*WsApiQueryOrderResponse, error) {
 	req := &binance.Request{Path: "order.status"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", o.symbol)
 	req.SetOptionalParam("orderId", o.orderId)
 	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
-	return o.SendMessage(req)
+	return binance.WsApiHandler[*WsApiQueryOrderResponse](ctx, o.Client, req)
+}
+
+// SendOpenOrders 当前挂单 (USER_DATA)
+func (o *queryOrderRequest) SendOpenOrders(ctx context.Context) (*WsApiOpenOrdersResponse, error) {
+	req := &binance.Request{Path: "openOrders.status"}
+	req.SetNeedSign(true)
+	req.SetOptionalParam("symbol", o.symbol)
+	return binance.WsApiHandler[*WsApiOpenOrdersResponse](ctx, o.Client, req)
 }

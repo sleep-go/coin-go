@@ -81,7 +81,7 @@ func (t *tradingDayRequest) Call(ctx context.Context) (body []*tradingDayRespons
 // ****************************** Websocket Api *******************************
 
 type WsApiTradingDay interface {
-	binance.WsApi[WsApiTradingDayResponse]
+	binance.WsApi[*WsApiTradingDayResponse]
 	SetSymbols(symbols []string) WsApiTradingDay
 	SetTimeZone(timeZone string) WsApiTradingDay
 	SetType(_type enums.TickerType) WsApiTradingDay
@@ -123,11 +123,8 @@ func (t *tradingDayRequest) SetTimeZone(timeZone string) WsApiTradingDay {
 	t.timeZone = timeZone
 	return t
 }
-func (t *tradingDayRequest) Receive(handler binance.Handler[WsApiTradingDayResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
-}
 
-func (t *tradingDayRequest) Send() error {
+func (t *tradingDayRequest) Send(ctx context.Context) (*WsApiTradingDayResponse, error) {
 	req := &binance.Request{Path: "ticker.tradingDay"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
@@ -135,5 +132,5 @@ func (t *tradingDayRequest) Send() error {
 	}
 	req.SetOptionalParam("timeZone", t.timeZone)
 	req.SetOptionalParam("type", t._type.String())
-	return t.SendMessage(req)
+	return binance.WsApiHandler[*WsApiTradingDayResponse](ctx, t.Client, req)
 }

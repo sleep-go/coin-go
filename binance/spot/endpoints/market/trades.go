@@ -114,7 +114,7 @@ func wsTrade[T WsTradeEvent | StreamTradeEvent](c *binance.Client, symbols []str
 // ****************************** Websocket Api *******************************
 
 type WsApiTrades interface {
-	binance.WsApi[WsApiTradesResponse]
+	binance.WsApi[*WsApiTradesResponse]
 	SetSymbol(symbol string) WsApiTrades
 	SetLimit(limit enums.LimitType) WsApiTrades
 }
@@ -143,12 +143,10 @@ func (t *tradesRequest) SetLimit(limit enums.LimitType) WsApiTrades {
 	t.limit = limit
 	return t
 }
-func (t *tradesRequest) Receive(handler binance.Handler[WsApiTradesResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
-}
-func (t *tradesRequest) Send() error {
+
+func (t *tradesRequest) Send(ctx context.Context) (*WsApiTradesResponse, error) {
 	req := &binance.Request{Path: "trades.recent"}
 	req.SetParam("symbol", t.symbol)
 	req.SetParam("limit", t.limit)
-	return t.SendMessage(req)
+	return binance.WsApiHandler[*WsApiTradesResponse](ctx, t.Client, req)
 }

@@ -125,7 +125,7 @@ func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderRespons
 // ****************************** Websocket Api *******************************
 
 type WsApiDeleteOrder interface {
-	binance.WsApi[WsApiDeleteOrderResponse]
+	binance.WsApi[*WsApiDeleteOrderResponse]
 	DeleteOrder
 }
 type WsApiDeleteOrderResponse struct {
@@ -145,11 +145,7 @@ func NewWsApiDeleteOrder(c *binance.Client) WsApiDeleteOrder {
 	return &deleteOrderRequest{Client: c}
 }
 
-func (d *deleteOrderRequest) Receive(handler binance.Handler[WsApiDeleteOrderResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
-}
-
-func (d *deleteOrderRequest) Send() error {
+func (d *deleteOrderRequest) Send(ctx context.Context) (*WsApiDeleteOrderResponse, error) {
 	req := &binance.Request{Path: "order.cancel"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", d.symbol)
@@ -157,5 +153,5 @@ func (d *deleteOrderRequest) Send() error {
 	req.SetOptionalParam("origClientOrderId", d.origClientOrderId)
 	req.SetOptionalParam("newClientOrderId", d.newClientOrderId)
 	req.SetOptionalParam("cancelRestrictions", d.cancelRestrictions)
-	return d.SendMessage(req)
+	return binance.WsApiHandler[*WsApiDeleteOrderResponse](ctx, d.Client, req)
 }

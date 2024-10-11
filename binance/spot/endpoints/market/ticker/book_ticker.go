@@ -94,7 +94,7 @@ func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.Client, 
 // ****************************** Websocket Api *******************************
 
 type WsApiBookTicker interface {
-	binance.WsApi[WsApiBookTickerResponse]
+	binance.WsApi[*WsApiBookTickerResponse]
 	SetSymbols(symbols []string) *bookTickerRequest
 }
 type WsApiBookTickerResponse struct {
@@ -116,14 +116,11 @@ func (b *bookTickerRequest) SetSymbols(symbols []string) *bookTickerRequest {
 	b.symbols = symbols
 	return b
 }
-func (b *bookTickerRequest) Receive(handler binance.Handler[WsApiBookTickerResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(b.Client, b.BaseURL, handler, exception)
-}
-func (b *bookTickerRequest) Send() error {
+func (b *bookTickerRequest) Send(ctx context.Context) (*WsApiBookTickerResponse, error) {
 	req := &binance.Request{Path: "ticker.book"}
 	if len(b.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
 		req.SetParam("symbols", result)
 	}
-	return b.SendMessage(req)
+	return binance.WsApiHandler[*WsApiBookTickerResponse](ctx, b.Client, req)
 }

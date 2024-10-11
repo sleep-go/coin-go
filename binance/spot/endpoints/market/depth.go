@@ -135,7 +135,7 @@ func wsDepthLevels[T WsDepthLevelsEvent | StreamDepthLevelsEvent](c *binance.Cli
 // ****************************** Websocket Api *******************************
 
 type WsApiDepth interface {
-	binance.WsApi[WsApiDepthResponse]
+	binance.WsApi[*WsApiDepthResponse]
 	SetSymbol(symbol string) WsApiDepth
 	SetLimit(limit enums.LimitType) WsApiDepth
 }
@@ -167,12 +167,9 @@ func (d *depthRequest) SetLimit(limit enums.LimitType) WsApiDepth {
 	d.limit = limit
 	return d
 }
-func (d *depthRequest) Receive(handler binance.Handler[WsApiDepthResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
-}
-func (d *depthRequest) Send() error {
+func (d *depthRequest) Send(ctx context.Context) (*WsApiDepthResponse, error) {
 	req := &binance.Request{Path: "depth"}
 	req.SetParam("symbol", d.symbol)
 	req.SetParam("limit", d.limit)
-	return d.SendMessage(req)
+	return binance.WsApiHandler[*WsApiDepthResponse](ctx, d.Client, req)
 }

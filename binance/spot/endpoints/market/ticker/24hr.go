@@ -77,7 +77,7 @@ func (hr *hr24Request) Call(ctx context.Context) (body []*hr24Response, err erro
 // ****************************** Websocket Api *******************************
 
 type WsApiHr24 interface {
-	binance.WsApi[WsApiHr24Response]
+	binance.WsApi[*WsApiHr24Response]
 	SetSymbols(symbols []string) WsApiHr24
 	SetType(_type enums.TickerType) WsApiHr24
 }
@@ -108,16 +108,13 @@ func (hr *hr24Request) SetType(_type enums.TickerType) WsApiHr24 {
 	hr._type = _type
 	return hr
 }
-func (hr *hr24Request) Receive(handler binance.Handler[WsApiHr24Response], exception binance.ErrorHandler) error {
-	return binance.WsHandler(hr.Client, hr.BaseURL, handler, exception)
-}
 
 // Send 如果未指定交易对，则返回有关当前在交易所交易的所有交易对的信息。
-func (hr *hr24Request) Send() error {
+func (hr *hr24Request) Send(ctx context.Context) (*WsApiHr24Response, error) {
 	req := &binance.Request{Path: "ticker.24hr"}
 	if len(hr.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(hr.symbols, `","`))
 		req.SetParam("symbols", result)
 	}
-	return hr.SendMessage(req)
+	return binance.WsApiHandler[*WsApiHr24Response](ctx, hr.Client, req)
 }

@@ -220,9 +220,9 @@ func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRate
 // ****************************** Websocket Api *******************************
 
 type WsApiCreateOrder interface {
-	binance.WsApi[WsApiCreateOrderResponse]
+	binance.WsApi[*WsApiCreateOrderResponse]
 	CreateOrder
-	ReceiveTest(handler binance.Handler[WsApiCreateOrderTestResponse], exception binance.ErrorHandler) error
+	SendTest(ctx context.Context, computeCommissionRates bool) (*WsApiCreateOrderTestResponse, error)
 }
 type WsApiCreateOrderResponse struct {
 	binance.WsApiResponse
@@ -237,15 +237,8 @@ func NewWsApiCreateOrder(c *binance.Client) WsApiCreateOrder {
 	return &createOrderRequest{Client: c}
 }
 
-func (c *createOrderRequest) Receive(handler binance.Handler[WsApiCreateOrderResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
-}
-func (c *createOrderRequest) ReceiveTest(handler binance.Handler[WsApiCreateOrderTestResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
-}
-
 // Send 下新的订单 (TRADE)
-func (c *createOrderRequest) Send() error {
+func (c *createOrderRequest) Send(ctx context.Context) (*WsApiCreateOrderResponse, error) {
 	req := &binance.Request{Path: "order.place"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)
@@ -262,11 +255,11 @@ func (c *createOrderRequest) Send() error {
 	req.SetOptionalParam("icebergQty", c.icebergQty)
 	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	return c.SendMessage(req)
+	return binance.WsApiHandler[*WsApiCreateOrderResponse](ctx, c.Client, req)
 }
 
 // SendTest 测试下单 (TRADE)
-func (c *createOrderRequest) SendTest(computeCommissionRates bool) error {
+func (c *createOrderRequest) SendTest(ctx context.Context, computeCommissionRates bool) (*WsApiCreateOrderTestResponse, error) {
 	req := &binance.Request{Path: "order.test"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)
@@ -284,5 +277,5 @@ func (c *createOrderRequest) SendTest(computeCommissionRates bool) error {
 	req.SetOptionalParam("icebergQty", c.icebergQty)
 	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	return c.SendMessage(req)
+	return binance.WsApiHandler[*WsApiCreateOrderTestResponse](ctx, c.Client, req)
 }

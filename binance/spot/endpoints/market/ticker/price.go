@@ -51,7 +51,7 @@ func (t *priceRequest) Call(ctx context.Context) (body []*priceResponse, err err
 // ****************************** Websocket Api *******************************
 
 type WsApiTickerPrice interface {
-	binance.WsApi[WsApiTickerPriceResponse]
+	binance.WsApi[*WsApiTickerPriceResponse]
 	SetSymbols(symbols []string) WsApiTickerPrice
 }
 type WsApiTickerPriceResponse struct {
@@ -74,15 +74,12 @@ func (t *priceRequest) SetSymbols(symbols []string) WsApiTickerPrice {
 	t.symbols = symbols
 	return t
 }
-func (t *priceRequest) Receive(handler binance.Handler[WsApiTickerPriceResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
-}
 
-func (t *priceRequest) Send() error {
+func (t *priceRequest) Send(ctx context.Context) (*WsApiTickerPriceResponse, error) {
 	req := &binance.Request{Path: "ticker.price"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
 		req.SetParam("symbols", result)
 	}
-	return t.SendMessage(req)
+	return binance.WsApiHandler[*WsApiTickerPriceResponse](ctx, t.Client, req)
 }

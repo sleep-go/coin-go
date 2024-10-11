@@ -299,7 +299,7 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 // ****************************** Websocket Api *******************************
 
 type WsApiCancelReplace interface {
-	binance.WsApi[WsApiCancelReplaceResponse]
+	binance.WsApi[*WsApiCancelReplaceResponse]
 	CancelReplace
 }
 type WsApiCancelReplaceResponse struct {
@@ -342,18 +342,14 @@ func NewWsApiCancelReplace(c *binance.Client) WsApiCancelReplace {
 	return &cancelReplaceRequest{Client: c}
 }
 
-func (c *cancelReplaceRequest) Receive(handler binance.Handler[WsApiCancelReplaceResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
-}
-
-func (c *cancelReplaceRequest) Send() error {
+func (c *cancelReplaceRequest) Send(ctx context.Context) (*WsApiCancelReplaceResponse, error) {
 	req := &binance.Request{Path: "order.cancelReplace"}
 	req.SetNeedSign(true)
-	req.SetParam("symbol", c.symbol)
-	req.SetParam("side", c.side)
-	req.SetParam("type", c._type)
+	req.SetOptionalParam("symbol", c.symbol)
+	req.SetOptionalParam("side", c.side)
+	req.SetOptionalParam("type", c._type)
 	req.SetOptionalParam("timeInForce", c.timeInForce)
-	req.SetParam("quantity", c.quantity)
+	req.SetOptionalParam("quantity", c.quantity)
 	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
 	req.SetOptionalParam("price", c.price)
 	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
@@ -369,5 +365,5 @@ func (c *cancelReplaceRequest) Send() error {
 	req.SetOptionalParam("cancelOrderId", c.cancelOrderId)
 	req.SetOptionalParam("cancelRestrictions", c.cancelRestrictions)
 	req.SetOptionalParam("orderRateLimitExceededMode", c.orderRateLimitExceededMode)
-	return c.SendMessage(req)
+	return binance.WsApiHandler[*WsApiCancelReplaceResponse](ctx, c.Client, req)
 }

@@ -99,7 +99,6 @@ func (t *tickerRequest) SetDay(d uint8) *tickerRequest {
 	t.windowSize = fmt.Sprintf("%dd", d)
 	return t
 }
-
 func (t *tickerRequest) Call(ctx context.Context) (body []*tickerResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
@@ -279,7 +278,7 @@ func allTicker[T []WsTickerEvent | StreamAllTickerEvent](c *binance.Client, hand
 // ****************************** Websocket Api *******************************
 
 type WsApiTicker interface {
-	binance.WsApi[WsApiTickerResponse]
+	binance.WsApi[*WsApiTickerResponse]
 	Ticker
 }
 type WsApiTickerResponse struct {
@@ -309,11 +308,7 @@ func NewWsApiTicker(c *binance.Client) WsApiTicker {
 	return &tickerRequest{Client: c}
 }
 
-func (t *tickerRequest) Receive(handler binance.Handler[WsApiTickerResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(t.Client, t.BaseURL, handler, exception)
-}
-
-func (t *tickerRequest) Send() error {
+func (t *tickerRequest) Send(ctx context.Context) (*WsApiTickerResponse, error) {
 	req := &binance.Request{Path: "ticker"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
@@ -321,5 +316,5 @@ func (t *tickerRequest) Send() error {
 	}
 	req.SetOptionalParam("windowSize", t.windowSize)
 	req.SetOptionalParam("type", t._type)
-	return t.SendMessage(req)
+	return binance.WsApiHandler[*WsApiTickerResponse](ctx, t.Client, req)
 }

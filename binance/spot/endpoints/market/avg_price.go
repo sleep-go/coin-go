@@ -97,7 +97,7 @@ func avgPrice[T WsAvgPriceEvent | StreamAvgPriceEvent](c *binance.Client, symbol
 // ****************************** Websocket Api *******************************
 
 type WsApiAvgPrice interface {
-	binance.WsApi[WsApiAvgPriceResponse]
+	binance.WsApi[*WsApiAvgPriceResponse]
 	SetSymbol(symbol string) *avgPriceRequest
 }
 type WsApiAvgPriceResponse struct {
@@ -110,12 +110,8 @@ func NewWsApiAvgPrice(c *binance.Client) WsApiAvgPrice {
 	return &avgPriceRequest{Client: c}
 }
 
-func (a *avgPriceRequest) Receive(handler binance.Handler[WsApiAvgPriceResponse], exception binance.ErrorHandler) error {
-	return binance.WsHandler(a.Client, a.BaseURL, handler, exception)
-}
-
-func (a *avgPriceRequest) Send() error {
+func (a *avgPriceRequest) Send(ctx context.Context) (*WsApiAvgPriceResponse, error) {
 	req := &binance.Request{Path: "avgPrice"}
 	req.SetParam("symbol", a.symbol)
-	return a.SendMessage(req)
+	return binance.WsApiHandler[*WsApiAvgPriceResponse](ctx, a.Client, req)
 }
