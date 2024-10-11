@@ -238,7 +238,6 @@ func TestCreateOrder(t *testing.T) {
 		SetQuantity("1").
 		SetType(enums.OrderTypeMarket).
 		SetSide(enums.SideTypeBuy).
-		SetTimestamp(time.Now().UnixMilli()).
 		CallTest(context.Background(), true)
 	if err != nil {
 		t.Fatal(err)

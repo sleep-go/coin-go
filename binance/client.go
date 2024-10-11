@@ -58,7 +58,6 @@ func NewClient(apiKey, secretKey string, baseURL ...string) *Client {
 		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 	}
 }
-
 func NewRsaClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
 	api := consts.REST_API
 	if len(baseURL) > 0 {
@@ -84,7 +83,6 @@ func NewRsaClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
 		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 	}
 }
-
 func NewED25519Client(apiKey, privateKeyPath string, baseURL ...string) *Client {
 	api := consts.REST_API
 	if len(baseURL) > 0 {
@@ -110,7 +108,6 @@ func NewED25519Client(apiKey, privateKeyPath string, baseURL ...string) *Client 
 		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 	}
 }
-
 func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error) {
 	r.header = http.Header{}
 	r.header.Set("X-MBX-APIKEY", c.APIKey)
@@ -154,7 +151,6 @@ func (c *Client) request(ctx context.Context, r *Request) (*http.Request, error)
 	c.Debugf("query:%s", r.query.Encode())
 	return req, nil
 }
-
 func (c *Client) Do(ctx context.Context, r *Request) (*http.Response, error) {
 	request, err := c.request(ctx, r)
 	if err != nil {
@@ -166,7 +162,6 @@ func (c *Client) Do(ctx context.Context, r *Request) (*http.Response, error) {
 	fmt.Printf("%+v\n", request.Form.Encode())
 	return c.HTTPClient.Do(request)
 }
-
 func (c *Client) Debugf(format string, v ...interface{}) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)

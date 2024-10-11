@@ -12,6 +12,7 @@ import (
 	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/trading"
 )
 
 var wsApiClient *binance.Client
@@ -25,7 +26,8 @@ func init() {
 		return
 	}
 	API_KEY := strings.TrimSpace(string(file))
-	wsApiClient = binance.NewWsApiClient(API_KEY, consts.WS_API_TEST)
+	PRIVATE_KEY_PATH := "./test-prv-key.pem"
+	wsApiClient = binance.NewWsApiED25519Client(API_KEY, PRIVATE_KEY_PATH, consts.WS_API_TEST)
 	wsApiClient.Debug = true
 }
 
@@ -343,4 +345,38 @@ func TestWsApiBookTicker(t *testing.T) {
 			continue
 		}
 	}
+}
+
+func TestWsApiCreateOrder(t *testing.T) {
+	defer close(done)
+	tk := trading.NewWsApiCreateOrder(wsApiClient)
+	go func() {
+		err := tk.Receive(func(event trading.WsApiCreateOrderResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Println(event.Result, event.RateLimits)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	//time.Sleep(2 * time.Second)
+	//err = tk.SetSymbol(ETHUSDT).
+	//	SetSide(enums.SideTypeBuy).
+	//	SetTimeInForce(enums.TimeInForceTypeGTC).
+	//	SetQuantity("0.01").
+	//	SetPrice("2000").
+	//	SetType(enums.OrderTypeLimit).
+	//	Send()
+	time.Sleep(2 * time.Second)
+	//{"id":"b54b5319-5787-4f3b-89a1-b338755ce24c","status":200,"result":{"symbol":"BTCUSDT","orderId":4336196,"orderListId":-1,"clientOrderId":"fDBM0cAaaaGpcffPQ0Wuud","transactTime":1728614800782,"price":"0.00000000","origQty":"0.01000000","executedQty":"0.01000000","cummulativeQuoteQty":"605.00045610","status":"FILLED","timeInForce":"GTC","type":"MARKET","side":"BUY","workingTime":1728614800782,"fills":[{"price":"60500.04000000","qty":"0.00439000","commission":"0.00000000","commissionAsset":"BTC","tradeId":1043813},{"price":"60500.05000000","qty":"0.00561000","commission":"0.00000000","commissionAsset":"BTC","tradeId":1043814}],"selfTradePreventionMode":"EXPIRE_MAKER"},"rateLimits":[{"rateLimitType":"ORDERS","interval":"SECOND","intervalNum":10,"limit":50,"count":1},{"rateLimitType":"ORDERS","interval":"DAY","intervalNum":1,"limit":160000,"count":2},{"rateLimitType":"REQUEST_WEIGHT","interval":"MINUTE","intervalNum":1,"limit":6000,"count":3}]}
+	err = tk.SetSymbol(BTCUSDT).
+		SetSide(enums.SideTypeSell).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.01").Send()
+	time.Sleep(2 * time.Second)
 }

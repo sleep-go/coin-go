@@ -61,17 +61,85 @@ func NewWsClient(isCombined, isFast bool, baseURL ...string) *Client {
 		},
 	}
 }
-func NewWsApiClient(apiKey string, baseURL ...string) *Client {
+func NewWsApiHMACClient(apiKey, secretKey string, baseURL ...string) *Client {
 	// 将默认基本 URL 设置为生产 WS URL
 	url := consts.WS_API2
 	if len(baseURL) > 0 {
 		url = baseURL[0]
 	}
+	prefix := "[INFO] "
+	switch LogLevel {
+	case os.Stderr:
+		prefix = "[ERROR] "
+	case os.Stdout:
+		prefix = "[INFO] "
+	}
 	// 根据客户端是否用于组合流附加到 baseURL
 	return &Client{
-		BaseURL: url,
-		APIKey:  apiKey,
-		Logger:  log.New(LogLevel, "[INFO] ", log.LstdFlags),
+		BaseURL:   url,
+		APIKey:    apiKey,
+		SecretKey: secretKey,
+		Logger:    log.New(LogLevel, prefix, log.LstdFlags),
+		dialer: &websocket.Dialer{
+			Proxy:             http.ProxyFromEnvironment,
+			HandshakeTimeout:  45 * time.Second,
+			EnableCompression: false,
+		},
+	}
+}
+func NewWsApiRSAClient(apiKey, privateKeyPath string, baseURL ...string) *Client {
+	// 将默认基本 URL 设置为生产 WS URL
+	url := consts.WS_API2
+	if len(baseURL) > 0 {
+		url = baseURL[0]
+	}
+	prefix := "[INFO] "
+	switch LogLevel {
+	case os.Stderr:
+		prefix = "[ERROR] "
+	case os.Stdout:
+		prefix = "[INFO] "
+	}
+	privateKey, err := loadRsaPrivateKey(privateKeyPath)
+	if err != nil {
+		panic(err)
+	}
+	// 根据客户端是否用于组合流附加到 baseURL
+	return &Client{
+		BaseURL:    url,
+		APIKey:     apiKey,
+		PrivateKey: privateKey,
+		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
+		dialer: &websocket.Dialer{
+			Proxy:             http.ProxyFromEnvironment,
+			HandshakeTimeout:  45 * time.Second,
+			EnableCompression: false,
+		},
+	}
+}
+func NewWsApiED25519Client(apiKey, privateKeyPath string, baseURL ...string) *Client {
+	// 将默认基本 URL 设置为生产 WS URL
+	url := consts.WS_API2
+	if len(baseURL) > 0 {
+		url = baseURL[0]
+	}
+	prefix := "[INFO] "
+	switch LogLevel {
+	case os.Stderr:
+		prefix = "[ERROR] "
+	case os.Stdout:
+		prefix = "[INFO] "
+	}
+	privateKey, err := loadED25519PrivateKey(privateKeyPath)
+	if err != nil {
+		panic(err)
+	}
+	// 根据客户端是否用于组合流附加到 baseURL
+	return &Client{
+		BaseURL:    url,
+		APIKey:     apiKey,
+		PrivateKey: privateKey,
+		Logger:     log.New(LogLevel, prefix, log.LstdFlags),
 		dialer: &websocket.Dialer{
 			Proxy:             http.ProxyFromEnvironment,
 			HandshakeTimeout:  45 * time.Second,

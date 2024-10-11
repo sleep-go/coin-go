@@ -11,22 +11,21 @@ import (
 )
 
 type CreateOrder interface {
-	SetSide(side enums.SideType) CreateOrder
-	SetType(orderType enums.OrderType) CreateOrder
-	SetTimeInForce(timeInForce enums.TimeInForceType) CreateOrder
-	SetQuantity(quantity string) CreateOrder
-	SetQuoteOrderQty(quoteOrderQty string) CreateOrder
-	SetPrice(price string) CreateOrder
-	SetNewClientOrderId(newClientOrderId string) CreateOrder
-	SetStrategyId(strategyId int64) CreateOrder
-	SetStrategyType(strategyType int64) CreateOrder
-	SetStopPrice(stopPrice string) CreateOrder
-	SetTrailingDelta(trailingDelta int64) CreateOrder
-	SetIcebergQty(icebergQty string) CreateOrder
-	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) CreateOrder
-	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) CreateOrder
-	SetRecvWindow(recvWindow int64) CreateOrder
-	SetTimestamp(timestamp int64) CreateOrder
+	SetSymbol(symbol string) *createOrderRequest
+	SetSide(side enums.SideType) *createOrderRequest
+	SetType(orderType enums.OrderType) *createOrderRequest
+	SetTimeInForce(timeInForce enums.TimeInForceType) *createOrderRequest
+	SetQuantity(quantity string) *createOrderRequest
+	SetQuoteOrderQty(quoteOrderQty string) *createOrderRequest
+	SetPrice(price string) *createOrderRequest
+	SetNewClientOrderId(newClientOrderId string) *createOrderRequest
+	SetStrategyId(strategyId int64) *createOrderRequest
+	SetStrategyType(strategyType int64) *createOrderRequest
+	SetStopPrice(stopPrice string) *createOrderRequest
+	SetTrailingDelta(trailingDelta int64) *createOrderRequest
+	SetIcebergQty(icebergQty string) *createOrderRequest
+	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *createOrderRequest
+	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *createOrderRequest
 	Call(ctx context.Context) (body *createOrderResponse, err error)
 	CallTest(ctx context.Context, computeCommissionRates bool) (body *createOrderTestResponse, err error)
 }
@@ -51,6 +50,7 @@ type createOrderRequest struct {
 	recvWindow              int64
 	timestamp               int64
 }
+
 type createOrderResponse struct {
 	Symbol                  string `json:"symbol"`
 	OrderId                 int    `json:"orderId"`
@@ -79,163 +79,64 @@ type createOrderResponse struct {
 func NewOrder(client *binance.Client, symbol string) CreateOrder {
 	return &createOrderRequest{Client: client, symbol: symbol}
 }
-
-func (c *createOrderRequest) SetSide(side enums.SideType) CreateOrder {
+func (c *createOrderRequest) SetSymbol(symbol string) *createOrderRequest {
+	c.symbol = symbol
+	return c
+}
+func (c *createOrderRequest) SetSide(side enums.SideType) *createOrderRequest {
 	c.side = side
 	return c
 }
-
-func (c *createOrderRequest) SetType(_type enums.OrderType) CreateOrder {
+func (c *createOrderRequest) SetType(_type enums.OrderType) *createOrderRequest {
 	c._type = _type
-	//强制要求的参数
-	switch c._type {
-	case enums.OrderTypeLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-	case enums.OrderTypeMarket:
-		//市价买卖单可用quoteOrderQty参数来设置quote asset数量. 正确的quantity取决于市场的流动性与quoteOrderQty
-		//例如: 市价 BUY BTCUSDT，单子会基于quoteOrderQty- USDT 的数量，购买 BTC.
-		//市价 SELL BTCUSDT，单子会卖出 BTC 来满足quoteOrderQty- USDT 的数量.
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-	case enums.OrderTypeStopLoss:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeStopLossLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeTakeProfit:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeTakeProfitLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeLimitMaker:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-	}
 	return c
 }
-
-func (c *createOrderRequest) SetTimeInForce(timeInForce enums.TimeInForceType) CreateOrder {
+func (c *createOrderRequest) SetTimeInForce(timeInForce enums.TimeInForceType) *createOrderRequest {
 	c.timeInForce = timeInForce
 	return c
 }
-
-func (c *createOrderRequest) SetQuantity(quantity string) CreateOrder {
+func (c *createOrderRequest) SetQuantity(quantity string) *createOrderRequest {
 	c.quantity = &quantity
 	return c
 }
-
-func (c *createOrderRequest) SetQuoteOrderQty(quoteOrderQty string) CreateOrder {
+func (c *createOrderRequest) SetQuoteOrderQty(quoteOrderQty string) *createOrderRequest {
 	c.quoteOrderQty = &quoteOrderQty
 	return c
 }
-
-func (c *createOrderRequest) SetPrice(price string) CreateOrder {
+func (c *createOrderRequest) SetPrice(price string) *createOrderRequest {
 	c.price = &price
 	return c
 }
-
-func (c *createOrderRequest) SetNewClientOrderId(newClientOrderId string) CreateOrder {
+func (c *createOrderRequest) SetNewClientOrderId(newClientOrderId string) *createOrderRequest {
 	c.newClientOrderId = &newClientOrderId
 	return c
 }
-
-func (c *createOrderRequest) SetStrategyId(strategyId int64) CreateOrder {
+func (c *createOrderRequest) SetStrategyId(strategyId int64) *createOrderRequest {
 	c.strategyId = &strategyId
 	return c
 }
-
-func (c *createOrderRequest) SetStrategyType(strategyType int64) CreateOrder {
+func (c *createOrderRequest) SetStrategyType(strategyType int64) *createOrderRequest {
 	c.strategyType = &strategyType
 	return c
 }
-
-func (c *createOrderRequest) SetStopPrice(stopPrice string) CreateOrder {
+func (c *createOrderRequest) SetStopPrice(stopPrice string) *createOrderRequest {
 	c.stopPrice = &stopPrice
 	return c
 }
-
-func (c *createOrderRequest) SetTrailingDelta(trailingDelta int64) CreateOrder {
+func (c *createOrderRequest) SetTrailingDelta(trailingDelta int64) *createOrderRequest {
 	c.trailingDelta = &trailingDelta
 	return c
 }
-
-func (c *createOrderRequest) SetIcebergQty(icebergQty string) CreateOrder {
+func (c *createOrderRequest) SetIcebergQty(icebergQty string) *createOrderRequest {
 	c.icebergQty = &icebergQty
 	return c
 }
-
-func (c *createOrderRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) CreateOrder {
+func (c *createOrderRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *createOrderRequest {
 	c.newOrderRespType = newOrderRespType
 	return c
 }
-
-func (c *createOrderRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) CreateOrder {
+func (c *createOrderRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *createOrderRequest {
 	c.selfTradePreventionMode = selfTradePreventionMode
-	return c
-}
-
-func (c *createOrderRequest) SetRecvWindow(recvWindow int64) CreateOrder {
-	c.recvWindow = recvWindow
-	return c
-}
-
-func (c *createOrderRequest) SetTimestamp(timestamp int64) CreateOrder {
-	c.timestamp = timestamp
 	return c
 }
 func (c *createOrderRequest) Call(ctx context.Context) (body *createOrderResponse, err error) {
@@ -258,8 +159,6 @@ func (c *createOrderRequest) Call(ctx context.Context) (body *createOrderRespons
 	req.SetOptionalParam("icebergQty", c.icebergQty)
 	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	req.SetOptionalParam("recvWindow", c.recvWindow)
-	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("createOrderRequest response err:%v", err)
@@ -313,12 +212,49 @@ func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRate
 	req.SetOptionalParam("icebergQty", c.icebergQty)
 	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	req.SetOptionalParam("recvWindow", c.recvWindow)
-	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("createOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*createOrderTestResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiCreateOrder interface {
+	binance.WsApi[WsApiCreateOrderResponse]
+	CreateOrder
+}
+type WsApiCreateOrderResponse struct {
+	binance.WsApiResponse
+	Result *createOrderResponse `json:"result"`
+}
+
+func NewWsApiCreateOrder(c *binance.Client) WsApiCreateOrder {
+	return &createOrderRequest{Client: c}
+}
+
+func (c *createOrderRequest) Receive(handler binance.Handler[WsApiCreateOrderResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
+}
+
+func (c *createOrderRequest) Send() error {
+	req := &binance.Request{Path: "order.place"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", c.symbol)
+	req.SetParam("side", c.side)
+	req.SetParam("type", c._type)
+	req.SetOptionalParam("quantity", c.quantity)
+	req.SetOptionalParam("timeInForce", c.timeInForce)
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	return c.SendMessage(req)
 }

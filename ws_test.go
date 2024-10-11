@@ -76,14 +76,12 @@ func TestWsAggTrade(t *testing.T) {
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)
 		})
-
 	} else {
 		err = market.NewWsAggTrade(wsClient, []string{BTCUSDT}, func(event market.WsAggTradeEvent) {
 			fmt.Println(event)
 		}, func(messageType int, err error) {
 			fmt.Println(messageType, err)
 		})
-
 	}
 	if err != nil {
 		t.Fatal(err)
