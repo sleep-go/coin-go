@@ -2,14 +2,12 @@ package binance
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sleep-go/coin-go/binance/consts"
 )
@@ -141,39 +139,4 @@ func WsHandler[T any](c *Client, endpoint string, handler Handler[T], exception 
 		handler(*event)
 	}
 	return c.serve(endpoint, h, exception)
-}
-func (c *Client) SendMessage(r *Request) (err error) {
-	//获取 query url
-	queryString := r.query.Encode()
-	if r.needSign {
-		r.SetParam("apiKey", c.APIKey)
-		r.SetOptionalParam("recvWindow", c.TimeOffset)
-		r.SetParam("timestamp", time.Now().UnixMilli())
-		//获取 query url
-		queryString = r.query.Encode()
-		//设置签名参数
-		raw := fmt.Sprintf("%s", queryString)
-		if c.SecretKey != "" {
-			r.SetParam("signature", signPayload(raw, c.SecretKey))
-		} else if c.PrivateKey != nil {
-			r.SetParam("signature", signPayload(raw, c.PrivateKey))
-		} else {
-			c.Println("signature is empty")
-		}
-	}
-	params := make(map[string]any)
-	for k, v := range r.query {
-		params[k] = v[0]
-	}
-	msg := &WsReqMsg{
-		Id:     uuid.New().String(),
-		Method: r.Path,
-		Params: params,
-	}
-	marshal, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	c.Debugf("%s", marshal)
-	return c.conn.WriteJSON(msg)
 }

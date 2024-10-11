@@ -295,3 +295,14 @@ func TestWsApiDeleteOpenOrders(t *testing.T) {
 		}
 	}
 }
+func TestWsApiOCO(t *testing.T) {
+	res, err := trading.NewWsApiOCO(wsApiClient).SetSymbol(BTCUSDT).Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
