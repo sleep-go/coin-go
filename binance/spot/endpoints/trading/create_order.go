@@ -47,8 +47,6 @@ type createOrderRequest struct {
 	icebergQty              *string                //仅有限价单(包括条件限价单与限价做事单)可以使用该参数，含义为创建冰山订单并指定冰山订单的数量。
 	newOrderRespType        enums.NewOrderRespType //指定响应类型 ACK, RESULT, or FULL; MARKET 与 LIMIT 订单默认为FULL, 其他默认为ACK。
 	selfTradePreventionMode enums.StpModeType      //允许的 ENUM 取决于交易对的配置。
-	recvWindow              int64
-	timestamp               int64
 }
 type createOrderResponse struct {
 	Symbol                  string `json:"symbol"`

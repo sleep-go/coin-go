@@ -11,29 +11,28 @@ import (
 )
 
 type CancelReplace interface {
-	SetSide(side enums.SideType) CancelReplace
-	SetType(_type enums.OrderType) CancelReplace
-	SetTimeInForce(timeInForce enums.TimeInForceType) CancelReplace
-	SetQuantity(quantity string) CancelReplace
-	SetQuoteOrderQty(quoteOrderQty string) CancelReplace
-	SetPrice(price string) CancelReplace
-	SetNewClientOrderId(newClientOrderId string) CancelReplace
-	SetStrategyId(strategyId int64) CancelReplace
-	SetStrategyType(strategyType int64) CancelReplace
-	SetStopPrice(stopPrice string) CancelReplace
-	SetTrailingDelta(trailingDelta int64) CancelReplace
-	SetIcebergQty(icebergQty string) CancelReplace
-	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) CancelReplace
-	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) CancelReplace
-	SetRecvWindow(recvWindow int64) CancelReplace
-	SetTimestamp(timestamp int64) CancelReplace
+	SetSymbol(symbol string) *cancelReplaceRequest
+	SetSide(side enums.SideType) *cancelReplaceRequest
+	SetType(_type enums.OrderType) *cancelReplaceRequest
+	SetTimeInForce(timeInForce enums.TimeInForceType) *cancelReplaceRequest
+	SetQuantity(quantity string) *cancelReplaceRequest
+	SetQuoteOrderQty(quoteOrderQty string) *cancelReplaceRequest
+	SetPrice(price string) *cancelReplaceRequest
+	SetNewClientOrderId(newClientOrderId string) *cancelReplaceRequest
+	SetStrategyId(strategyId int64) *cancelReplaceRequest
+	SetStrategyType(strategyType int64) *cancelReplaceRequest
+	SetStopPrice(stopPrice string) *cancelReplaceRequest
+	SetTrailingDelta(trailingDelta int64) *cancelReplaceRequest
+	SetIcebergQty(icebergQty string) *cancelReplaceRequest
+	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *cancelReplaceRequest
+	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *cancelReplaceRequest
 
-	SetCancelReplaceMode(cancelReplaceMode enums.CancelReplaceModeType) CancelReplace
-	SetCancelNewClientOrderId(cancelNewClientOrderId string) CancelReplace
-	SetCancelOrigClientOrderId(cancelOrigClientOrderId string) CancelReplace
-	SetCancelOrderId(cancelOrderId int64) CancelReplace
-	SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) CancelReplace
-	SetOrderRateLimitExceededMode(orderRateLimitExceededMode enums.OrderRateLimitExceededModeType) CancelReplace
+	SetCancelReplaceMode(cancelReplaceMode enums.CancelReplaceModeType) *cancelReplaceRequest
+	SetCancelNewClientOrderId(cancelNewClientOrderId string) *cancelReplaceRequest
+	SetCancelOrigClientOrderId(cancelOrigClientOrderId string) *cancelReplaceRequest
+	SetCancelOrderId(cancelOrderId int64) *cancelReplaceRequest
+	SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) *cancelReplaceRequest
+	SetOrderRateLimitExceededMode(orderRateLimitExceededMode enums.OrderRateLimitExceededModeType) *cancelReplaceRequest
 	Call(ctx context.Context) (body *cancelReplaceResponse, err error)
 }
 
@@ -147,192 +146,106 @@ func NewCancelReplace(client *binance.Client, symbol string) CancelReplace {
 	}
 }
 
-func (c *cancelReplaceRequest) SetCancelReplaceMode(cancelReplaceMode enums.CancelReplaceModeType) CancelReplace {
+func (c *cancelReplaceRequest) SetCancelReplaceMode(cancelReplaceMode enums.CancelReplaceModeType) *cancelReplaceRequest {
 	c.cancelReplaceMode = cancelReplaceMode
 	return c
 }
 
-func (c *cancelReplaceRequest) SetCancelNewClientOrderId(cancelNewClientOrderId string) CancelReplace {
+func (c *cancelReplaceRequest) SetCancelNewClientOrderId(cancelNewClientOrderId string) *cancelReplaceRequest {
 	c.cancelNewClientOrderId = &cancelNewClientOrderId
 	return c
 }
 
-func (c *cancelReplaceRequest) SetCancelOrigClientOrderId(cancelOrigClientOrderId string) CancelReplace {
+func (c *cancelReplaceRequest) SetCancelOrigClientOrderId(cancelOrigClientOrderId string) *cancelReplaceRequest {
 	c.cancelOrigClientOrderId = &cancelOrigClientOrderId
 	return c
 }
 
-func (c *cancelReplaceRequest) SetCancelOrderId(cancelOrderId int64) CancelReplace {
+func (c *cancelReplaceRequest) SetCancelOrderId(cancelOrderId int64) *cancelReplaceRequest {
 	c.cancelOrderId = &cancelOrderId
 	return c
 }
 
-func (c *cancelReplaceRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) CancelReplace {
+func (c *cancelReplaceRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) *cancelReplaceRequest {
 	c.cancelRestrictions = cancelRestrictions
 	return c
 }
 
-func (c *cancelReplaceRequest) SetOrderRateLimitExceededMode(orderRateLimitExceededMode enums.OrderRateLimitExceededModeType) CancelReplace {
+func (c *cancelReplaceRequest) SetOrderRateLimitExceededMode(orderRateLimitExceededMode enums.OrderRateLimitExceededModeType) *cancelReplaceRequest {
 	c.orderRateLimitExceededMode = orderRateLimitExceededMode
 	return c
 }
-
-func (c *cancelReplaceRequest) SetSide(side enums.SideType) CancelReplace {
+func (c *cancelReplaceRequest) SetSymbol(symbol string) *cancelReplaceRequest {
+	c.symbol = symbol
+	return c
+}
+func (c *cancelReplaceRequest) SetSide(side enums.SideType) *cancelReplaceRequest {
 	c.side = side
 	return c
 }
 
-func (c *cancelReplaceRequest) SetType(_type enums.OrderType) CancelReplace {
+func (c *cancelReplaceRequest) SetType(_type enums.OrderType) *cancelReplaceRequest {
 	c._type = _type
-	//强制要求的参数
-	switch c._type {
-	case enums.OrderTypeLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-	case enums.OrderTypeMarket:
-		//市价买卖单可用quoteOrderQty参数来设置quote asset数量. 正确的quantity取决于市场的流动性与quoteOrderQty
-		//例如: 市价 BUY BTCUSDT，单子会基于quoteOrderQty- USDT 的数量，购买 BTC.
-		//市价 SELL BTCUSDT，单子会卖出 BTC 来满足quoteOrderQty- USDT 的数量.
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-	case enums.OrderTypeStopLoss:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeStopLossLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeTakeProfit:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeTakeProfitLimit:
-		if c.timeInForce == "" {
-			panic("timeInForce not set")
-		}
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-		if c.stopPrice == nil {
-			panic("stopPrice not set")
-		}
-		if c.trailingDelta == nil {
-			panic("trailingDelta not set")
-		}
-	case enums.OrderTypeLimitMaker:
-		if c.quantity == nil {
-			panic("quantity not set")
-		}
-		if c.price == nil {
-			panic("price not set")
-		}
-	}
 	return c
 }
 
-func (c *cancelReplaceRequest) SetTimeInForce(timeInForce enums.TimeInForceType) CancelReplace {
+func (c *cancelReplaceRequest) SetTimeInForce(timeInForce enums.TimeInForceType) *cancelReplaceRequest {
 	c.timeInForce = timeInForce
 	return c
 }
 
-func (c *cancelReplaceRequest) SetQuantity(quantity string) CancelReplace {
+func (c *cancelReplaceRequest) SetQuantity(quantity string) *cancelReplaceRequest {
 	c.quantity = &quantity
 	return c
 }
 
-func (c *cancelReplaceRequest) SetQuoteOrderQty(quoteOrderQty string) CancelReplace {
+func (c *cancelReplaceRequest) SetQuoteOrderQty(quoteOrderQty string) *cancelReplaceRequest {
 	c.quoteOrderQty = &quoteOrderQty
 	return c
 }
 
-func (c *cancelReplaceRequest) SetPrice(price string) CancelReplace {
+func (c *cancelReplaceRequest) SetPrice(price string) *cancelReplaceRequest {
 	c.price = &price
 	return c
 }
 
-func (c *cancelReplaceRequest) SetNewClientOrderId(newClientOrderId string) CancelReplace {
+func (c *cancelReplaceRequest) SetNewClientOrderId(newClientOrderId string) *cancelReplaceRequest {
 	c.newClientOrderId = &newClientOrderId
 	return c
 }
 
-func (c *cancelReplaceRequest) SetStrategyId(strategyId int64) CancelReplace {
+func (c *cancelReplaceRequest) SetStrategyId(strategyId int64) *cancelReplaceRequest {
 	c.strategyId = &strategyId
 	return c
 }
 
-func (c *cancelReplaceRequest) SetStrategyType(strategyType int64) CancelReplace {
+func (c *cancelReplaceRequest) SetStrategyType(strategyType int64) *cancelReplaceRequest {
 	c.strategyType = &strategyType
 	return c
 }
 
-func (c *cancelReplaceRequest) SetStopPrice(stopPrice string) CancelReplace {
+func (c *cancelReplaceRequest) SetStopPrice(stopPrice string) *cancelReplaceRequest {
 	c.stopPrice = &stopPrice
 	return c
 }
 
-func (c *cancelReplaceRequest) SetTrailingDelta(trailingDelta int64) CancelReplace {
+func (c *cancelReplaceRequest) SetTrailingDelta(trailingDelta int64) *cancelReplaceRequest {
 	c.trailingDelta = &trailingDelta
 	return c
 }
 
-func (c *cancelReplaceRequest) SetIcebergQty(icebergQty string) CancelReplace {
+func (c *cancelReplaceRequest) SetIcebergQty(icebergQty string) *cancelReplaceRequest {
 	c.icebergQty = &icebergQty
 	return c
 }
 
-func (c *cancelReplaceRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) CancelReplace {
+func (c *cancelReplaceRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *cancelReplaceRequest {
 	c.newOrderRespType = newOrderRespType
 	return c
 }
 
-func (c *cancelReplaceRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) CancelReplace {
+func (c *cancelReplaceRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *cancelReplaceRequest {
 	c.selfTradePreventionMode = selfTradePreventionMode
-	return c
-}
-
-func (c *cancelReplaceRequest) SetRecvWindow(recvWindow int64) CancelReplace {
-	c.recvWindow = recvWindow
-	return c
-}
-
-func (c *cancelReplaceRequest) SetTimestamp(timestamp int64) CancelReplace {
-	c.timestamp = timestamp
 	return c
 }
 
@@ -362,8 +275,6 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 	req.SetOptionalParam("icebergQty", c.icebergQty)
 	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
-	req.SetOptionalParam("recvWindow", c.recvWindow)
-	req.SetParam("timestamp", c.timestamp)
 	req.SetOptionalParam("cancelNewClientOrderId", c.cancelNewClientOrderId)
 	req.SetOptionalParam("cancelReplaceMode", c.cancelReplaceMode)
 	req.SetOptionalParam("cancelOrigClientOrderId", c.cancelOrigClientOrderId)
@@ -383,4 +294,80 @@ func (c *cancelReplaceRequest) Call(ctx context.Context) (body *cancelReplaceRes
 		return nil, err
 	}
 	return body, nil
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiCancelReplace interface {
+	binance.WsApi[WsApiCancelReplaceResponse]
+	CancelReplace
+}
+type WsApiCancelReplaceResponse struct {
+	binance.WsApiResponse
+	Result *cancelReplaceResponse `json:"result"`
+}
+
+// NewWsApiCancelReplace 撤消挂单再下单 (TRADE)
+// 撤消挂单并在同个交易对上重新下单。
+// 类似于 order.place 请求，额外的强制参数 (*) 由新订单的 type 确定。
+//
+// 可用的 cancelReplaceMode 选项：
+//
+// STOP_ON_FAILURE – 如果撤销订单请求失败，将不会尝试下新订单。
+// ALLOW_FAILURE – 即使撤销订单请求失败，也会尝试下新订单。
+// 备注：
+//
+// 如果同时指定了 cancelOrderId 和 cancelOrigClientOrderId 参数，仅使用 cancelOrderId 并忽略 cancelOrigClientOrderId。
+//
+// cancelNewClientOrderId 将替换已撤销订单的 clientOrderId，为新订单腾出空间。
+//
+// newClientOrderId 指定下单的 clientOrderId 值。
+//
+// 仅当前一个订单已成交或过期时，才会接受具有相同 clientOrderId 的新订单。
+//
+// 新订单可以重用已取消订单的旧 clientOrderId。
+//
+// 此 cancel-replace 操作不是事务性的。
+//
+// 如果一个操作成功但另一个操作失败，则仍然执行成功的操作。
+//
+// 例如，在 STOP_ON_FAILURE 模式下，如果下新订单达失败，旧订单仍然被撤销。
+//
+// 过滤器和订单次数限制会在撤销和下订单之前评估。
+//
+// 如果未尝试下新订单，订单次数仍会增加。
+//
+// 与 order.cancel 一样，如果您撤销订单列表内的某个订单，则整个订单列表将被撤销。
+func NewWsApiCancelReplace(c *binance.Client) WsApiCancelReplace {
+	return &cancelReplaceRequest{Client: c}
+}
+
+func (c *cancelReplaceRequest) Receive(handler binance.Handler[WsApiCancelReplaceResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
+}
+
+func (c *cancelReplaceRequest) Send() error {
+	req := &binance.Request{Path: "order.cancelReplace"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", c.symbol)
+	req.SetParam("side", c.side)
+	req.SetParam("type", c._type)
+	req.SetOptionalParam("timeInForce", c.timeInForce)
+	req.SetParam("quantity", c.quantity)
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	req.SetOptionalParam("cancelNewClientOrderId", c.cancelNewClientOrderId)
+	req.SetOptionalParam("cancelReplaceMode", c.cancelReplaceMode)
+	req.SetOptionalParam("cancelOrigClientOrderId", c.cancelOrigClientOrderId)
+	req.SetOptionalParam("cancelOrderId", c.cancelOrderId)
+	req.SetOptionalParam("cancelRestrictions", c.cancelRestrictions)
+	req.SetOptionalParam("orderRateLimitExceededMode", c.orderRateLimitExceededMode)
+	return c.SendMessage(req)
 }

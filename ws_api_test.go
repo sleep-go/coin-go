@@ -452,3 +452,30 @@ func TestWsApiDeleteOrder(t *testing.T) {
 	tk.SetOrderId(736954).SetSymbol(BTCUSDT).SetCancelRestrictions(enums.CancelRestrictionsTypeOnlyNew).Send()
 	time.Sleep(2 * time.Second)
 }
+func TestWsApiCancelReplace(t *testing.T) {
+	defer close(done)
+	tk := trading.NewWsApiCancelReplace(wsApiClient)
+	go func() {
+		err := tk.Receive(func(event trading.WsApiCancelReplaceResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Printf("%+v\n", event.Result)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	time.Sleep(2 * time.Second)
+	tk.SetSymbol(BTCUSDT).SetCancelReplaceMode(enums.CancelReplaceModeTypeAllowFailure).
+		SetSide(enums.SideTypeBuy).
+		SetType(enums.OrderTypeLimit).
+		SetTimeInForce(enums.TimeInForceTypeGTC).
+		SetCancelOrderId(736954).
+		SetQuantity("0.01").
+		SetPrice("23416").Send()
+	time.Sleep(2 * time.Second)
+}

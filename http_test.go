@@ -259,7 +259,6 @@ func TestCancelReplace(t *testing.T) {
 		SetCancelReplaceMode(enums.CancelReplaceModeTypeStopOnFailure).
 		SetCancelOrderId(123).
 		SetType(enums.OrderTypeMarket).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)

@@ -49,6 +49,30 @@ type deleteOrderResponse struct {
 	Type                    enums.OrderType       `json:"type"`
 	Side                    enums.SideType        `json:"side"`
 	SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"`
+	Orders                  []struct {
+		Symbol        string `json:"symbol"`
+		OrderId       int    `json:"orderId"`
+		ClientOrderId string `json:"clientOrderId"`
+	} `json:"orders,omitempty"`
+	OrderReports []struct {
+		Symbol                  string                `json:"symbol"`
+		OrigClientOrderId       string                `json:"origClientOrderId"`
+		OrderId                 int                   `json:"orderId"`
+		OrderListId             int                   `json:"orderListId"`
+		ClientOrderId           string                `json:"clientOrderId"`
+		TransactTime            int64                 `json:"transactTime"`
+		Price                   string                `json:"price"`
+		OrigQty                 string                `json:"origQty"`
+		ExecutedQty             string                `json:"executedQty"`
+		CummulativeQuoteQty     string                `json:"cummulativeQuoteQty"`
+		Status                  enums.OrderStatusType `json:"status"`
+		TimeInForce             enums.TimeInForceType `json:"timeInForce"`
+		Type                    enums.OrderType       `json:"type"`
+		Side                    enums.SideType        `json:"side"`
+		StopPrice               string                `json:"stopPrice,omitempty"`
+		IcebergQty              string                `json:"icebergQty"`
+		SelfTradePreventionMode enums.StpModeType     `json:"selfTradePreventionMode"`
+	} `json:"orderReports,omitempty"`
 }
 
 func NewDeleteOrder(client *binance.Client, symbol string) DeleteOrder {
@@ -109,6 +133,14 @@ type WsApiDeleteOrderResponse struct {
 	Result *deleteOrderResponse `json:"result"`
 }
 
+// NewWsApiDeleteOrder 撤销订单 (TRADE)
+// 备注：
+//
+// 如果同时指定了 orderId 和 origClientOrderId 参数，仅使用 orderId 并忽略 origClientOrderId。
+//
+// newClientOrderId 将替换已取消订单的 clientOrderId，为新订单腾出空间。
+//
+// 如果您取消属于订单列表的订单，则整个订单列表将被取消。
 func NewWsApiDeleteOrder(c *binance.Client) WsApiDeleteOrder {
 	return &deleteOrderRequest{Client: c}
 }
@@ -117,7 +149,6 @@ func (d *deleteOrderRequest) Receive(handler binance.Handler[WsApiDeleteOrderRes
 	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
 }
 
-// Send 下新的订单 (TRADE)
 func (d *deleteOrderRequest) Send() error {
 	req := &binance.Request{Path: "order.cancel"}
 	req.SetNeedSign(true)
