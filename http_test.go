@@ -215,7 +215,6 @@ func TestQueryOrder(t *testing.T) {
 		SetOrderId(30102167318).
 		//SetOrderId，SetOrigClientOrderId 二选一
 		//SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
-		//SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -249,7 +248,9 @@ func TestAllOrders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("%+v\n", res)
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
 }
 func TestCancelReplace(t *testing.T) {
 	res, err := trading.NewCancelReplace(client, BTCUSDT).
@@ -268,7 +269,6 @@ func TestCancelReplace(t *testing.T) {
 func TestDeleteOrder(t *testing.T) {
 	response, err := trading.NewDeleteOrder(client, BTCUSDT).
 		SetOrderId(394763750).
-		SetTimestamp(time.Now().UnixMilli()).
 		SetCancelRestrictions(enums.CancelRestrictionsTypeOnlyNew).
 		Call(context.Background())
 	if err != nil {

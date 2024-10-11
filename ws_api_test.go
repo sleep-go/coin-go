@@ -410,3 +410,45 @@ func TestWsApiCreateOrderTest(t *testing.T) {
 		SendTest(true)
 	time.Sleep(2 * time.Second)
 }
+func TestWsApiQueryOrder(t *testing.T) {
+	defer close(done)
+	tk := trading.NewWsApiQueryOrder(wsApiClient)
+	go func() {
+		err := tk.Receive(func(event trading.WsApiQueryOrderResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Printf("%+v\n", event.Result)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	time.Sleep(2 * time.Second)
+	tk.SetOrderId(736954).SetSymbol(BTCUSDT).Send()
+	time.Sleep(2 * time.Second)
+}
+func TestWsApiDeleteOrder(t *testing.T) {
+	defer close(done)
+	tk := trading.NewWsApiDeleteOrder(wsApiClient)
+	go func() {
+		err := tk.Receive(func(event trading.WsApiDeleteOrderResponse) {
+			if event.Error != nil {
+				fmt.Println(event.Error)
+			} else {
+				fmt.Printf("%+v\n", event.Result)
+			}
+		}, func(messageType int, err error) {
+			fmt.Println(messageType, err)
+		})
+		if err != nil {
+			return
+		}
+	}()
+	time.Sleep(2 * time.Second)
+	tk.SetOrderId(736954).SetSymbol(BTCUSDT).SetCancelRestrictions(enums.CancelRestrictionsTypeOnlyNew).Send()
+	time.Sleep(2 * time.Second)
+}

@@ -13,18 +13,15 @@ import (
 type QueryOrder interface {
 	Call(ctx context.Context) (body *queryOrderResponse, err error)
 	CallOpenOrders(ctx context.Context) (body []*queryOrderResponse, err error)
-	SetOrderId(orderId int64) QueryOrder
-	SetRecvWindow(recvWindow int64) QueryOrder
-	SetOrigClientOrderId(origClientOrderId string) QueryOrder
-	SetTimestamp(timestamp int64) QueryOrder
+	SetSymbol(symbol string) *queryOrderRequest
+	SetOrderId(orderId int64) *queryOrderRequest
+	SetOrigClientOrderId(origClientOrderId string) *queryOrderRequest
 }
 type queryOrderRequest struct {
 	*binance.Client
 	symbol            string
 	orderId           *int64
 	origClientOrderId *string
-	recvWindow        int64
-	timestamp         int64
 }
 
 // queryOrderResponse 查询订单 (USER_DATA)
@@ -64,23 +61,18 @@ func NewQueryOrder(client *binance.Client, symbol string) QueryOrder {
 	return &queryOrderRequest{Client: client, symbol: symbol}
 }
 
-func (o *queryOrderRequest) SetOrderId(orderId int64) QueryOrder {
+func (o *queryOrderRequest) SetSymbol(symbol string) *queryOrderRequest {
+	o.symbol = symbol
+	return o
+}
+
+func (o *queryOrderRequest) SetOrderId(orderId int64) *queryOrderRequest {
 	o.orderId = &orderId
 	return o
 }
 
-func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) QueryOrder {
+func (o *queryOrderRequest) SetOrigClientOrderId(origClientOrderId string) *queryOrderRequest {
 	o.origClientOrderId = &origClientOrderId
-	return o
-}
-
-func (o *queryOrderRequest) SetRecvWindow(recvWindow int64) QueryOrder {
-	o.recvWindow = recvWindow
-	return o
-}
-
-func (o *queryOrderRequest) SetTimestamp(timestamp int64) QueryOrder {
-	o.timestamp = timestamp
 	return o
 }
 
@@ -96,8 +88,6 @@ func (o *queryOrderRequest) Call(ctx context.Context) (body *queryOrderResponse,
 	req.SetParam("symbol", o.symbol)
 	req.SetOptionalParam("orderId", o.orderId)
 	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
@@ -112,12 +102,39 @@ func (o *queryOrderRequest) CallOpenOrders(ctx context.Context) (body []*queryOr
 	}
 	req.SetNeedSign(true)
 	req.SetOptionalParam("symbol", o.symbol)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*queryOrderResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiQueryOrder interface {
+	binance.WsApi[WsApiQueryOrderResponse]
+	QueryOrder
+}
+type WsApiQueryOrderResponse struct {
+	binance.WsApiResponse
+	Result *queryOrderResponse `json:"result"`
+}
+
+func NewWsApiQueryOrder(c *binance.Client) WsApiQueryOrder {
+	return &queryOrderRequest{Client: c}
+}
+
+func (o *queryOrderRequest) Receive(handler binance.Handler[WsApiQueryOrderResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(o.Client, o.BaseURL, handler, exception)
+}
+
+// Send 下新的订单 (TRADE)
+func (o *queryOrderRequest) Send() error {
+	req := &binance.Request{Path: "order.status"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", o.symbol)
+	req.SetOptionalParam("orderId", o.orderId)
+	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
+	return o.SendMessage(req)
 }

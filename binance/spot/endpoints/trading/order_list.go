@@ -138,3 +138,5 @@ func (o *orderListRequest) CallDelete(ctx context.Context) (body *deleteOrderLis
 	}
 	return utils.ParseHttpResponse[*deleteOrderListResponse](resp)
 }
+
+// ****************************** Websocket Api *******************************

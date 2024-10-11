@@ -12,12 +12,11 @@ import (
 
 type DeleteOrder interface {
 	Call(ctx context.Context) (body *deleteOrderResponse, err error)
-	SetOrderId(orderId int64) DeleteOrder
-	SetOrigClientOrderId(origClientOrderId string) DeleteOrder
-	SetNewClientOrderId(newClientOrderId string) DeleteOrder
-	SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) DeleteOrder
-	SetRecvWindow(recvWindow int64) DeleteOrder
-	SetTimestamp(timestamp int64) DeleteOrder
+	SetSymbol(symbol string) *deleteOrderRequest
+	SetOrderId(orderId int64) *deleteOrderRequest
+	SetOrigClientOrderId(origClientOrderId string) *deleteOrderRequest
+	SetNewClientOrderId(newClientOrderId string) *deleteOrderRequest
+	SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) *deleteOrderRequest
 }
 
 // deleteOrderRequest orderId 与 origClientOrderId 必须至少发送一个.
@@ -32,8 +31,6 @@ type deleteOrderRequest struct {
 	//ONLY_NEW - 如果订单状态为 NEW，撤销将成功。
 	//ONLY_PARTIALLY_FILLED - 如果订单状态为 PARTIALLY_FILLED，撤销将成功。
 	cancelRestrictions enums.CancelRestrictionsType
-	recvWindow         int64
-	timestamp          int64
 }
 
 type deleteOrderResponse struct {
@@ -58,35 +55,30 @@ func NewDeleteOrder(client *binance.Client, symbol string) DeleteOrder {
 	return &deleteOrderRequest{Client: client, symbol: symbol}
 }
 
-func (d *deleteOrderRequest) SetOrderId(orderId int64) DeleteOrder {
+func (d *deleteOrderRequest) SetSymbol(symbol string) *deleteOrderRequest {
+	d.symbol = symbol
+	return d
+}
+func (d *deleteOrderRequest) SetOrderId(orderId int64) *deleteOrderRequest {
 	d.orderId = &orderId
 	return d
 }
 
-func (d *deleteOrderRequest) SetOrigClientOrderId(origClientOrderId string) DeleteOrder {
+func (d *deleteOrderRequest) SetOrigClientOrderId(origClientOrderId string) *deleteOrderRequest {
 	d.origClientOrderId = &origClientOrderId
 	return d
 }
 
-func (d *deleteOrderRequest) SetNewClientOrderId(newClientOrderId string) DeleteOrder {
+func (d *deleteOrderRequest) SetNewClientOrderId(newClientOrderId string) *deleteOrderRequest {
 	d.newClientOrderId = &newClientOrderId
 	return d
 }
 
-func (d *deleteOrderRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) DeleteOrder {
+func (d *deleteOrderRequest) SetCancelRestrictions(cancelRestrictions enums.CancelRestrictionsType) *deleteOrderRequest {
 	d.cancelRestrictions = cancelRestrictions
 	return d
 }
 
-func (d *deleteOrderRequest) SetRecvWindow(recvWindow int64) DeleteOrder {
-	d.recvWindow = recvWindow
-	return d
-}
-
-func (d *deleteOrderRequest) SetTimestamp(timestamp int64) DeleteOrder {
-	d.timestamp = timestamp
-	return d
-}
 func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodDelete,
@@ -98,12 +90,41 @@ func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderRespons
 	req.SetOptionalParam("origClientOrderId", d.origClientOrderId)
 	req.SetOptionalParam("newClientOrderId", d.newClientOrderId)
 	req.SetOptionalParam("cancelRestrictions", d.cancelRestrictions)
-	req.SetOptionalParam("recvWindow", d.recvWindow)
-	req.SetParam("timestamp", d.timestamp)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
 		d.Debugf("deleteOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*deleteOrderResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiDeleteOrder interface {
+	binance.WsApi[WsApiDeleteOrderResponse]
+	DeleteOrder
+}
+type WsApiDeleteOrderResponse struct {
+	binance.WsApiResponse
+	Result *deleteOrderResponse `json:"result"`
+}
+
+func NewWsApiDeleteOrder(c *binance.Client) WsApiDeleteOrder {
+	return &deleteOrderRequest{Client: c}
+}
+
+func (d *deleteOrderRequest) Receive(handler binance.Handler[WsApiDeleteOrderResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(d.Client, d.BaseURL, handler, exception)
+}
+
+// Send 下新的订单 (TRADE)
+func (d *deleteOrderRequest) Send() error {
+	req := &binance.Request{Path: "order.cancel"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", d.symbol)
+	req.SetOptionalParam("orderId", d.orderId)
+	req.SetOptionalParam("origClientOrderId", d.origClientOrderId)
+	req.SetOptionalParam("newClientOrderId", d.newClientOrderId)
+	req.SetOptionalParam("cancelRestrictions", d.cancelRestrictions)
+	return d.SendMessage(req)
 }
