@@ -389,7 +389,7 @@ func TestOCO(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestOTO(t *testing.T) {
-	res, err := trading.NewOto(client, BTCUSDT).
+	res, err := trading.NewOTO(client, BTCUSDT).
 		SetWorkingType(enums.OrderTypeLimit).
 		SetWorkingSide(enums.SideTypeSell).
 		SetWorkingPrice("1").
@@ -401,7 +401,6 @@ func TestOTO(t *testing.T) {
 		SetPendingTrailingDelta("1").
 		SetWorkingTimeInForce(enums.TimeInForceTypeGTC).
 		SetPendingTimeInForce(enums.TimeInForceTypeGTC).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)

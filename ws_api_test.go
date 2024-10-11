@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
@@ -298,7 +300,43 @@ func TestWsApiDeleteOpenOrders(t *testing.T) {
 	}
 }
 func TestWsApiOCO(t *testing.T) {
-	res, err := trading.NewWsApiOCO(wsApiClient).SetSymbol(BTCUSDT).Send(context.Background())
+	//OrderListId:2604
+	//&{OrderListId:2605 ContingencyType:OCO ListStatusType:EXEC_STARTED ListOrderStatus:EXECUTING ListClientOrderId:8d931268-307c-4bb4-97fb-0a978f974f14 TransactionTime:1728658223336 Symbol:ETHUSDT Orders:[{Symbol:ETHUSDT OrderId:4564037 ClientOrderId:qta1Pd9f1C1SHMAJj3zhyR} {Symbol:ETHUSDT OrderId:4564038 ClientOrderId:OTffGJW6HD7Qvweq1ujCth}] OrderReports:[{Symbol:ETHUSDT OrderId:4564037 OrderListId:2605 ClientOrderId:qta1Pd9f1C1SHMAJj3zhyR TransactTime:1728658223336 Price:2428.77000000 OrigQty:0.01000000 ExecutedQty:0.00000000 CummulativeQuoteQty:0.00000000 Status:NEW TimeInForce:GTC Type:STOP_LOSS_LIMIT Side:BUY StopPrice:2428.87000000 WorkingTime:-1 IcebergQty: SelfTradePreventionMode:EXPIRE_MAKER} {Symbol:ETHUSDT OrderId:4564038 OrderListId:2605 ClientOrderId:OTffGJW6HD7Qvweq1ujCth TransactTime:1728658223336 Price:1500.00000000 OrigQty:0.01000000 ExecutedQty:0.00000000 CummulativeQuoteQty:0.00000000 Status:NEW TimeInForce:GTC Type:LIMIT_MAKER Side:BUY StopPrice: WorkingTime:1728658223336 IcebergQty: SelfTradePreventionMode:EXPIRE_MAKER}]}
+	res, err := trading.NewWsApiOCO(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetListClientOrderId(uuid.New().String()).
+		SetAboveType(enums.OrderTypeStopLossLimit).
+		SetAbovePrice("2428.77000000").
+		SetAboveStopPrice("2428.87000000").
+		SetAboveTimeInForce(enums.TimeInForceTypeGTC).
+		SetBelowType(enums.OrderTypeLimitMaker).
+		SetBelowPrice("1500").
+		SetQuantity("0.01").
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
+func TestWsApiOTO(t *testing.T) {
+	//&{OrderListId:2609 ContingencyType:OTO ListStatusType:EXEC_STARTED ListOrderStatus:EXECUTING ListClientOrderId:267f613e-116a-44ed-b353-e87e4f2fe412 TransactionTime:1728659162507 Symbol:ETHUSDT Orders:[{Symbol:ETHUSDT OrderId:4571011 ClientOrderId:hto0WXQ2Msjr3PwDgSX224} {Symbol:ETHUSDT OrderId:4571012 ClientOrderId:fV1kDH2dTlMVxM9FL4qiJI}] OrderReports:[{Symbol:ETHUSDT OrderId:4571011 OrderListId:2609 ClientOrderId:hto0WXQ2Msjr3PwDgSX224 TransactTime:1728659162507 Price:2428.77000000 OrigQty:0.01000000 ExecutedQty:0.01000000 CummulativeQuoteQty:24.36850000 Status:FILLED TimeInForce:GTC Type:LIMIT Side:SELL StopPrice: WorkingTime:1728659162507 IcebergQty: SelfTradePreventionMode:EXPIRE_MAKER} {Symbol:ETHUSDT OrderId:4571012 OrderListId:2609 ClientOrderId:fV1kDH2dTlMVxM9FL4qiJI TransactTime:1728659162507 Price:0.00000000 OrigQty:0.01000000 ExecutedQty:0.00000000 CummulativeQuoteQty:0.00000000 Status:PENDING_NEW TimeInForce:GTC Type:MARKET Side:BUY StopPrice: WorkingTime:-1 IcebergQty: SelfTradePreventionMode:EXPIRE_MAKER}]}
+	res, err := trading.NewWsApiOTO(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetPendingSide(enums.SideTypeBuy).
+		SetPendingQuantity("0.01").
+		SetListClientOrderId(uuid.New().String()).
+		SetPendingType(enums.OrderTypeMarket).
+		SetWorkingPrice("2428.77000000").
+		SetWorkingQuantity("0.01").
+		SetWorkingSide(enums.SideTypeSell).
+		SetWorkingType(enums.OrderTypeLimit).
+		SetWorkingTimeInForce(enums.TimeInForceTypeGTC).
+		Send(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

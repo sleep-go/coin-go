@@ -261,7 +261,7 @@ type WsApiOCO interface {
 }
 type WsApiOCOResponse struct {
 	binance.WsApiResponse
-	Result *createOrderResponse `json:"result"`
+	Result *ocoResponse `json:"result"`
 }
 
 func NewWsApiOCO(c *binance.Client) WsApiOCO {

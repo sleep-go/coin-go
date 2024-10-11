@@ -19,31 +19,30 @@ import (
 // 如果生效订单在下订单列表后立即完全成交，则可能会得到订单响应。其中，生效订单的状态为 FILLED ，但待处理订单的状态为 PENDING_NEW。针对这类情况，如果需要检查当前状态，您可以查询相关的待处理订单。
 // OTO 订单将2 个订单添加到未成交订单计数，EXCHANGE_MAX_NUM_ORDERS 过滤器和 MAX_NUM_ORDERS 过滤器中。
 type OTO interface {
-	SetListClientOrderId(listClientOrderId string) OTO
-	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) OTO
-	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) OTO
-	SetWorkingType(workingType enums.OrderType) OTO
-	SetWorkingSide(workingSide enums.SideType) OTO
-	SetWorkingClientOrderId(workingClientOrderId string) OTO
-	SetWorkingPrice(workingPrice string) OTO
-	SetWorkingQuantity(workingQuantity string) OTO
-	SetWorkingIcebergQty(workingIcebergQty string) OTO
-	SetWorkingTimeInForce(workingTimeInForce enums.TimeInForceType) OTO
-	SetWorkingStrategyId(workingStrategyId int64) OTO
-	SetWorkingStrategyType(workingStrategyType int64) OTO
-	SetPendingType(pendingType enums.OrderType) OTO
-	SetPendingSide(pendingSide enums.SideType) OTO
-	SetPendingClientOrderId(pendingClientOrderId string) OTO
-	SetPendingPrice(pendingPrice string) OTO
-	SetPendingStopPrice(pendingStopPrice string) OTO
-	SetPendingTrailingDelta(pendingTrailingDelta string) OTO
-	SetPendingQuantity(pendingQuantity string) OTO
-	SetPendingIcebergQty(pendingIcebergQty string) OTO
-	SetPendingTimeInForce(pendingTimeInForce enums.TimeInForceType) OTO
-	SetPendingStrategyId(pendingStrategyId int64) OTO
-	SetPendingStrategyType(pendingStrategyType int64) OTO
-	SetRecvWindow(recvWindow int64) OTO
-	SetTimestamp(timestamp int64) OTO
+	SetSymbol(symbol string) *otoRequest
+	SetListClientOrderId(listClientOrderId string) *otoRequest
+	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *otoRequest
+	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *otoRequest
+	SetWorkingType(workingType enums.OrderType) *otoRequest
+	SetWorkingSide(workingSide enums.SideType) *otoRequest
+	SetWorkingClientOrderId(workingClientOrderId string) *otoRequest
+	SetWorkingPrice(workingPrice string) *otoRequest
+	SetWorkingQuantity(workingQuantity string) *otoRequest
+	SetWorkingIcebergQty(workingIcebergQty string) *otoRequest
+	SetWorkingTimeInForce(workingTimeInForce enums.TimeInForceType) *otoRequest
+	SetWorkingStrategyId(workingStrategyId int64) *otoRequest
+	SetWorkingStrategyType(workingStrategyType int64) *otoRequest
+	SetPendingType(pendingType enums.OrderType) *otoRequest
+	SetPendingSide(pendingSide enums.SideType) *otoRequest
+	SetPendingClientOrderId(pendingClientOrderId string) *otoRequest
+	SetPendingPrice(pendingPrice string) *otoRequest
+	SetPendingStopPrice(pendingStopPrice string) *otoRequest
+	SetPendingTrailingDelta(pendingTrailingDelta string) *otoRequest
+	SetPendingQuantity(pendingQuantity string) *otoRequest
+	SetPendingIcebergQty(pendingIcebergQty string) *otoRequest
+	SetPendingTimeInForce(pendingTimeInForce enums.TimeInForceType) *otoRequest
+	SetPendingStrategyId(pendingStrategyId int64) *otoRequest
+	SetPendingStrategyType(pendingStrategyType int64) *otoRequest
 	Call(ctx context.Context) (body *otoResponse, err error)
 }
 
@@ -76,9 +75,8 @@ type otoRequest struct {
 	pendingTimeInForce      enums.TimeInForceType
 	pendingStrategyId       *int64 //订单策略中用于标识待处理订单的 ID。
 	pendingStrategyType     *int64 //用于标识待处理订单策略的任意数值。小于 1000000 的值被保留，无法使用。
-	recvWindow              int64
-	timestamp               int64
 }
+
 type otoResponse struct {
 	OrderListId       int    `json:"orderListId"`
 	ContingencyType   string `json:"contingencyType"`
@@ -113,132 +111,126 @@ type otoResponse struct {
 	} `json:"orderReports"`
 }
 
-func (o *otoRequest) SetListClientOrderId(listClientOrderId string) OTO {
+func (o *otoRequest) SetSymbol(symbol string) *otoRequest {
+	o.symbol = symbol
+	return o
+}
+func (o *otoRequest) SetListClientOrderId(listClientOrderId string) *otoRequest {
 	o.listClientOrderId = &listClientOrderId
 	return o
 }
 
-func (o *otoRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) OTO {
+func (o *otoRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *otoRequest {
 	o.newOrderRespType = newOrderRespType
 	return o
 }
 
-func (o *otoRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) OTO {
+func (o *otoRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *otoRequest {
 	o.selfTradePreventionMode = selfTradePreventionMode
 	return o
 }
 
-func (o *otoRequest) SetWorkingType(workingType enums.OrderType) OTO {
+func (o *otoRequest) SetWorkingType(workingType enums.OrderType) *otoRequest {
 	o.workingType = workingType
 	return o
 }
 
-func (o *otoRequest) SetWorkingSide(workingSide enums.SideType) OTO {
+func (o *otoRequest) SetWorkingSide(workingSide enums.SideType) *otoRequest {
 	o.workingSide = workingSide
 	return o
 }
 
-func (o *otoRequest) SetWorkingClientOrderId(workingClientOrderId string) OTO {
+func (o *otoRequest) SetWorkingClientOrderId(workingClientOrderId string) *otoRequest {
 	o.workingClientOrderId = &workingClientOrderId
 	return o
 }
 
-func (o *otoRequest) SetWorkingPrice(workingPrice string) OTO {
+func (o *otoRequest) SetWorkingPrice(workingPrice string) *otoRequest {
 	o.workingPrice = &workingPrice
 	return o
 }
 
-func (o *otoRequest) SetWorkingQuantity(workingQuantity string) OTO {
+func (o *otoRequest) SetWorkingQuantity(workingQuantity string) *otoRequest {
 	o.workingQuantity = &workingQuantity
 	return o
 }
 
-func (o *otoRequest) SetWorkingIcebergQty(workingIcebergQty string) OTO {
+func (o *otoRequest) SetWorkingIcebergQty(workingIcebergQty string) *otoRequest {
 	o.workingIcebergQty = &workingIcebergQty
 	return o
 }
 
-func (o *otoRequest) SetWorkingTimeInForce(workingTimeInForce enums.TimeInForceType) OTO {
+func (o *otoRequest) SetWorkingTimeInForce(workingTimeInForce enums.TimeInForceType) *otoRequest {
 	o.workingTimeInForce = workingTimeInForce
 	return o
 }
 
-func (o *otoRequest) SetWorkingStrategyId(workingStrategyId int64) OTO {
+func (o *otoRequest) SetWorkingStrategyId(workingStrategyId int64) *otoRequest {
 	o.workingStrategyId = &workingStrategyId
 	return o
 }
 
-func (o *otoRequest) SetWorkingStrategyType(workingStrategyType int64) OTO {
+func (o *otoRequest) SetWorkingStrategyType(workingStrategyType int64) *otoRequest {
 	o.workingStrategyType = &workingStrategyType
 	return o
 }
 
-func (o *otoRequest) SetPendingType(pendingType enums.OrderType) OTO {
+func (o *otoRequest) SetPendingType(pendingType enums.OrderType) *otoRequest {
 	o.pendingType = pendingType
 	return o
 }
 
-func (o *otoRequest) SetPendingSide(pendingSide enums.SideType) OTO {
+func (o *otoRequest) SetPendingSide(pendingSide enums.SideType) *otoRequest {
 	o.pendingSide = pendingSide
 	return o
 }
 
-func (o *otoRequest) SetPendingClientOrderId(pendingClientOrderId string) OTO {
+func (o *otoRequest) SetPendingClientOrderId(pendingClientOrderId string) *otoRequest {
 	o.pendingClientOrderId = &pendingClientOrderId
 	return o
 }
 
-func (o *otoRequest) SetPendingPrice(pendingPrice string) OTO {
+func (o *otoRequest) SetPendingPrice(pendingPrice string) *otoRequest {
 	o.pendingPrice = &pendingPrice
 	return o
 }
 
-func (o *otoRequest) SetPendingStopPrice(pendingStopPrice string) OTO {
+func (o *otoRequest) SetPendingStopPrice(pendingStopPrice string) *otoRequest {
 	o.pendingStopPrice = &pendingStopPrice
 	return o
 }
 
-func (o *otoRequest) SetPendingTrailingDelta(pendingTrailingDelta string) OTO {
+func (o *otoRequest) SetPendingTrailingDelta(pendingTrailingDelta string) *otoRequest {
 	o.pendingTrailingDelta = &pendingTrailingDelta
 	return o
 }
 
-func (o *otoRequest) SetPendingQuantity(pendingQuantity string) OTO {
+func (o *otoRequest) SetPendingQuantity(pendingQuantity string) *otoRequest {
 	o.pendingQuantity = &pendingQuantity
 	return o
 }
 
-func (o *otoRequest) SetPendingIcebergQty(pendingIcebergQty string) OTO {
+func (o *otoRequest) SetPendingIcebergQty(pendingIcebergQty string) *otoRequest {
 	o.pendingIcebergQty = &pendingIcebergQty
 	return o
 }
 
-func (o *otoRequest) SetPendingTimeInForce(pendingTimeInForce enums.TimeInForceType) OTO {
+func (o *otoRequest) SetPendingTimeInForce(pendingTimeInForce enums.TimeInForceType) *otoRequest {
 	o.pendingTimeInForce = pendingTimeInForce
 	return o
 }
 
-func (o *otoRequest) SetPendingStrategyId(pendingStrategyId int64) OTO {
+func (o *otoRequest) SetPendingStrategyId(pendingStrategyId int64) *otoRequest {
 	o.pendingStrategyId = &pendingStrategyId
 	return o
 }
 
-func (o *otoRequest) SetPendingStrategyType(pendingStrategyType int64) OTO {
+func (o *otoRequest) SetPendingStrategyType(pendingStrategyType int64) *otoRequest {
 	o.pendingStrategyType = &pendingStrategyType
 	return o
 }
 
-func (o *otoRequest) SetRecvWindow(recvWindow int64) OTO {
-	o.recvWindow = recvWindow
-	return o
-}
-
-func (o *otoRequest) SetTimestamp(timestamp int64) OTO {
-	o.timestamp = timestamp
-	return o
-}
-
-func NewOto(client *binance.Client, symbol string) OTO {
+func NewOTO(client *binance.Client, symbol string) OTO {
 	return &otoRequest{Client: client, symbol: symbol}
 }
 
@@ -272,12 +264,56 @@ func (o *otoRequest) Call(ctx context.Context) (body *otoResponse, err error) {
 	req.SetOptionalParam("pendingTimeInForce", o.pendingTimeInForce)
 	req.SetOptionalParam("pendingStrategyId", o.pendingStrategyId)
 	req.SetOptionalParam("pendingStrategyType", o.pendingStrategyType)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*otoResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiOTO interface {
+	binance.WsApi[*WsApiOTOResponse]
+	OTO
+}
+type WsApiOTOResponse struct {
+	binance.WsApiResponse
+	Result *otoResponse `json:"result"`
+}
+
+func NewWsApiOTO(c *binance.Client) WsApiOTO {
+	return &otoRequest{Client: c}
+}
+
+// Send 下新的订单 (TRADE)
+func (o *otoRequest) Send(ctx context.Context) (*WsApiOTOResponse, error) {
+	req := &binance.Request{Path: "orderList.place.oto"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", o.symbol)
+	req.SetOptionalParam("listClientOrderId", o.listClientOrderId)
+	req.SetOptionalParam("newOrderRespType", o.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", o.selfTradePreventionMode)
+	req.SetParam("workingType", o.workingType)
+	req.SetParam("workingSide", o.workingSide)
+	req.SetOptionalParam("workingClientOrderId", o.workingClientOrderId)
+	req.SetParam("workingPrice", o.workingPrice)
+	req.SetParam("workingQuantity", o.workingQuantity)
+	req.SetOptionalParam("workingIcebergQty", o.workingIcebergQty)
+	req.SetOptionalParam("workingTimeInForce", o.workingTimeInForce)
+	req.SetOptionalParam("workingStrategyId", o.workingStrategyId)
+	req.SetOptionalParam("workingStrategyType", o.workingStrategyType)
+	req.SetParam("pendingType", o.pendingType)
+	req.SetParam("pendingSide", o.pendingSide)
+	req.SetOptionalParam("pendingClientOrderId", o.pendingClientOrderId)
+	req.SetOptionalParam("pendingPrice", o.pendingPrice)
+	req.SetOptionalParam("pendingStopPrice", o.pendingStopPrice)
+	req.SetOptionalParam("pendingTrailingDelta", o.pendingTrailingDelta)
+	req.SetParam("pendingQuantity", o.pendingQuantity)
+	req.SetOptionalParam("pendingIcebergQty", o.pendingIcebergQty)
+	req.SetOptionalParam("pendingTimeInForce", o.pendingTimeInForce)
+	req.SetOptionalParam("pendingStrategyId", o.pendingStrategyId)
+	req.SetOptionalParam("pendingStrategyType", o.pendingStrategyType)
+	return binance.WsApiHandler[*WsApiOTOResponse](ctx, o.Client, req)
 }
