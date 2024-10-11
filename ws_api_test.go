@@ -346,3 +346,27 @@ func TestWsApiOTO(t *testing.T) {
 		fmt.Printf("%+v\n", res.Result)
 	}
 }
+func TestWsApiOTOCO(t *testing.T) {
+	res, err := trading.NewWsApiOTOCO(wsApiClient).
+		SetSymbol("LTCBNB").
+		SetPendingSide(enums.SideTypeSell).
+		SetPendingQuantity("5").
+		SetPendingBelowPrice("5").
+		SetPendingBelowType(enums.OrderTypeLimitMaker).
+		SetPendingAboveStopPrice("0.5").
+		SetPendingAboveType(enums.OrderTypeStopLoss).
+		SetWorkingPrice("1.5").
+		SetWorkingQuantity("1").
+		SetWorkingSide(enums.SideTypeBuy).
+		SetWorkingTimeInForce(enums.TimeInForceTypeGTC).
+		SetWorkingType(enums.OrderTypeLimit).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}

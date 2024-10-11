@@ -223,9 +223,14 @@ const (
 )
 
 const (
+	// AccountDataEventTypeOutboundAccountPosition 会在账户余额发生变化时发送，其中包含可能因产生余额变化的事件而发生变化的资产。
 	AccountDataEventTypeOutboundAccountPosition AccountDataEventType = "outboundAccountPosition"
-	AccountDataEventTypeBalanceUpdate           AccountDataEventType = "balanceUpdate"
-	AccountDataEventTypeExecutionReport         AccountDataEventType = "executionReport"
+	// AccountDataEventTypeBalanceUpdate 余额更新在以下情况下发生：
+	// 1.账户存款或取款
+	// 2.账户之间的资金转移（如现货转保证金）
+	AccountDataEventTypeBalanceUpdate AccountDataEventType = "balanceUpdate"
+	// AccountDataEventTypeExecutionReport 订单更新
+	AccountDataEventTypeExecutionReport AccountDataEventType = "executionReport"
 	// AccountDataEventTypeListStatus 如果是一个订单组，则除了显示executionReport事件外，还将显示一个名为ListStatus的事件。
 	//
 	//可能的执行类型:

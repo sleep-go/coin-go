@@ -417,7 +417,6 @@ func TestOTOCO(t *testing.T) {
 		SetPendingQuantity("1").
 		SetPendingAboveType(enums.OrderTypeStopLossLimit).
 		SetPendingBelowType(enums.OrderTypeStopLossLimit).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
