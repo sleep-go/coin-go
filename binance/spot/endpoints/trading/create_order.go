@@ -50,7 +50,6 @@ type createOrderRequest struct {
 	recvWindow              int64
 	timestamp               int64
 }
-
 type createOrderResponse struct {
 	Symbol                  string `json:"symbol"`
 	OrderId                 int    `json:"orderId"`
@@ -225,10 +224,15 @@ func (c *createOrderRequest) CallTest(ctx context.Context, computeCommissionRate
 type WsApiCreateOrder interface {
 	binance.WsApi[WsApiCreateOrderResponse]
 	CreateOrder
+	ReceiveTest(handler binance.Handler[WsApiCreateOrderTestResponse], exception binance.ErrorHandler) error
 }
 type WsApiCreateOrderResponse struct {
 	binance.WsApiResponse
 	Result *createOrderResponse `json:"result"`
+}
+type WsApiCreateOrderTestResponse struct {
+	binance.WsApiResponse
+	Result *createOrderTestResponse `json:"result"`
 }
 
 func NewWsApiCreateOrder(c *binance.Client) WsApiCreateOrder {
@@ -238,13 +242,39 @@ func NewWsApiCreateOrder(c *binance.Client) WsApiCreateOrder {
 func (c *createOrderRequest) Receive(handler binance.Handler[WsApiCreateOrderResponse], exception binance.ErrorHandler) error {
 	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
 }
+func (c *createOrderRequest) ReceiveTest(handler binance.Handler[WsApiCreateOrderTestResponse], exception binance.ErrorHandler) error {
+	return binance.WsHandler(c.Client, c.BaseURL, handler, exception)
+}
 
+// Send 下新的订单 (TRADE)
 func (c *createOrderRequest) Send() error {
 	req := &binance.Request{Path: "order.place"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)
 	req.SetParam("side", c.side)
 	req.SetParam("type", c._type)
+	req.SetOptionalParam("quantity", c.quantity)
+	req.SetOptionalParam("timeInForce", c.timeInForce)
+	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
+	req.SetOptionalParam("price", c.price)
+	req.SetOptionalParam("newClientOrderId", c.newClientOrderId)
+	req.SetOptionalParam("strategyId", c.strategyId)
+	req.SetOptionalParam("stopPrice", c.stopPrice)
+	req.SetOptionalParam("trailingDelta", c.trailingDelta)
+	req.SetOptionalParam("icebergQty", c.icebergQty)
+	req.SetOptionalParam("newOrderRespType", c.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", c.selfTradePreventionMode)
+	return c.SendMessage(req)
+}
+
+// SendTest 测试下单 (TRADE)
+func (c *createOrderRequest) SendTest(computeCommissionRates bool) error {
+	req := &binance.Request{Path: "order.test"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", c.symbol)
+	req.SetParam("side", c.side)
+	req.SetParam("type", c._type)
+	req.SetParam("computeCommissionRates", computeCommissionRates)
 	req.SetOptionalParam("quantity", c.quantity)
 	req.SetOptionalParam("timeInForce", c.timeInForce)
 	req.SetOptionalParam("quoteOrderQty", c.quoteOrderQty)
