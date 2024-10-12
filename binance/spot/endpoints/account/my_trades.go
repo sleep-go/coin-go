@@ -111,10 +111,10 @@ func (m *myTradesRequest) Call(ctx context.Context) (body []*myTradesResponse, e
 // ****************************** Websocket Api *******************************
 
 type WsApiMyTrades interface {
-	binance.WsApi[*WsApiWsApiMyTradesResponse]
+	binance.WsApi[*WsApiMyTradesResponse]
 	MyTrades
 }
-type WsApiWsApiMyTradesResponse struct {
+type WsApiMyTradesResponse struct {
 	binance.WsApiResponse
 	Result []*myTradesResponse `json:"result"`
 }
@@ -140,7 +140,7 @@ func NewWsApiMyTrades(c *binance.Client) WsApiMyTrades {
 	return &myTradesRequest{Client: c}
 }
 
-func (m *myTradesRequest) Send(ctx context.Context) (*WsApiWsApiMyTradesResponse, error) {
+func (m *myTradesRequest) Send(ctx context.Context) (*WsApiMyTradesResponse, error) {
 	req := &binance.Request{Path: "myTrades"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
@@ -149,5 +149,5 @@ func (m *myTradesRequest) Send(ctx context.Context) (*WsApiWsApiMyTradesResponse
 	req.SetOptionalParam("endTime", m.endTime)
 	req.SetOptionalParam("fromId", m.fromId)
 	req.SetOptionalParam("limit", m.limit)
-	return binance.WsApiHandler[*WsApiWsApiMyTradesResponse](ctx, m.Client, req)
+	return binance.WsApiHandler[*WsApiMyTradesResponse](ctx, m.Client, req)
 }
