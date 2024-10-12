@@ -5,26 +5,21 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/duke-git/lancet/v2/netutil"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
-	"github.com/sleep-go/coin-go/pkg/errors"
+	"github.com/sleep-go/coin-go/pkg/utils"
 	"github.com/tidwall/gjson"
 )
 
 type Account interface {
 	Call(ctx context.Context) (body *getAccountResponse, err error)
-	SetOmitZeroBalances(omitZeroBalances bool) Account
-	SetTimestamp(timestamp int64) Account
-	SetRecvWindow(recvWindow int64) Account
+	SetOmitZeroBalances(omitZeroBalances bool) *getAccountRequest
 }
 
 type getAccountRequest struct {
 	*binance.Client
 	omitZeroBalances bool //如果true，将隐藏所有零余额。默认值：false
-	recvWindow       int64
-	timestamp        int64
 }
 
 type getAccountResponse struct {
@@ -59,17 +54,7 @@ func NewGetAccount(client *binance.Client) Account {
 	return &getAccountRequest{Client: client}
 }
 
-func (g *getAccountRequest) SetTimestamp(timestamp int64) Account {
-	g.timestamp = timestamp
-	return g
-}
-
-func (g *getAccountRequest) SetRecvWindow(recvWindow int64) Account {
-	g.recvWindow = recvWindow
-	return g
-}
-
-func (g *getAccountRequest) SetOmitZeroBalances(omitZeroBalances bool) Account {
+func (g *getAccountRequest) SetOmitZeroBalances(omitZeroBalances bool) *getAccountRequest {
 	g.omitZeroBalances = omitZeroBalances
 	return g
 }
@@ -81,27 +66,15 @@ func (g *getAccountRequest) Call(ctx context.Context) (body *getAccountResponse,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("omitZeroBalances", g.omitZeroBalances)
-	if g.recvWindow > 0 {
-		req.SetParam("recvWindow", g.recvWindow)
-	}
-	req.SetParam("timestamp", g.timestamp)
 	resp, err := g.Do(ctx, req)
 	if err != nil {
 		g.Debugf("getAccountRequest response err:%v", err)
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		var e *errors.Error
-		err = netutil.ParseHttpResponse(resp, &e)
-		return nil, e
-	}
-	err = netutil.ParseHttpResponse(resp, &body)
-	if err != nil {
-		g.Debugf("ParseHttpResponse err:%v", err)
-		return nil, err
-	}
-	return body, nil
+	return utils.ParseHttpResponse[*getAccountResponse](resp)
 }
+
+// ****************************** Websocket Stream *******************************
 
 // WsOutboundAccountPositionEvent 账户更新
 // 每当帐户余额发生更改时，都会发送一个事件outboundAccountPosition，其中包含可能由生成余额变动的事件而变动的资产。
@@ -309,4 +282,29 @@ func NewStreamUserData(
 	}
 	endpoint := c.BaseURL + listenKey
 	return c.Serve(endpoint, h, exception)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiAccount interface {
+	binance.WsApi[*WsApiAccountResponse]
+	Account
+}
+type WsApiAccountResponse struct {
+	binance.WsApiResponse
+	Result *getAccountResponse `json:"result"`
+}
+
+func NewWsApiAccount(c *binance.Client) WsApiAccount {
+	return &getAccountRequest{Client: c}
+}
+
+// Send 下 SOR 订单 (TRADE)
+// 下使用智能订单路由 (SOR) 的新订单。
+// 注意: sor.order.place 只支持 限价 和 市场 单， 并不支持 quoteOrderQty。
+func (g *getAccountRequest) Send(ctx context.Context) (*WsApiAccountResponse, error) {
+	req := &binance.Request{Path: "account.status"}
+	req.SetNeedSign(true)
+	req.SetParam("omitZeroBalances", g.omitZeroBalances)
+	return binance.WsApiHandler[*WsApiAccountResponse](ctx, g.Client, req)
 }

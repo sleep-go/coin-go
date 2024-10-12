@@ -42,7 +42,7 @@ func (k *klinesRequest) SetLimit(limit enums.LimitType) *klinesRequest {
 	return k
 }
 
-// [
+// KlinesResponse [
 //
 //	[
 //	  1499040000000,      // 开盘时间

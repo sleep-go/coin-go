@@ -287,7 +287,6 @@ func TestDeleteOpenOrders(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	response, err := account.NewGetAccount(client).
 		SetOmitZeroBalances(true).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)

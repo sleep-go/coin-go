@@ -415,3 +415,33 @@ func TestWsApiSor(t *testing.T) {
 		fmt.Printf("%+v\n", res.Result)
 	}
 }
+func TestWsApiSorTest(t *testing.T) {
+	res, err := trading.NewWsApiSOR(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.0001").
+		SendTest(context.Background(), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
+func TestWsApiAccount(t *testing.T) {
+	res, err := account.NewWsApiAccount(wsApiClient).
+		SetOmitZeroBalances(false).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
