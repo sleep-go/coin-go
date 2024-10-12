@@ -426,7 +426,7 @@ func TestOTOCO(t *testing.T) {
 func TestOrderList(t *testing.T) {
 	res, err := trading.NewOrderList(client).
 		SetOrderListId(123456).
-		SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -434,8 +434,7 @@ func TestOrderList(t *testing.T) {
 }
 func TestOpenOrderList(t *testing.T) {
 	res, err := account.NewOpenOrderList(client).
-		SetOrderListId(31).
-		SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

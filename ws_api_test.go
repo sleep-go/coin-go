@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
+
 	"github.com/google/uuid"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -367,5 +369,32 @@ func TestWsApiOTOCO(t *testing.T) {
 		fmt.Println(res.Error)
 	} else {
 		fmt.Printf("%+v\n", res.Result)
+	}
+}
+func TestWsOrderListCancel(t *testing.T) {
+	res, err := trading.NewWsApiOrderList(wsApiClient).
+		SetOrigClientOrderId("fvh0x6K2e2s0Gk4oqw7seI").
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
+func TestOpenOrderLists(t *testing.T) {
+	res, err := account.NewWsApiOpenOrderList(wsApiClient).Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
 	}
 }

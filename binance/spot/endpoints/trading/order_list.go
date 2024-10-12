@@ -11,10 +11,9 @@ import (
 )
 
 type OrderList interface {
-	SetOrderListId(orderListId int64) OrderList
-	SetOrigClientOrderId(origClientOrderId string) OrderList
-	SetRecvWindow(recvWindow int64) OrderList
-	SetTimestamp(timestamp int64) OrderList
+	SetOrderListId(orderListId int64) *orderListRequest
+	SetOrigClientOrderId(origClientOrderId string) *orderListRequest
+	SetNewClientOrderId(newClientOrderId string) *orderListRequest
 	Call(ctx context.Context) (body *orderListResponse, err error)
 	CallDelete(ctx context.Context) (body *deleteOrderListResponse, err error)
 }
@@ -24,9 +23,8 @@ type orderListRequest struct {
 	orderListId       *int64  //orderListId 或 origClientOrderId 必须提供一个。
 	origClientOrderId *string //orderListId 或 origClientOrderId 必须提供一个。
 	newClientOrderId  *string //用户自定义的本次撤销操作的ID(注意不是被撤销的订单的自定义ID)。如无指定会自动赋值。
-	recvWindow        int64
-	timestamp         int64
 }
+
 type orderListResponse struct {
 	OrderListId       int                       `json:"orderListId"`
 	ContingencyType   enums.ContingencyType     `json:"contingencyType"`
@@ -73,22 +71,16 @@ type deleteOrderListResponse struct {
 	} `json:"orderReports"`
 }
 
-func (o *orderListRequest) SetTimestamp(timestamp int64) OrderList {
-	o.timestamp = timestamp
+func (o *orderListRequest) SetNewClientOrderId(newClientOrderId string) *orderListRequest {
+	o.newClientOrderId = &newClientOrderId
 	return o
 }
-
-func (o *orderListRequest) SetRecvWindow(recvWindow int64) OrderList {
-	o.recvWindow = recvWindow
-	return o
-}
-
-func (o *orderListRequest) SetOrigClientOrderId(origClientOrderId string) OrderList {
+func (o *orderListRequest) SetOrigClientOrderId(origClientOrderId string) *orderListRequest {
 	o.origClientOrderId = &origClientOrderId
 	return o
 }
 
-func (o *orderListRequest) SetOrderListId(orderListId int64) OrderList {
+func (o *orderListRequest) SetOrderListId(orderListId int64) *orderListRequest {
 	o.orderListId = &orderListId
 	return o
 }
@@ -105,8 +97,6 @@ func (o *orderListRequest) Call(ctx context.Context) (body *orderListResponse, e
 	req.SetNeedSign(true)
 	req.SetOptionalParam("orderListId", o.orderListId)
 	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("orderListRequest response err:%v", err)
@@ -129,8 +119,6 @@ func (o *orderListRequest) CallDelete(ctx context.Context) (body *deleteOrderLis
 	req.SetOptionalParam("orderListId", o.orderListId)
 	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
 	req.SetOptionalParam("newClientOrderId", o.newClientOrderId)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("orderListRequest response err:%v", err)
@@ -140,3 +128,50 @@ func (o *orderListRequest) CallDelete(ctx context.Context) (body *deleteOrderLis
 }
 
 // ****************************** Websocket Api *******************************
+
+type WsApiOrderList interface {
+	binance.WsApi[*WsApiOrderListResponse]
+	OrderList
+	SendDelete(ctx context.Context) (*WsApiDeleteOrderListResponse, error)
+}
+type WsApiOrderListResponse struct {
+	binance.WsApiResponse
+	Result *orderListResponse `json:"result"`
+}
+type WsApiDeleteOrderListResponse struct {
+	binance.WsApiResponse
+	Result *deleteOrderListResponse `json:"result"`
+}
+
+// NewWsApiOrderList 查询订单列表 (USER_DATA)
+// 检查订单列表的执行状态。
+//
+// 对于单个订单的执行状态，使用 order.status。
+// 备注：
+//
+// origClientOrderId 指的是订单列表本身的 listClientOrderId。
+//
+// 如果同时指定了 origClientOrderId 和 orderListId 参数，仅使用 origClientOrderId 并忽略 orderListId。
+func NewWsApiOrderList(c *binance.Client) WsApiOrderList {
+	return &orderListRequest{Client: c}
+}
+
+// Send 查询订单列表 (USER_DATA)
+func (o *orderListRequest) Send(ctx context.Context) (*WsApiOrderListResponse, error) {
+	req := &binance.Request{Path: "orderList.status"}
+	req.SetNeedSign(true)
+	req.SetOptionalParam("orderListId", o.orderListId)
+	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
+	return binance.WsApiHandler[*WsApiOrderListResponse](ctx, o.Client, req)
+}
+
+// SendDelete 撤销订单列表订单(TRADE)
+// 取消整个订单列表。
+func (o *orderListRequest) SendDelete(ctx context.Context) (*WsApiDeleteOrderListResponse, error) {
+	req := &binance.Request{Path: "orderList.cancel"}
+	req.SetNeedSign(true)
+	req.SetOptionalParam("orderListId", o.orderListId)
+	req.SetOptionalParam("origClientOrderId", o.origClientOrderId)
+	req.SetOptionalParam("newClientOrderId", o.newClientOrderId)
+	return binance.WsApiHandler[*WsApiDeleteOrderListResponse](ctx, o.Client, req)
+}

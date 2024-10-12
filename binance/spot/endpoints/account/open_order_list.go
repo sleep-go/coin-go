@@ -11,17 +11,11 @@ import (
 )
 
 type OpenOrderList interface {
-	SetOrderListId(orderListId int64) OpenOrderList
-	SetRecvWindow(recvWindow int64) OpenOrderList
-	SetTimestamp(timestamp int64) OpenOrderList
 	Call(ctx context.Context) (body []*openOrderListResponse, err error)
 }
 
 type openOrderListRequest struct {
 	*binance.Client
-	orderListId *int64
-	recvWindow  int64
-	timestamp   int64
 }
 
 type openOrderListResponse struct {
@@ -39,19 +33,6 @@ type openOrderListResponse struct {
 	} `json:"orders"`
 }
 
-func (o *openOrderListRequest) SetOrderListId(orderListId int64) OpenOrderList {
-	o.orderListId = &orderListId
-	return o
-}
-func (o *openOrderListRequest) SetTimestamp(timestamp int64) OpenOrderList {
-	o.timestamp = timestamp
-	return o
-}
-func (o *openOrderListRequest) SetRecvWindow(recvWindow int64) OpenOrderList {
-	o.recvWindow = recvWindow
-	return o
-}
-
 func NewOpenOrderList(client *binance.Client) OpenOrderList {
 	return &openOrderListRequest{Client: client}
 }
@@ -63,13 +44,37 @@ func (o *openOrderListRequest) Call(ctx context.Context) (body []*openOrderListR
 		Path:   consts.ApiTradingOpenOrderList,
 	}
 	req.SetNeedSign(true)
-	req.SetOptionalParam("orderListId", o.orderListId)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("openOrderListRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*openOrderListResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiOpenOrderList interface {
+	binance.WsApi[*WsApiOpenOrderListResponse]
+}
+type WsApiOpenOrderListResponse struct {
+	binance.WsApiResponse
+	Result []*openOrderListResponse `json:"result"`
+}
+
+// NewWsApiOpenOrderList 查询订单列表挂单 (USER_DATA)
+// 查询所有订单列表挂单的执行状态。
+//
+// 如果您需要持续监控订单状态更新，请考虑使用 WebSocket Streams：
+//
+// userDataStream.start 请求
+// executionReport 更新
+func NewWsApiOpenOrderList(c *binance.Client) WsApiOpenOrderList {
+	return &openOrderListRequest{Client: c}
+}
+
+func (o *openOrderListRequest) Send(ctx context.Context) (*WsApiOpenOrderListResponse, error) {
+	req := &binance.Request{Path: "openOrderLists.status"}
+	req.SetNeedSign(true)
+	return binance.WsApiHandler[*WsApiOpenOrderListResponse](ctx, o.Client, req)
 }
