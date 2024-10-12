@@ -492,3 +492,21 @@ func TestWsApiAllOrders(t *testing.T) {
 		fmt.Printf("%+v\n", res.RateLimits)
 	}
 }
+func TestWsApiMyTrades(t *testing.T) {
+	res, err := account.NewWsApiMyTrades(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetFromId(834230).
+		SetLimit(enums.Limit5).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+		fmt.Printf("%+v\n", res.RateLimits)
+	}
+}

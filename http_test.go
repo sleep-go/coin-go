@@ -299,7 +299,6 @@ func TestGetAccount(t *testing.T) {
 }
 func TestMyTrades(t *testing.T) {
 	res, err := account.NewMyTrades(client, BTCUSDT, 500).
-		SetTimestamp(time.Now().UnixMilli()).
 		//SetFormId(11750571916).
 		Call(context.Background())
 	if err != nil {

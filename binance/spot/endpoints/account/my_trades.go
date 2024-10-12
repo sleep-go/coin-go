@@ -11,12 +11,12 @@ import (
 )
 
 type MyTrades interface {
-	SetOrderId(orderId int64) MyTrades
-	SetStartTime(startTime uint64) MyTrades
-	SetEndTime(endTime uint64) MyTrades
-	SetFromId(fromId int64) MyTrades
-	SetRecvWindow(recvWindow int64) MyTrades
-	SetTimestamp(timestamp int64) MyTrades
+	SetSymbol(symbol string) *myTradesRequest
+	SetLimit(limit enums.LimitType) *myTradesRequest
+	SetOrderId(orderId int64) *myTradesRequest
+	SetStartTime(startTime uint64) *myTradesRequest
+	SetEndTime(endTime uint64) *myTradesRequest
+	SetFromId(fromId int64) *myTradesRequest
 	Call(ctx context.Context) (body []*myTradesResponse, err error)
 }
 
@@ -34,14 +34,12 @@ type MyTrades interface {
 // symbol+ orderId + fromId
 type myTradesRequest struct {
 	*binance.Client
-	symbol     string
-	orderId    *int64 //必须要和参数symbol一起使用.
-	startTime  *uint64
-	endTime    *uint64
-	fromId     *int64          //返回该fromId之后的成交，缺省返回最近的成交
-	limit      enums.LimitType //Default 500; max 1000.
-	recvWindow int64
-	timestamp  int64
+	symbol    string
+	orderId   *int64 //必须要和参数symbol一起使用.
+	startTime *uint64
+	endTime   *uint64
+	fromId    *int64          //返回该fromId之后的成交，缺省返回最近的成交
+	limit     enums.LimitType //Default 500; max 1000.
 }
 
 type myTradesResponse struct {
@@ -61,34 +59,32 @@ type myTradesResponse struct {
 func NewMyTrades(client *binance.Client, symbol string, limit enums.LimitType) MyTrades {
 	return &myTradesRequest{Client: client, symbol: symbol, limit: limit}
 }
+func (m *myTradesRequest) SetLimit(limit enums.LimitType) *myTradesRequest {
+	m.limit = limit
+	return m
+}
 
-func (m *myTradesRequest) SetOrderId(orderId int64) MyTrades {
+func (m *myTradesRequest) SetSymbol(symbol string) *myTradesRequest {
+	m.symbol = symbol
+	return m
+}
+func (m *myTradesRequest) SetOrderId(orderId int64) *myTradesRequest {
 	m.orderId = &orderId
 	return m
 }
 
-func (m *myTradesRequest) SetStartTime(startTime uint64) MyTrades {
+func (m *myTradesRequest) SetStartTime(startTime uint64) *myTradesRequest {
 	m.startTime = &startTime
 	return m
 }
 
-func (m *myTradesRequest) SetEndTime(endTime uint64) MyTrades {
+func (m *myTradesRequest) SetEndTime(endTime uint64) *myTradesRequest {
 	m.endTime = &endTime
 	return m
 }
 
-func (m *myTradesRequest) SetFromId(fromId int64) MyTrades {
+func (m *myTradesRequest) SetFromId(fromId int64) *myTradesRequest {
 	m.fromId = &fromId
-	return m
-}
-
-func (m *myTradesRequest) SetRecvWindow(recvWindow int64) MyTrades {
-	m.recvWindow = recvWindow
-	return m
-}
-
-func (m *myTradesRequest) SetTimestamp(timestamp int64) MyTrades {
-	m.timestamp = timestamp
 	return m
 }
 
@@ -99,29 +95,42 @@ func (m *myTradesRequest) Call(ctx context.Context) (body []*myTradesResponse, e
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
-	if m.orderId != nil {
-		req.SetParam("fromId", m.orderId)
-	}
-	if m.startTime != nil {
-		req.SetParam("startTime", m.startTime)
-	}
-	if m.endTime != nil {
-		req.SetParam("endTime", m.endTime)
-	}
-	if m.fromId != nil {
-		req.SetParam("fromId", m.fromId)
-	}
-	if m.limit > 0 {
-		req.SetParam("limit", m.limit)
-	}
-	if m.recvWindow > 0 {
-		req.SetParam("recvWindow", m.recvWindow)
-	}
-	req.SetParam("timestamp", m.timestamp)
+	req.SetOptionalParam("fromId", m.orderId)
+	req.SetOptionalParam("startTime", m.startTime)
+	req.SetOptionalParam("endTime", m.endTime)
+	req.SetOptionalParam("fromId", m.fromId)
+	req.SetOptionalParam("limit", m.limit)
 	resp, err := m.Do(ctx, req)
 	if err != nil {
 		m.Debugf("myTradesRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*myTradesResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiMyTrades interface {
+	binance.WsApi[*WsApiWsApiMyTradesResponse]
+	MyTrades
+}
+type WsApiWsApiMyTradesResponse struct {
+	binance.WsApiResponse
+	Result []*myTradesResponse `json:"result"`
+}
+
+func NewWsApiMyTrades(c *binance.Client) WsApiMyTrades {
+	return &myTradesRequest{Client: c}
+}
+
+func (m *myTradesRequest) Send(ctx context.Context) (*WsApiWsApiMyTradesResponse, error) {
+	req := &binance.Request{Path: "myTrades"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", m.symbol)
+	req.SetOptionalParam("fromId", m.orderId)
+	req.SetOptionalParam("startTime", m.startTime)
+	req.SetOptionalParam("endTime", m.endTime)
+	req.SetOptionalParam("fromId", m.fromId)
+	req.SetOptionalParam("limit", m.limit)
+	return binance.WsApiHandler[*WsApiWsApiMyTradesResponse](ctx, m.Client, req)
 }
