@@ -1,4 +1,4 @@
-package trading
+package account
 
 import (
 	"context"
@@ -11,9 +11,11 @@ import (
 )
 
 type AllOrders interface {
-	SetOrderId(orderId int64) AllOrders
-	SetRecvWindow(recvWindow int64) AllOrders
-	SetTimestamp(timestamp int64) AllOrders
+	SetSymbol(symbol string) *allOrdersRequest
+	SetOrderId(orderId int64) *allOrdersRequest
+	SetLimit(limit enums.LimitType) *allOrdersRequest
+	SetStartTime(startTime uint64) *allOrdersRequest
+	SetEndTime(endTime uint64) *allOrdersRequest
 	Call(ctx context.Context) (body []*allOrdersResponse, err error)
 }
 
@@ -25,18 +27,16 @@ type AllOrders interface {
 // startTime和endTime之间的时间不能超过 24 小时。
 type allOrdersRequest struct {
 	*binance.Client
-	symbol     string
-	orderId    *int64
-	startTime  *uint64
-	endTime    *uint64
-	limit      enums.LimitType
-	recvWindow int64
-	timestamp  int64
+	symbol    string
+	orderId   *int64
+	startTime *uint64
+	endTime   *uint64
+	limit     enums.LimitType
 }
 
 type allOrdersResponse struct {
 	Symbol                  string                `json:"symbol"`                  // 交易对
-	OrderId                 int                   `json:"orderId"`                 // 系统的订单ID
+	OrderId                 int                   `json:"fromId"`                  // 系统的订单ID
 	OrderListId             int                   `json:"orderListId"`             // 除非此单是订单列表的一部分, 否则此值为 -1
 	ClientOrderId           string                `json:"clientOrderId"`           // 客户自己设置的ID
 	Price                   string                `json:"price"`                   // 订单价格
@@ -67,26 +67,28 @@ type allOrdersResponse struct {
 func NewAllOrders(client *binance.Client, symbol string, limit enums.LimitType) AllOrders {
 	return &allOrdersRequest{Client: client, symbol: symbol, limit: limit}
 }
-func (o *allOrdersRequest) SetStartTime(startTime uint64) {
-	o.startTime = &startTime
+func (o *allOrdersRequest) SetSymbol(symbol string) *allOrdersRequest {
+	o.symbol = symbol
+	return o
 }
 
-func (o *allOrdersRequest) SetEndTime(endTime uint64) {
-	o.endTime = &endTime
+func (o *allOrdersRequest) SetLimit(limit enums.LimitType) *allOrdersRequest {
+	o.limit = limit
+	return o
 }
 
-func (o *allOrdersRequest) SetOrderId(orderId int64) AllOrders {
+func (o *allOrdersRequest) SetOrderId(orderId int64) *allOrdersRequest {
 	o.orderId = &orderId
 	return o
 }
 
-func (o *allOrdersRequest) SetRecvWindow(recvWindow int64) AllOrders {
-	o.recvWindow = recvWindow
+func (o *allOrdersRequest) SetStartTime(startTime uint64) *allOrdersRequest {
+	o.startTime = &startTime
 	return o
 }
 
-func (o *allOrdersRequest) SetTimestamp(timestamp int64) AllOrders {
-	o.timestamp = timestamp
+func (o *allOrdersRequest) SetEndTime(endTime uint64) *allOrdersRequest {
+	o.endTime = &endTime
 	return o
 }
 
@@ -96,17 +98,43 @@ func (o *allOrdersRequest) Call(ctx context.Context) (body []*allOrdersResponse,
 		Path:   consts.ApiTradingAllOrders,
 	}
 	req.SetNeedSign(true)
-	req.SetOptionalParam("symbol", o.symbol)
+	req.SetParam("symbol", o.symbol)
 	req.SetOptionalParam("limit", o.limit)
 	req.SetOptionalParam("orderId", o.orderId)
 	req.SetOptionalParam("startTime", o.startTime)
 	req.SetOptionalParam("endTime", o.endTime)
-	req.SetOptionalParam("recvWindow", o.recvWindow)
-	req.SetParam("timestamp", o.timestamp)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
 		o.Debugf("queryOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*allOrdersResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiAllOrders interface {
+	binance.WsApi[*WsApiAllOrdersResponse]
+	AllOrders
+}
+type WsApiAllOrdersResponse struct {
+	binance.WsApiResponse
+	Result []*allOrdersResponse `json:"result"`
+}
+
+// NewWsApiAllOrders 账户订单历史 (USER_DATA)
+// 获取所有账户订单； 有效，已取消或已完成。按时间范围过滤。
+func NewWsApiAllOrders(c *binance.Client) WsApiAllOrders {
+	return &allOrdersRequest{Client: c}
+}
+
+func (o *allOrdersRequest) Send(ctx context.Context) (*WsApiAllOrdersResponse, error) {
+	req := &binance.Request{Path: "allOrders"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", o.symbol)
+	req.SetOptionalParam("orderId", o.orderId)
+	req.SetOptionalParam("startTime", o.startTime)
+	req.SetOptionalParam("endTime", o.endTime)
+	req.SetOptionalParam("limit", o.limit)
+	return binance.WsApiHandler[*WsApiAllOrdersResponse](ctx, o.Client, req)
 }

@@ -47,7 +47,7 @@ type myTradesRequest struct {
 type myTradesResponse struct {
 	Symbol          string `json:"symbol"`
 	Id              int    `json:"id"`
-	OrderId         int    `json:"orderId"`
+	OrderId         int    `json:"fromId"`
 	Price           string `json:"price"`
 	Qty             string `json:"qty"`
 	Commission      string `json:"commission"`
@@ -100,7 +100,7 @@ func (m *myTradesRequest) Call(ctx context.Context) (body []*myTradesResponse, e
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
 	if m.orderId != nil {
-		req.SetParam("orderId", m.orderId)
+		req.SetParam("fromId", m.orderId)
 	}
 	if m.startTime != nil {
 		req.SetParam("startTime", m.startTime)

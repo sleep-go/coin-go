@@ -445,3 +445,50 @@ func TestWsApiAccount(t *testing.T) {
 		fmt.Printf("%+v\n", res.Result)
 	}
 }
+func TestWsApiRateLimitOrder(t *testing.T) {
+	res, err := account.NewWsApiWsApiRateLimitOrder(wsApiClient).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+	}
+}
+func TestWsApiNewWsApiAllOrderList(t *testing.T) {
+	res, err := account.NewWsApiAllOrderList(wsApiClient).
+		SetLimit(enums.Limit20).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+		fmt.Printf("%+v\n", res.RateLimits)
+	}
+}
+func TestWsApiAllOrders(t *testing.T) {
+	res, err := account.NewWsApiAllOrders(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetLimit(enums.Limit100).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+		fmt.Printf("%+v\n", res.RateLimits)
+	}
+}

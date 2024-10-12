@@ -85,9 +85,9 @@ func (m *myPreventedMatchesRequest) SetTimestamp(timestamp int64) MyPreventedMat
 // 这些是支持的组合：
 //
 // symbol + preventedMatchId
-// symbol + orderId
-// symbol + orderId + fromPreventedMatchId (limit 默认为 500)
-// symbol + orderId + fromPreventedMatchId + limit
+// symbol + fromId
+// symbol + fromId + fromPreventedMatchId (limit 默认为 500)
+// symbol + fromId + fromPreventedMatchId + limit
 func (m *myPreventedMatchesRequest) Call(ctx context.Context) (body []*myPreventedMatchesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
@@ -100,7 +100,7 @@ func (m *myPreventedMatchesRequest) Call(ctx context.Context) (body []*myPrevent
 		req.SetParam("preventedMatchId", m.preventedMatchId)
 	}
 	if m.orderId != nil {
-		req.SetParam("orderId", m.orderId)
+		req.SetParam("fromId", m.orderId)
 	}
 	if m.fromPreventedMatchId != nil {
 		req.SetParam("fromPreventedMatchId", m.fromPreventedMatchId)

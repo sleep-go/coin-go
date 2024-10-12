@@ -10,15 +10,11 @@ import (
 )
 
 type RateLimitOrder interface {
-	SetRecvWindow(recvWindow int64) RateLimitOrder
-	SetTimestamp(timestamp int64) RateLimitOrder
 	Call(ctx context.Context) (body []*rateLimitOrderResponse, err error)
 }
 
 type rateLimitOrderRequest struct {
 	*binance.Client
-	recvWindow int64
-	timestamp  int64
 }
 
 type rateLimitOrderResponse struct {
@@ -33,16 +29,6 @@ func NewRateLimitOrder(client *binance.Client) RateLimitOrder {
 	return &rateLimitOrderRequest{Client: client}
 }
 
-func (r *rateLimitOrderRequest) SetRecvWindow(recvWindow int64) RateLimitOrder {
-	r.recvWindow = recvWindow
-	return r
-}
-
-func (r *rateLimitOrderRequest) SetTimestamp(timestamp int64) RateLimitOrder {
-	r.timestamp = timestamp
-	return r
-}
-
 // Call 查询未成交的订单计数 (USER_DATA)
 // 显示用户在所有时间间隔内的未成交订单计数。
 func (r *rateLimitOrderRequest) Call(ctx context.Context) (body []*rateLimitOrderResponse, err error) {
@@ -51,14 +37,32 @@ func (r *rateLimitOrderRequest) Call(ctx context.Context) (body []*rateLimitOrde
 		Path:   consts.ApiAccountRateLimitOrder,
 	}
 	req.SetNeedSign(true)
-	if r.recvWindow > 0 {
-		req.SetParam("recvWindow", r.recvWindow)
-	}
-	req.SetParam("timestamp", r.timestamp)
 	resp, err := r.Do(ctx, req)
 	if err != nil {
 		r.Debugf("rateLimitOrderRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*rateLimitOrderResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiRateLimitOrder interface {
+	binance.WsApi[*WsApiRateLimitOrderResponse]
+}
+type WsApiRateLimitOrderResponse struct {
+	binance.WsApiResponse
+	Result []*rateLimitOrderResponse `json:"result"`
+}
+
+// NewWsApiWsApiRateLimitOrder 查询未成交的订单计数 (USER_DATA)
+// 显示用户在所有时间间隔内的未成交订单计数。
+func NewWsApiWsApiRateLimitOrder(c *binance.Client) WsApiRateLimitOrder {
+	return &rateLimitOrderRequest{Client: c}
+}
+
+func (r *rateLimitOrderRequest) Send(ctx context.Context) (*WsApiRateLimitOrderResponse, error) {
+	req := &binance.Request{Path: "account.rateLimits.orders"}
+	req.SetNeedSign(true)
+	return binance.WsApiHandler[*WsApiRateLimitOrderResponse](ctx, r.Client, req)
 }

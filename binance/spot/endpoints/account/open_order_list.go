@@ -28,7 +28,7 @@ type openOrderListResponse struct {
 	Symbol            string                    `json:"symbol"`
 	Orders            []struct {
 		Symbol        string `json:"symbol"`
-		OrderId       int    `json:"orderId"`
+		OrderId       int    `json:"fromId"`
 		ClientOrderId string `json:"clientOrderId"`
 	} `json:"orders"`
 }

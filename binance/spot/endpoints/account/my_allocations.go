@@ -40,7 +40,7 @@ type myAllocationsResponse struct {
 	Symbol          string `json:"symbol"`
 	AllocationId    int    `json:"allocationId"`
 	AllocationType  string `json:"allocationType"`
-	OrderId         int    `json:"orderId"`
+	OrderId         int    `json:"fromId"`
 	OrderListId     int    `json:"orderListId"`
 	Price           string `json:"price"`
 	Qty             string `json:"qty"`
@@ -92,8 +92,8 @@ func (m *myAllocationsRequest) SetTimestamp(timestamp int64) MyAllocations {
 // symbol + endTime	到 endTime 为止的最新的分配
 // symbol + startTime + endTime	在指定时间范围内的分配
 // symbol + fromAllocationId	从指定 AllocationId 开始的分配
-// symbol + orderId	按从最旧到最新排序并和特定订单关联的分配
-// symbol + orderId + fromAllocationId	从指定 AllocationId 开始并和特定订单关联的分配
+// symbol + fromId	按从最旧到最新排序并和特定订单关联的分配
+// symbol + fromId + fromAllocationId	从指定 AllocationId 开始并和特定订单关联的分配
 // 注意: startTime 和 endTime 之间的时间不能超过 24 小时。
 func (m *myAllocationsRequest) Call(ctx context.Context) (body []*myAllocationsResponse, err error) {
 	req := &binance.Request{
@@ -113,7 +113,7 @@ func (m *myAllocationsRequest) Call(ctx context.Context) (body []*myAllocationsR
 		req.SetParam("fromAllocationId", m.fromAllocationId)
 	}
 	if m.orderId != nil {
-		req.SetParam("orderId", m.orderId)
+		req.SetParam("fromId", m.orderId)
 	}
 	if m.recvWindow > 0 {
 		req.SetParam("recvWindow", m.recvWindow)

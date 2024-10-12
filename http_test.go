@@ -211,9 +211,9 @@ func TestTicker(t *testing.T) {
 }
 func TestQueryOrder(t *testing.T) {
 	res, err := trading.NewQueryOrder(client, BTCUSDT).
-		//SetOrderId，SetOrigClientOrderId 二选一
+		//SetFormId，SetOrigClientOrderId 二选一
 		SetOrderId(30102167318).
-		//SetOrderId，SetOrigClientOrderId 二选一
+		//SetFormId，SetOrigClientOrderId 二选一
 		//SetOrigClientOrderId("ios_e5556c10ddda4b4e8520c300cbab4c73").
 		Call(context.Background())
 	if err != nil {
@@ -244,7 +244,8 @@ func TestCreateOrder(t *testing.T) {
 	fmt.Printf("%+v\n", res)
 }
 func TestAllOrders(t *testing.T) {
-	res, err := trading.NewAllOrders(client, BTCUSDT, enums.Limit20).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	res, err := account.NewAllOrders(client, BTCUSDT, enums.Limit20).
+		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -299,7 +300,7 @@ func TestGetAccount(t *testing.T) {
 func TestMyTrades(t *testing.T) {
 	res, err := account.NewMyTrades(client, BTCUSDT, 500).
 		SetTimestamp(time.Now().UnixMilli()).
-		//SetOrderId(11750571916).
+		//SetFormId(11750571916).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -309,7 +310,7 @@ func TestMyTrades(t *testing.T) {
 	}
 }
 func TestRateLimitOrder(t *testing.T) {
-	res, err := account.NewRateLimitOrder(client).SetTimestamp(time.Now().UnixMilli()).Call(context.Background())
+	res, err := account.NewRateLimitOrder(client).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
