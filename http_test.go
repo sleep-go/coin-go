@@ -445,7 +445,6 @@ func TestSor(t *testing.T) {
 		SetSide(enums.SideTypeBuy).
 		SetType(enums.OrderTypeMarket).
 		SetQuantity("0.0001").
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -457,9 +456,7 @@ func TestSorTest(t *testing.T) {
 		SetSide(enums.SideTypeBuy).
 		SetType(enums.OrderTypeMarket).
 		SetQuantity("0.0001").
-		SetComputeCommissionRates(true).
-		SetTimestamp(time.Now().UnixMilli()).
-		CallTest(context.Background())
+		CallTest(context.Background(), true)
 	if err != nil {
 		t.Fatal(err)
 	}

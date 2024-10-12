@@ -14,22 +14,20 @@ import (
 // 发送使用智能订单路由 (SOR) 的新订单。
 // 请注意: POST /api/v3/sor/order 只支持 限价 和 市场 单， 并不支持 quoteOrderQty。
 type SOR interface {
-	SetSide(side enums.SideType) SOR
-	SetType(_type enums.OrderType) SOR
-	SetTimeInForce(timeInForce enums.TimeInForceType) SOR
-	SetQuantity(quantity string) SOR
-	SetPrice(price string) SOR
-	SetNewClientOrderId(newClientOrderId string) SOR
-	SetStrategyId(strategyId int64) SOR
-	SetStrategyType(strategyType int64) SOR
-	SetIcebergQty(icebergQty string) SOR
-	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) SOR
-	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) SOR
-	SetComputeCommissionRates(computeCommissionRates bool) SOR
-	SetRecvWindow(recvWindow int64) SOR
-	SetTimestamp(timestamp int64) SOR
+	SetSymbol(symbol string) *sorRequest
+	SetSide(side enums.SideType) *sorRequest
+	SetType(_type enums.OrderType) *sorRequest
+	SetTimeInForce(timeInForce enums.TimeInForceType) *sorRequest
+	SetQuantity(quantity string) *sorRequest
+	SetPrice(price string) *sorRequest
+	SetNewClientOrderId(newClientOrderId string) *sorRequest
+	SetStrategyId(strategyId int64) *sorRequest
+	SetStrategyType(strategyType int64) *sorRequest
+	SetIcebergQty(icebergQty string) *sorRequest
+	SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *sorRequest
+	SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *sorRequest
 	Call(ctx context.Context) (body *sorResponse, err error)
-	CallTest(ctx context.Context) (body *sorTestResponse, err error)
+	CallTest(ctx context.Context, computeCommissionRates bool) (body *sorTestResponse, err error)
 }
 type sorRequest struct {
 	*binance.Client
@@ -47,10 +45,8 @@ type sorRequest struct {
 	icebergQty              *string
 	newOrderRespType        enums.NewOrderRespType //指定响应类型 ACK, RESULT 或 FULL; 默认为 FULL。
 	selfTradePreventionMode enums.StpModeType
-	computeCommissionRates  *bool
-	recvWindow              int64
-	timestamp               int64
 }
+
 type sorResponse struct {
 	Symbol              string                `json:"symbol"`
 	OrderId             int                   `json:"orderId"`
@@ -80,73 +76,63 @@ type sorResponse struct {
 	UsedSor                 bool              `json:"usedSor"`
 }
 
-func (s *sorRequest) SetComputeCommissionRates(computeCommissionRates bool) SOR {
-	s.computeCommissionRates = &computeCommissionRates
+func (s *sorRequest) SetSymbol(symbol string) *sorRequest {
+	s.symbol = symbol
 	return s
 }
 
-func (s *sorRequest) SetSide(side enums.SideType) SOR {
+func (s *sorRequest) SetSide(side enums.SideType) *sorRequest {
 	s.side = side
 	return s
 }
 
-func (s *sorRequest) SetType(_type enums.OrderType) SOR {
+func (s *sorRequest) SetType(_type enums.OrderType) *sorRequest {
 	s._type = _type
 	return s
 }
 
-func (s *sorRequest) SetTimeInForce(timeInForce enums.TimeInForceType) SOR {
+func (s *sorRequest) SetTimeInForce(timeInForce enums.TimeInForceType) *sorRequest {
 	s.timeInForce = timeInForce
 	return s
 }
 
-func (s *sorRequest) SetQuantity(quantity string) SOR {
+func (s *sorRequest) SetQuantity(quantity string) *sorRequest {
 	s.quantity = &quantity
 	return s
 }
 
-func (s *sorRequest) SetPrice(price string) SOR {
+func (s *sorRequest) SetPrice(price string) *sorRequest {
 	s.price = &price
 	return s
 }
 
-func (s *sorRequest) SetNewClientOrderId(newClientOrderId string) SOR {
+func (s *sorRequest) SetNewClientOrderId(newClientOrderId string) *sorRequest {
 	s.newClientOrderId = &newClientOrderId
 	return s
 }
 
-func (s *sorRequest) SetStrategyId(strategyId int64) SOR {
+func (s *sorRequest) SetStrategyId(strategyId int64) *sorRequest {
 	s.strategyId = &strategyId
 	return s
 }
 
-func (s *sorRequest) SetStrategyType(strategyType int64) SOR {
+func (s *sorRequest) SetStrategyType(strategyType int64) *sorRequest {
 	s.strategyType = &strategyType
 	return s
 }
 
-func (s *sorRequest) SetIcebergQty(icebergQty string) SOR {
+func (s *sorRequest) SetIcebergQty(icebergQty string) *sorRequest {
 	s.icebergQty = &icebergQty
 	return s
 }
 
-func (s *sorRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) SOR {
+func (s *sorRequest) SetNewOrderRespType(newOrderRespType enums.NewOrderRespType) *sorRequest {
 	s.newOrderRespType = newOrderRespType
 	return s
 }
 
-func (s *sorRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) SOR {
+func (s *sorRequest) SetSelfTradePreventionMode(selfTradePreventionMode enums.StpModeType) *sorRequest {
 	s.selfTradePreventionMode = selfTradePreventionMode
-	return s
-}
-
-func (s *sorRequest) SetRecvWindow(recvWindow int64) SOR {
-	s.recvWindow = recvWindow
-	return s
-}
-
-func (s *sorRequest) SetTimestamp(timestamp int64) SOR {
-	s.timestamp = timestamp
 	return s
 }
 
@@ -171,8 +157,6 @@ func (s *sorRequest) Call(ctx context.Context) (body *sorResponse, err error) {
 	req.SetOptionalParam("icebergQty", s.icebergQty)
 	req.SetOptionalParam("newOrderRespType", s.newOrderRespType)
 	req.SetOptionalParam("selfTradePreventionMode", s.selfTradePreventionMode)
-	req.SetOptionalParam("recvWindow", s.recvWindow)
-	req.SetParam("timestamp", s.timestamp)
 	resp, err := s.Do(ctx, req)
 	if err != nil {
 		s.Debugf("sorRequest response err:%v", err)
@@ -183,7 +167,7 @@ func (s *sorRequest) Call(ctx context.Context) (body *sorResponse, err error) {
 
 // CallTest 测试 SOR 下单接口 (TRADE)
 // 用于测试使用智能订单路由 (SOR) 的订单请求，但不会提交到撮合引擎
-func (s *sorRequest) CallTest(ctx context.Context) (body *sorTestResponse, err error) {
+func (s *sorRequest) CallTest(ctx context.Context, computeCommissionRates bool) (body *sorTestResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodPost,
 		Path:   consts.ApiTradingSorOrderTest,
@@ -200,10 +184,8 @@ func (s *sorRequest) CallTest(ctx context.Context) (body *sorTestResponse, err e
 	req.SetOptionalParam("strategyType", s.strategyType)
 	req.SetOptionalParam("icebergQty", s.icebergQty)
 	req.SetOptionalParam("newOrderRespType", s.newOrderRespType)
-	req.SetOptionalParam("computeCommissionRates", s.computeCommissionRates)
 	req.SetOptionalParam("selfTradePreventionMode", s.selfTradePreventionMode)
-	req.SetOptionalParam("recvWindow", s.recvWindow)
-	req.SetParam("timestamp", s.timestamp)
+	req.SetOptionalParam("computeCommissionRates", computeCommissionRates)
 	resp, err := s.Do(ctx, req)
 	if err != nil {
 		s.Debugf("sorRequest response err:%v", err)
@@ -227,4 +209,65 @@ type sorTestResponse struct {
 		DiscountAsset     string `json:"discountAsset"`
 		Discount          string `json:"discount"`
 	} `json:"discount"`
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiSOR interface {
+	binance.WsApi[*WsApiSORResponse]
+	SOR
+	SendTest(ctx context.Context, computeCommissionRates bool) (*WsApiSORTestResponse, error)
+}
+type WsApiSORResponse struct {
+	binance.WsApiResponse
+	Result *sorResponse `json:"result"`
+}
+type WsApiSORTestResponse struct {
+	binance.WsApiResponse
+	Result *sorTestResponse `json:"result"`
+}
+
+func NewWsApiSOR(c *binance.Client) WsApiSOR {
+	return &sorRequest{Client: c}
+}
+
+// Send 下 SOR 订单 (TRADE)
+// 下使用智能订单路由 (SOR) 的新订单。
+// 注意: sor.order.place 只支持 限价 和 市场 单， 并不支持 quoteOrderQty。
+func (s *sorRequest) Send(ctx context.Context) (*WsApiSORResponse, error) {
+	req := &binance.Request{Path: "sor.order.place"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", s.symbol)
+	req.SetParam("side", s.side)
+	req.SetParam("type", s._type)
+	req.SetOptionalParam("timeInForce", s.timeInForce)
+	req.SetParam("quantity", s.quantity)
+	req.SetOptionalParam("price", s.price)
+	req.SetOptionalParam("newClientOrderId", s.newClientOrderId)
+	req.SetOptionalParam("strategyId", s.strategyId)
+	req.SetOptionalParam("strategyType", s.strategyType)
+	req.SetOptionalParam("icebergQty", s.icebergQty)
+	req.SetOptionalParam("newOrderRespType", s.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", s.selfTradePreventionMode)
+	return binance.WsApiHandler[*WsApiSORResponse](ctx, s.Client, req)
+}
+
+// SendTest 测试 SOR 下单接口 (TRADE)
+func (s *sorRequest) SendTest(ctx context.Context, computeCommissionRates bool) (*WsApiSORTestResponse, error) {
+	req := &binance.Request{Path: "sor.order.test"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", s.symbol)
+	req.SetParam("side", s.side)
+	req.SetParam("type", s._type)
+	req.SetOptionalParam("timeInForce", s.timeInForce)
+	req.SetParam("quantity", s.quantity)
+	req.SetOptionalParam("price", s.price)
+	req.SetOptionalParam("newClientOrderId", s.newClientOrderId)
+	req.SetOptionalParam("strategyId", s.strategyId)
+	req.SetOptionalParam("strategyType", s.strategyType)
+	req.SetOptionalParam("icebergQty", s.icebergQty)
+	req.SetOptionalParam("newOrderRespType", s.newOrderRespType)
+	req.SetOptionalParam("selfTradePreventionMode", s.selfTradePreventionMode)
+	req.SetOptionalParam("computeCommissionRates", computeCommissionRates)
+	return binance.WsApiHandler[*WsApiSORTestResponse](ctx, s.Client, req)
 }

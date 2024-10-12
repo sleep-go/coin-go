@@ -398,3 +398,20 @@ func TestOpenOrderLists(t *testing.T) {
 		}
 	}
 }
+func TestWsApiSor(t *testing.T) {
+	res, err := trading.NewWsApiSOR(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetSide(enums.SideTypeBuy).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.0001").
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+	}
+}
