@@ -64,6 +64,7 @@ type allOrdersResponse struct {
 	TrailingTime      int64  `json:"trailingTime,omitempty"`
 }
 
+// NewAllOrders 账户订单历史 (USER_DATA)
 func NewAllOrders(client *binance.Client, symbol string, limit enums.LimitType) AllOrders {
 	return &allOrdersRequest{Client: client, symbol: symbol, limit: limit}
 }
