@@ -93,10 +93,10 @@ func (m *myPreventedMatchesRequest) Call(ctx context.Context) (body []*myPrevent
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
-	req.SetOptionalParam("limit", m.limit)
 	req.SetOptionalParam("preventedMatchId", m.preventedMatchId)
-	req.SetOptionalParam("fromId", m.orderId)
+	req.SetOptionalParam("orderId", m.orderId)
 	req.SetOptionalParam("fromPreventedMatchId", m.fromPreventedMatchId)
+	req.SetOptionalParam("limit", m.limit)
 	resp, err := m.Do(ctx, req)
 	if err != nil {
 		m.Debugf("myPreventedMatchesRequest response err:%v", err)
@@ -130,12 +130,12 @@ func NewWsApiMyPreventedMatches(c *binance.Client) WsApiMyPreventedMatches {
 }
 
 func (m *myPreventedMatchesRequest) Send(ctx context.Context) (*WsApiMyPreventedMatchesResponse, error) {
-	req := &binance.Request{Path: "myTrades"}
+	req := &binance.Request{Path: "myPreventedMatches"}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", m.symbol)
-	req.SetOptionalParam("limit", m.limit)
 	req.SetOptionalParam("preventedMatchId", m.preventedMatchId)
-	req.SetOptionalParam("fromId", m.orderId)
+	req.SetOptionalParam("orderId", m.orderId)
 	req.SetOptionalParam("fromPreventedMatchId", m.fromPreventedMatchId)
+	req.SetOptionalParam("limit", m.limit)
 	return binance.WsApiHandler[*WsApiMyPreventedMatchesResponse](ctx, m.Client, req)
 }

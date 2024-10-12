@@ -8,12 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
-
 	"github.com/google/uuid"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/trading"
@@ -514,6 +513,7 @@ func TestNewWsApiMyPreventedMatches(t *testing.T) {
 	res, err := account.NewWsApiMyPreventedMatches(wsApiClient).
 		SetSymbol(ETHUSDT).
 		SetLimit(enums.Limit5).
+		SetOrderId(11750571916).
 		Send(context.Background())
 	if err != nil {
 		t.Fatal(err)
