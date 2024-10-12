@@ -119,6 +119,23 @@ type WsApiWsApiMyTradesResponse struct {
 	Result []*myTradesResponse `json:"result"`
 }
 
+// NewWsApiMyTrades 账户成交历史 (USER_DATA)
+// 获取账户指定交易对的成交历史，按时间范围过滤。
+// 备注：
+//
+// 如果指定了 fromId，则返回的交易将是 交易ID >= fromId。
+//
+// 如果指定了 startTime 和/或 endTime，则交易按执行时间（time）过滤。
+//
+// fromId 不能与 startTime 和 endTime 一起使用。
+//
+// 如果指定了 orderId，则只返回与该订单相关的交易。
+//
+// startTime 和 endTime 不能与 orderId 一起使用。
+//
+// 如果不指定条件，则返回最近的交易。
+//
+// startTime和endTime之间的时间不能超过 24 小时。
 func NewWsApiMyTrades(c *binance.Client) WsApiMyTrades {
 	return &myTradesRequest{Client: c}
 }
