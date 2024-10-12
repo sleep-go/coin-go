@@ -97,8 +97,8 @@ type WsApiAllOrderListResponse struct {
 	Result []*allOrderListResponse `json:"result"`
 }
 
-// NewWsApiAllOrderList 账户订单历史 (USER_DATA)
-// 获取所有账户订单； 有效，已取消或已完成。按时间范围过滤。
+// NewWsApiAllOrderList 账户订单列表历史 (USER_DATA)
+// 查询所有订单列表的信息，按时间范围过滤。
 func NewWsApiAllOrderList(c *binance.Client) WsApiAllOrderList {
 	return &allOrderListRequest{Client: c}
 }
