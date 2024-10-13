@@ -376,3 +376,29 @@ func TestTopLongShortAccountRatio(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestGlobalLongShortAccountRatio(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewGlobalLongShortAccountRatio(client).
+		SetPeriod(enums.KlineIntervalType5m).
+		SetLimit(enums.Limit5).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
+func TestTakerLongShortRatio(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewTakerLongShortRatio(client).
+		SetPeriod(enums.KlineIntervalType5m).
+		SetLimit(enums.Limit5).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}

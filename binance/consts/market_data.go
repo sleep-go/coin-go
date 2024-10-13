@@ -11,4 +11,8 @@ const (
 	FApiDataTopLongShortPositionRatio = "/futures/data/topLongShortPositionRatio"
 	// FApiDataTopLongShortAccountRatio 大户账户数多空比
 	FApiDataTopLongShortAccountRatio = "/futures/data/topLongShortAccountRatio"
+	// FApiDataGlobalLongShortAccountRatio 多空持仓人数比
+	FApiDataGlobalLongShortAccountRatio = "/futures/data/globalLongShortAccountRatio"
+
+	FApiDataTakerLongShortRatio = "/futures/data/takerlongshortRatio"
 )
