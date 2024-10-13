@@ -148,8 +148,8 @@ func (c *Client) connect() error {
 func (c *Client) sendWsApiMsg(ctx context.Context, r *Request) (res []byte, err error) {
 	//获取 query url
 	queryString := r.query.Encode()
+	r.SetParam("apiKey", c.APIKey)
 	if r.needSign {
-		r.SetParam("apiKey", c.APIKey)
 		r.SetOptionalParam("recvWindow", c.TimeOffset)
 		r.SetParam("timestamp", time.Now().UnixMilli())
 		//获取 query url

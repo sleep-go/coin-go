@@ -13,7 +13,7 @@ import (
 //
 // 从创建起60分钟有效
 type UserDataStream interface {
-	SetListenKey(listenKey string) UserDataStream
+	SetListenKey(listenKey string) *userDataStreamRequest
 	CallCreate(ctx context.Context) (body *userDataStreamResponse, err error)
 	CallUpdate(ctx context.Context) (err error)
 	CallDelete(ctx context.Context) (err error)
@@ -31,7 +31,7 @@ func NewUserDataStream(client *binance.Client) UserDataStream {
 	return &userDataStreamRequest{Client: client}
 }
 
-func (o *userDataStreamRequest) SetListenKey(listenKey string) UserDataStream {
+func (o *userDataStreamRequest) SetListenKey(listenKey string) *userDataStreamRequest {
 	o.listenKey = listenKey
 	return o
 }
@@ -79,4 +79,36 @@ func (o *userDataStreamRequest) CallDelete(ctx context.Context) (err error) {
 		return err
 	}
 	return nil
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiUserDataStream interface {
+	UserDataStream
+	SendStart(ctx context.Context) (*WsApiUserDataStreamResponse, error)
+	SendPing(ctx context.Context) (*WsApiUserDataStreamResponse, error)
+	SendStop(ctx context.Context) (*WsApiUserDataStreamResponse, error)
+}
+type WsApiUserDataStreamResponse struct {
+	binance.WsApiResponse
+	Result *userDataStreamResponse `json:"result"`
+}
+
+func NewWsApiUserDataStream(c *binance.Client) WsApiUserDataStream {
+	return &userDataStreamRequest{Client: c}
+}
+
+func (o *userDataStreamRequest) SendStart(ctx context.Context) (*WsApiUserDataStreamResponse, error) {
+	req := &binance.Request{Path: "userDataStream.start"}
+	return binance.WsApiHandler[*WsApiUserDataStreamResponse](ctx, o.Client, req)
+}
+func (o *userDataStreamRequest) SendPing(ctx context.Context) (*WsApiUserDataStreamResponse, error) {
+	req := &binance.Request{Path: "userDataStream.ping"}
+	req.SetParam("listenKey", o.listenKey)
+	return binance.WsApiHandler[*WsApiUserDataStreamResponse](ctx, o.Client, req)
+}
+func (o *userDataStreamRequest) SendStop(ctx context.Context) (*WsApiUserDataStreamResponse, error) {
+	req := &binance.Request{Path: "userDataStream.stop"}
+	req.SetParam("listenKey", o.listenKey)
+	return binance.WsApiHandler[*WsApiUserDataStreamResponse](ctx, o.Client, req)
 }

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/coin-go/binance/spot/endpoints/stream"
+
 	"github.com/google/uuid"
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -545,7 +547,7 @@ func TestWsApiMyAllocations(t *testing.T) {
 	}
 }
 func TestNewWsApiWsApiCommission(t *testing.T) {
-	res, err := account.NewWsApiWsApiCommission(wsApiClient).
+	res, err := account.NewWsApiCommission(wsApiClient).
 		SetSymbol(ETHUSDT).
 		Send(context.Background())
 	if err != nil {
@@ -557,4 +559,36 @@ func TestNewWsApiWsApiCommission(t *testing.T) {
 		fmt.Printf("%+v\n", res.Result)
 		fmt.Printf("%+v\n", res.RateLimits)
 	}
+}
+func TestNewWsApiUserDataStream(t *testing.T) {
+	ds := stream.NewWsApiUserDataStream(wsApiClient)
+	res, err := ds.SendStart(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+		return
+	}
+	fmt.Printf("%+v\n", res.Result)
+	fmt.Printf("%+v\n", res.RateLimits)
+	listenKey := res.Result.ListenKey
+	res, err = ds.SetListenKey(listenKey).SendPing(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+		return
+	}
+	fmt.Printf("%+v\n", res.RateLimits)
+	res, err = ds.SetListenKey(listenKey).SendStop(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+		return
+	}
+	fmt.Printf("%+v\n", res.RateLimits)
 }

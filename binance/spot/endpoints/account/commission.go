@@ -81,9 +81,9 @@ type WsApiCommissionResponse struct {
 	Result *commissionResponse `json:"result"`
 }
 
-// NewWsApiWsApiCommission 账户佣金费率 (USER_DATA)
+// NewWsApiCommission 账户佣金费率 (USER_DATA)
 // 获取当前账户的佣金费率。
-func NewWsApiWsApiCommission(c *binance.Client) WsApiCommission {
+func NewWsApiCommission(c *binance.Client) WsApiCommission {
 	return &commissionRequest{Client: c}
 }
 
