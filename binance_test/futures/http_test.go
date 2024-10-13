@@ -350,3 +350,16 @@ func TestOpenInterestHist(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestTopLongShortPositionRatio(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewTopLongShortPositionRatio(client).
+		SetPeriod(enums.KlineIntervalType5m).
+		SetLimit(enums.Limit5).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
