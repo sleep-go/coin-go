@@ -106,7 +106,7 @@ func (t *tickerRequest) Call(ctx context.Context) (body []*tickerResponse, err e
 	}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	req.SetParam("windowSize", t.windowSize)
 	req.SetParam("type", t._type.String())
@@ -312,7 +312,7 @@ func (t *tickerRequest) Send(ctx context.Context) (*WsApiTickerResponse, error) 
 	req := &binance.Request{Path: "ticker"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	req.SetOptionalParam("windowSize", t.windowSize)
 	req.SetOptionalParam("type", t._type)

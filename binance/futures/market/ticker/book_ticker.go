@@ -38,7 +38,7 @@ func (b *bookTickerRequest) Call(ctx context.Context) (body []*bookTickerRespons
 	}
 	if len(b.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	res, err := b.Do(ctx, req)
 	if err != nil {
@@ -120,7 +120,7 @@ func (b *bookTickerRequest) Send(ctx context.Context) (*WsApiBookTickerResponse,
 	req := &binance.Request{Path: "ticker.book"}
 	if len(b.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	return binance.WsApiHandler[*WsApiBookTickerResponse](ctx, b.Client, req)
 }

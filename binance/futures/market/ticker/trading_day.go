@@ -66,7 +66,7 @@ func (t *tradingDayRequest) Call(ctx context.Context) (body []*tradingDayRespons
 	}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	req.SetParam("timeZone", t.timeZone)
 	req.SetParam("type", t._type.String())
@@ -128,7 +128,7 @@ func (t *tradingDayRequest) Send(ctx context.Context) (*WsApiTradingDayResponse,
 	req := &binance.Request{Path: "ticker.tradingDay"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	req.SetOptionalParam("timeZone", t.timeZone)
 	req.SetOptionalParam("type", t._type.String())

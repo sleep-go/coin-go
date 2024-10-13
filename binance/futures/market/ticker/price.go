@@ -38,7 +38,7 @@ func (t *priceRequest) Call(ctx context.Context) (body []*priceResponse, err err
 	}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	resp, err := t.Do(ctx, req)
 	if err != nil {
@@ -79,7 +79,7 @@ func (t *priceRequest) Send(ctx context.Context) (*WsApiTickerPriceResponse, err
 	req := &binance.Request{Path: "ticker.price"}
 	if len(t.symbols) > 0 {
 		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbols", result)
+		req.SetParam("symbol", result)
 	}
 	return binance.WsApiHandler[*WsApiTickerPriceResponse](ctx, t.Client, req)
 }

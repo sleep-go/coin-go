@@ -13,6 +13,7 @@ import (
 	"github.com/sleep-go/coin-go/binance/futures/enums"
 	"github.com/sleep-go/coin-go/binance/futures/general"
 	"github.com/sleep-go/coin-go/binance/futures/market"
+	"github.com/sleep-go/coin-go/binance/futures/market/ticker"
 	"github.com/spf13/cast"
 )
 
@@ -238,5 +239,22 @@ func TestCallPremiumIndexKlines(t *testing.T) {
 		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
 		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
 		fmt.Println(r[11])                                                                // 请忽略该参数
+	}
+}
+
+func TestHr24(t *testing.T) {
+	res, err := ticker.NewHr24(client, ETHUSDT).Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	fmt.Println(res)
+	ress, err := ticker.NewHr24(client, ETHUSDT).CallAll(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range ress {
+		fmt.Printf("%+v\n", v)
 	}
 }
