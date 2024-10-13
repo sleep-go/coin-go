@@ -1,3 +1,3 @@
 .idea
-private.pem
-.env
+binance_test/futures/private.pem
+binance_test/futures/.env

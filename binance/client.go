@@ -158,9 +158,6 @@ func (c *Client) Do(ctx context.Context, r *Request) (*http.Response, error) {
 		c.Debugf("request err:%v", err)
 		return nil, err
 	}
-	fmt.Printf("%+v\n", request.URL)
-	fmt.Printf("%+v\n", request.Body)
-	fmt.Printf("%+v\n", request.Form.Encode())
 	return c.HTTPClient.Do(request)
 }
 func (c *Client) Debugf(format string, v ...interface{}) {

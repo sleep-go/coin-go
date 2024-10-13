@@ -4,7 +4,7 @@ type (
 	ContractType       string //合约类型
 	ContractStatusType string //合约状态
 	StatusType         string //订单状态
-	orderType          string //订单种类
+	OrderType          string //订单种类
 	SideType           string //订单方向 (side)
 	PositionSideType   string //持仓方向
 	TimeInForceType    string //有效方式 (timeInForce)
@@ -51,13 +51,13 @@ const (
 
 // 订单种类 (orderTypes, type):
 const (
-	OrderTypeLimit              orderType = "LIMIT"                //限价单
-	OrderTypeMarket             orderType = "MARKET"               //市价单
-	OrderTypeStop               orderType = "STOP"                 //止损限价单
-	OrderTypeStopMarket         orderType = "STOP_MARKET"          //止损市价单
-	OrderTypeTakeProfit         orderType = "TAKE_PROFIT"          //止盈限价单
-	OrderTypeTakeProfitMarket   orderType = "TAKE_PROFIT_MARKET"   //止盈市价单
-	OrderTypeTrailingStopMarket orderType = "TRAILING_STOP_MARKET" //跟踪止损单
+	OrderTypeLimit              OrderType = "LIMIT"                //限价单
+	OrderTypeMarket             OrderType = "MARKET"               //市价单
+	OrderTypeStop               OrderType = "STOP"                 //止损限价单
+	OrderTypeStopMarket         OrderType = "STOP_MARKET"          //止损市价单
+	OrderTypeTakeProfit         OrderType = "TAKE_PROFIT"          //止盈限价单
+	OrderTypeTakeProfitMarket   OrderType = "TAKE_PROFIT_MARKET"   //止盈市价单
+	OrderTypeTrailingStopMarket OrderType = "TRAILING_STOP_MARKET" //跟踪止损单
 )
 
 // 订单方向 (side):

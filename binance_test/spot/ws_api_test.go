@@ -1,4 +1,4 @@
-package coin_go
+package spot_test
 
 import (
 	"context"

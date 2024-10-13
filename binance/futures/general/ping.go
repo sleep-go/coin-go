@@ -26,11 +26,11 @@ type pingResponse struct {
 }
 
 func (p *pingRequest) Call(ctx context.Context) (body *pingResponse, err error) {
-	r := &binance.Request{
+	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiPing,
+		Path:   consts.FApiPing,
 	}
-	resp, err := p.Do(ctx, r)
+	resp, err := p.Do(ctx, req)
 	if err != nil {
 		p.Debugf("pingRequest response err: %v", err)
 		return nil, err
