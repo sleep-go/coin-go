@@ -36,6 +36,9 @@ const (
 	//采集各大交易所数据加权平均
 	FApiMarketPremiumIndex = "/fapi/v1/premiumIndex"
 
+	// FApiMarketFundingRate 查询资金费率历史
+	FApiMarketFundingRate = "/fapi/v1/fundingRate"
+
 	// FApiMarketTicker24Hr 24hr价格变动情况
 	FApiMarketTicker24Hr = "/fapi/v1/ticker/24hr"
 

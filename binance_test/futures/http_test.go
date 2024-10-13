@@ -248,6 +248,17 @@ func TestCallPremiumIndex(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestCallFundingRate(t *testing.T) {
+	res, err := market.NewFundingRate(client).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
 func TestHr24(t *testing.T) {
 	res, err := ticker.NewHr24(client, ETHUSDT).Call(context.Background())
 	if err != nil {
