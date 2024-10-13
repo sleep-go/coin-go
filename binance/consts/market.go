@@ -43,7 +43,8 @@ const (
 	FApiMarketTickerTradingDay = "/fapi/v1/ticker/tradingDay"
 
 	// FApiMarketTickerPrice 最新价格接口
-	FApiMarketTickerPrice = "/fapi/v1/ticker/price"
+	FApiMarketTickerPrice   = "/fapi/v1/ticker/price"
+	FApiMarketTickerPriceV2 = "/fapi/v2/ticker/price"
 
 	// FApiMarketTickerBookTicker 最优挂单接口
 	FApiMarketTickerBookTicker = "/fapi/v1/ticker/bookTicker"

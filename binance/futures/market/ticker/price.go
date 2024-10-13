@@ -2,9 +2,7 @@ package ticker
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -12,12 +10,14 @@ import (
 )
 
 type Price interface {
-	Call(ctx context.Context) (body []*priceResponse, err error)
+	CallV1(ctx context.Context, symbol string) (body *priceResponse, err error)
+	CallAllV1(ctx context.Context) (body []*priceResponse, err error)
+	CallV2(ctx context.Context, symbol string) (body *priceResponse, err error)
+	CallAllV2(ctx context.Context) (body []*priceResponse, err error)
 }
 
 type priceRequest struct {
 	*binance.Client
-	symbols []string
 }
 
 type priceResponse struct {
@@ -26,19 +26,57 @@ type priceResponse struct {
 }
 
 // NewPrice 最新价格接口
-func NewPrice(client *binance.Client, symbols []string) Price {
-	return &priceRequest{Client: client, symbols: symbols}
+func NewPrice(client *binance.Client) Price {
+	return &priceRequest{Client: client}
 }
 
-// Call 最新价格接口
-func (t *priceRequest) Call(ctx context.Context) (body []*priceResponse, err error) {
+// CallV1 最新价格接口
+// 返回最近价格
+func (t *priceRequest) CallV1(ctx context.Context, symbol string) (body *priceResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketTickerPrice,
+		Path:   consts.FApiMarketTickerPrice,
 	}
-	if len(t.symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbol", result)
+	req.SetParam("symbol", symbol)
+	resp, err := t.Do(ctx, req)
+	if err != nil {
+		t.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[*priceResponse](resp)
+}
+func (t *priceRequest) CallAllV1(ctx context.Context) (body []*priceResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketTickerPrice,
+	}
+	resp, err := t.Do(ctx, req)
+	if err != nil {
+		t.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[[]*priceResponse](resp)
+}
+
+// CallV2 最新价格接口
+// 返回最近价格
+func (t *priceRequest) CallV2(ctx context.Context, symbol string) (body *priceResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketTickerPriceV2,
+	}
+	req.SetParam("symbol", symbol)
+	resp, err := t.Do(ctx, req)
+	if err != nil {
+		t.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[*priceResponse](resp)
+}
+func (t *priceRequest) CallAllV2(ctx context.Context) (body []*priceResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketTickerPriceV2,
 	}
 	resp, err := t.Do(ctx, req)
 	if err != nil {
@@ -52,7 +90,6 @@ func (t *priceRequest) Call(ctx context.Context) (body []*priceResponse, err err
 
 type WsApiTickerPrice interface {
 	binance.WsApi[*WsApiTickerPriceResponse]
-	SetSymbols(symbols []string) WsApiTickerPrice
 }
 type WsApiTickerPriceResponse struct {
 	binance.WsApiResponse
@@ -70,16 +107,7 @@ func NewWsApiTickerPrice(c *binance.Client) WsApiTickerPrice {
 	return &priceRequest{Client: c}
 }
 
-func (t *priceRequest) SetSymbols(symbols []string) WsApiTickerPrice {
-	t.symbols = symbols
-	return t
-}
-
 func (t *priceRequest) Send(ctx context.Context) (*WsApiTickerPriceResponse, error) {
 	req := &binance.Request{Path: "ticker.price"}
-	if len(t.symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(t.symbols, `","`))
-		req.SetParam("symbol", result)
-	}
 	return binance.WsApiHandler[*WsApiTickerPriceResponse](ctx, t.Client, req)
 }

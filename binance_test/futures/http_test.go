@@ -241,7 +241,6 @@ func TestCallPremiumIndexKlines(t *testing.T) {
 		fmt.Println(r[11])                                                                // 请忽略该参数
 	}
 }
-
 func TestHr24(t *testing.T) {
 	res, err := ticker.NewHr24(client, ETHUSDT).Call(context.Background())
 	if err != nil {
@@ -257,4 +256,20 @@ func TestHr24(t *testing.T) {
 	for _, v := range ress {
 		fmt.Printf("%+v\n", v)
 	}
+}
+func TestNewPrice(t *testing.T) {
+	res, err := ticker.NewPrice(client).CallAllV2(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range res {
+		fmt.Println(v)
+	}
+	resp, err := ticker.NewPrice(client).CallV2(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(resp)
 }
