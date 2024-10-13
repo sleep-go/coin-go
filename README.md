@@ -34,9 +34,9 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/spot/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
+	"github.com/sleep-go/coin-go/binance/spot/enums"
 )
 
 func TestNewExchangeInfo(t *testing.T) {
@@ -82,7 +82,7 @@ func TestAggTrades(t *testing.T) {
 | 现货交易(REST接口 账户接口)               | 完成  |
 | 现货交易(Web Socket 行情接口)           | 完成  |
 | 现货交易(WebSocket 账户接口)            | 完成  |
-| 现货交易(Binance 的公共 WebSocket API) | 未完成 |
+| 现货交易(Binance 的公共 WebSocket API) | 完成  |
 
 # 支持的功能
 
