@@ -259,6 +259,16 @@ func TestCallFundingRate(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestCallFundingInfo(t *testing.T) {
+	res, err := market.NewFundingInfo(client).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
 func TestHr24(t *testing.T) {
 	res, err := ticker.NewHr24(client, ETHUSDT).Call(context.Background())
 	if err != nil {

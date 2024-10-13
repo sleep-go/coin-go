@@ -39,6 +39,9 @@ const (
 	// FApiMarketFundingRate 查询资金费率历史
 	FApiMarketFundingRate = "/fapi/v1/fundingRate"
 
+	// FApiMarketFundingInfo 查询资金费率信息
+	FApiMarketFundingInfo = "/fapi/v1/fundingInfo"
+
 	// FApiMarketTicker24Hr 24hr价格变动情况
 	FApiMarketTicker24Hr = "/fapi/v1/ticker/24hr"
 
