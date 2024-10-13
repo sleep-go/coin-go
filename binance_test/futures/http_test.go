@@ -330,3 +330,10 @@ func TestDeliveryPrice(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestOpenInterest(t *testing.T) {
+	res, err := market.NewOpenInterest(client).Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
+}

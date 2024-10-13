@@ -51,6 +51,9 @@ const (
 
 	// FApiMarketTickerBookTicker 最优挂单接口
 	FApiMarketTickerBookTicker = "/fapi/v1/ticker/bookTicker"
+
+	// FApiMarketOpenInterest 获取未平仓合约数
+	FApiMarketOpenInterest = "/fapi/v1/openInterest"
 )
 
 const (

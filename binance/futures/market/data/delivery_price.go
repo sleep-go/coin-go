@@ -6,7 +6,6 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/futures/enums"
 	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
@@ -16,8 +15,7 @@ type DeliveryPrice interface {
 
 type deliveryPriceRequest struct {
 	*binance.Client
-	pair  string
-	limit enums.LimitType
+	symbol string
 }
 type deliveryPriceResponse struct {
 	DeliveryTime  int64   `json:"deliveryTime"`
@@ -28,7 +26,7 @@ type deliveryPriceResponse struct {
 func NewDeliveryPrice(c *binance.Client, pair string) DeliveryPrice {
 	return &deliveryPriceRequest{
 		Client: c,
-		pair:   pair,
+		symbol: pair,
 	}
 }
 
@@ -37,7 +35,7 @@ func (d *deliveryPriceRequest) Call(ctx context.Context) (body []*deliveryPriceR
 		Method: http.MethodGet,
 		Path:   consts.FApiDataDeliveryPrice,
 	}
-	req.SetParam("pair", d.pair)
+	req.SetParam("pair", d.symbol)
 	resp, err := d.Do(ctx, req)
 	if err != nil {
 		d.Debugf("response err:%v", err)
