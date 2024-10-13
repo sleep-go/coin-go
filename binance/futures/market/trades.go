@@ -42,6 +42,7 @@ type tradesResponse struct {
 	QuoteQty     string `json:"quoteQty"`
 	Time         int64  `json:"time"`
 	IsBuyerMaker bool   `json:"isBuyerMaker"`
+	IsBestMatch  bool   `json:"isBestMatch"` //查询历史成交用到的字段
 }
 
 // Call 获取近期成交
@@ -54,7 +55,7 @@ func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err e
 		Path:   consts.FApiMarketTrades,
 	}
 	req.SetParam("symbol", t.symbol)
-	req.SetParam("limit", t.limit)
+	req.SetOptionalParam("limit", t.limit)
 	resp, err := t.Do(ctx, req)
 	if err != nil {
 		t.Debugf("response err:%v", err)

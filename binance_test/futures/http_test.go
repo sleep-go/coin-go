@@ -78,3 +78,15 @@ func TestTrades(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestHistoryTrades(t *testing.T) {
+	res, err := market.NewHistoryTrades(client, BTCUSDT, 1).
+		SetFromId(290414224).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, r := range res {
+		fmt.Printf("%+v\n", r)
+	}
+}

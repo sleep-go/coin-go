@@ -52,10 +52,10 @@ func (t *historyTradesRequest) SetLimit(limit enums.LimitType) *historyTradesReq
 func (t *historyTradesRequest) Call(ctx context.Context) (body []*tradesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketHistoricalTrades,
+		Path:   consts.FApiMarketHistoricalTrades,
 	}
 	req.SetParam("symbol", t.symbol)
-	req.SetParam("limit", t.limit)
+	req.SetOptionalParam("limit", t.limit)
 	req.SetOptionalParam("fromId", t.fromId)
 	resp, err := t.Do(ctx, req)
 	if err != nil {
