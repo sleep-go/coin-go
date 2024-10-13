@@ -13,6 +13,7 @@ import (
 	"github.com/sleep-go/coin-go/binance/futures/enums"
 	"github.com/sleep-go/coin-go/binance/futures/general"
 	"github.com/sleep-go/coin-go/binance/futures/market"
+	"github.com/sleep-go/coin-go/binance/futures/market/data"
 	"github.com/sleep-go/coin-go/binance/futures/market/ticker"
 	"github.com/spf13/cast"
 )
@@ -260,6 +261,7 @@ func TestCallFundingRate(t *testing.T) {
 	}
 }
 func TestCallFundingInfo(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
 	res, err := market.NewFundingInfo(client).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -315,5 +317,16 @@ func TestBookTicker(t *testing.T) {
 	}
 	for _, v := range resp {
 		fmt.Println(v)
+	}
+}
+func TestDeliveryPrice(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewDeliveryPrice(client, ETHUSDT).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
 	}
 }

@@ -11,6 +11,9 @@ func ParseHttpResponse[T any](resp *http.Response) (body T, err error) {
 	if resp.StatusCode != http.StatusOK {
 		var e *errors.Error
 		err = netutil.ParseHttpResponse(resp, &e)
+		if err != nil {
+			return body, errors.New(resp.StatusCode, err.Error(), resp.Status)
+		}
 		return body, e
 	}
 	err = netutil.ParseHttpResponse(resp, &body)
