@@ -363,3 +363,16 @@ func TestTopLongShortPositionRatio(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestTopLongShortAccountRatio(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewTopLongShortAccountRatio(client).
+		SetPeriod(enums.KlineIntervalType5m).
+		SetLimit(enums.Limit5).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}

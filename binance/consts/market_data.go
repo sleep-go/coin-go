@@ -9,4 +9,6 @@ const (
 
 	// FApiDataTopLongShortPositionRatio 大户持仓量多空比
 	FApiDataTopLongShortPositionRatio = "/futures/data/topLongShortPositionRatio"
+	// FApiDataTopLongShortAccountRatio 大户账户数多空比
+	FApiDataTopLongShortAccountRatio = "/futures/data/topLongShortAccountRatio"
 )
