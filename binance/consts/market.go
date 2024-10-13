@@ -1,6 +1,11 @@
 package consts
 
 const (
+	// FApiMarketDepth 交易对深度信息
+	FApiMarketDepth = "/fapi/v1/depth"
+)
+
+const (
 	// ApiMarketDepth 深度信息
 	ApiMarketDepth = "/api/v3/depth"
 

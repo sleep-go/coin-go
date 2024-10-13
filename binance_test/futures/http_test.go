@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/sleep-go/coin-go/binance/futures/market"
+	"github.com/sleep-go/coin-go/binance/spot/enums"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/futures/general"
@@ -55,4 +58,14 @@ func TestNewExchangeInfo(t *testing.T) {
 	}
 	fmt.Println(len(response.Symbols))
 	fmt.Printf("%+v\n", response)
+}
+func TestDepth(t *testing.T) {
+	res, err := market.NewDepth(client, ETHUSDT, enums.Limit20).Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res.Asks)
+	fmt.Println(len(res.Asks))
+	fmt.Println(len(res.Bids))
+	fmt.Println(res.LastUpdateId)
 }
