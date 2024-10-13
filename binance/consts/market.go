@@ -3,6 +3,10 @@ package consts
 const (
 	// FApiMarketDepth 交易对深度信息
 	FApiMarketDepth = "/fapi/v1/depth"
+	// FApiMarketTrades 近期成交
+	FApiMarketTrades = "/fapi/v1/trades"
+	// FApiMarketHistoricalTrades 查询历史成交
+	FApiMarketHistoricalTrades = "/fapi/v1/historicalTrades"
 )
 
 const (

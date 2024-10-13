@@ -39,9 +39,9 @@ type tradesResponse struct {
 	Id           int    `json:"id"`
 	Price        string `json:"price"`
 	Qty          string `json:"qty"`
+	QuoteQty     string `json:"quoteQty"`
 	Time         int64  `json:"time"`
 	IsBuyerMaker bool   `json:"isBuyerMaker"`
-	IsBestMatch  bool   `json:"isBestMatch"`
 }
 
 // Call 获取近期成交
@@ -51,7 +51,7 @@ type tradesResponse struct {
 func (t *tradesRequest) Call(ctx context.Context) (body []*tradesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketTrades,
+		Path:   consts.FApiMarketTrades,
 	}
 	req.SetParam("symbol", t.symbol)
 	req.SetParam("limit", t.limit)
