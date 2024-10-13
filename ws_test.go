@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sleep-go/coin-go/binance/spot/enums"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"
-	"github.com/sleep-go/coin-go/binance/spot/endpoints/stream"
+	"github.com/sleep-go/coin-go/binance/spot/account"
+	"github.com/sleep-go/coin-go/binance/spot/enums"
+	"github.com/sleep-go/coin-go/binance/spot/market"
+	"github.com/sleep-go/coin-go/binance/spot/market/ticker"
+	"github.com/sleep-go/coin-go/binance/spot/stream"
 	"github.com/tidwall/gjson"
 )
 
