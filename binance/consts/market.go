@@ -54,6 +54,12 @@ const (
 
 	// FApiMarketOpenInterest 获取未平仓合约数
 	FApiMarketOpenInterest = "/fapi/v1/openInterest"
+
+	// FApiMarketLvKlines 杠杆代币历史净值K线
+	FApiMarketLvKlines = "/fapi/v1/lvtKlines"
+
+	// FApiMarketIndexInfo 综合指数交易对信息
+	FApiMarketIndexInfo = "/fapi/v1/indexInfo"
 )
 
 const (

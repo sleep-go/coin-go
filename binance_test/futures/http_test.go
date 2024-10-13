@@ -402,3 +402,10 @@ func TestTakerLongShortRatio(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestIndexInfo(t *testing.T) {
+	res, err := market.NewIndexInfo(client, "DEFIUSDT").Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
