@@ -10,9 +10,10 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
+	"github.com/sleep-go/coin-go/binance/futures/enums"
 	"github.com/sleep-go/coin-go/binance/futures/general"
 	"github.com/sleep-go/coin-go/binance/futures/market"
-	"github.com/sleep-go/coin-go/binance/spot/enums"
+	"github.com/spf13/cast"
 )
 
 var client *binance.Client
@@ -103,5 +104,139 @@ func TestAggTrades(t *testing.T) {
 	}
 	for _, r := range res {
 		fmt.Printf("%+v\n", r)
+	}
+}
+func TestKlines(t *testing.T) {
+	k := market.NewKlines(client, BTCUSDT, enums.Limit100).
+		SetInterval(enums.KlineIntervalType1M).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetTimeZone("0")
+	res, err := k.Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for i, r := range res {
+		fmt.Print(time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), "开盘时间 ") // 开盘时间
+		fmt.Print(r[1], " ", res[i][1], "开盘价 ")                                      // 开盘价
+		fmt.Print(r[2], " ", res[i][2], "最高价 ")                                      // 最高价
+		fmt.Print(r[3], " ", res[i][3], "最低价 ")                                      // 最低价
+		fmt.Print(r[4], " ", res[i][4], "收盘价 ")                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print(r[5], "成交量 ")                                                      // 成交量
+		fmt.Print(time.UnixMilli(cast.ToInt64(r[6])), "收盘时间 ")                       // 收盘时间
+		fmt.Print(r[7], "成交额 ")                                                      // 成交额
+		fmt.Print(r[8], "成交笔数 ")                                                     // 成交笔数
+		fmt.Print(r[9], "主动买入成交量 ")                                                  // 主动买入成交量
+		fmt.Print(r[10], "主动买入成交额 ")                                                 // 主动买入成交额
+		fmt.Println(r[11])                                                           // 请忽略该参数
+	}
+}
+func TestContinuousKlines(t *testing.T) {
+	res, err := market.NewKlines(client, BTCUSDT, enums.Limit100).
+		SetContractType(enums.ContractTypePerpetual).
+		SetInterval(enums.KlineIntervalType1M).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetTimeZone("0").
+		CallMarkPriceKlines(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, r := range res {
+		fmt.Print("开盘时间:", time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), " ") // 开盘时间
+		fmt.Print("开盘价:", r[1], " ")                                                      // 开盘价
+		fmt.Print("最高价:", r[2], " ")                                                      // 最高价
+		fmt.Print("最低价:", r[3], " ")                                                      // 最低价
+		fmt.Print("收盘价:", r[4], " ")                                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print("成交量:", r[5], " ")                                                      // 成交量
+		fmt.Print("收盘时间:", time.UnixMilli(cast.ToInt64(r[6])), " ")                       // 收盘时间
+		fmt.Print("成交额:", r[7], " ")                                                      // 成交额
+		fmt.Print("成交笔数:", r[8], " ")                                                     // 成交笔数
+		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
+		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
+		fmt.Println(r[11])                                                                // 请忽略该参数
+	}
+}
+func TestCallIndexPriceKlines(t *testing.T) {
+	res, err := market.NewKlines(client, BTCUSDT, enums.Limit100).
+		SetContractType(enums.ContractTypePerpetual).
+		SetInterval(enums.KlineIntervalType1M).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetTimeZone("0").
+		CallIndexPriceKlines(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, r := range res {
+		fmt.Print("开盘时间:", time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), " ") // 开盘时间
+		fmt.Print("开盘价:", r[1], " ")                                                      // 开盘价
+		fmt.Print("最高价:", r[2], " ")                                                      // 最高价
+		fmt.Print("最低价:", r[3], " ")                                                      // 最低价
+		fmt.Print("收盘价:", r[4], " ")                                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print("成交量:", r[5], " ")                                                      // 成交量
+		fmt.Print("收盘时间:", time.UnixMilli(cast.ToInt64(r[6])), " ")                       // 收盘时间
+		fmt.Print("成交额:", r[7], " ")                                                      // 成交额
+		fmt.Print("成交笔数:", r[8], " ")                                                     // 成交笔数
+		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
+		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
+		fmt.Println(r[11])                                                                // 请忽略该参数
+	}
+}
+func TestCallMarkPriceKlines(t *testing.T) {
+	res, err := market.NewKlines(client, BTCUSDT, enums.Limit100).
+		SetContractType(enums.ContractTypePerpetual).
+		SetInterval(enums.KlineIntervalType1M).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetTimeZone("0").
+		CallIndexPriceKlines(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, r := range res {
+		fmt.Print("开盘时间:", time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), " ") // 开盘时间
+		fmt.Print("开盘价:", r[1], " ")                                                      // 开盘价
+		fmt.Print("最高价:", r[2], " ")                                                      // 最高价
+		fmt.Print("最低价:", r[3], " ")                                                      // 最低价
+		fmt.Print("收盘价:", r[4], " ")                                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print("成交量:", r[5], " ")                                                      // 成交量
+		fmt.Print("收盘时间:", time.UnixMilli(cast.ToInt64(r[6])), " ")                       // 收盘时间
+		fmt.Print("成交额:", r[7], " ")                                                      // 成交额
+		fmt.Print("成交笔数:", r[8], " ")                                                     // 成交笔数
+		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
+		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
+		fmt.Println(r[11])                                                                // 请忽略该参数
+	}
+}
+func TestCallPremiumIndexKlines(t *testing.T) {
+	res, err := market.NewKlines(client, BTCUSDT, enums.Limit100).
+		SetContractType(enums.ContractTypePerpetual).
+		SetInterval(enums.KlineIntervalType1M).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		SetTimeZone("0").
+		CallPremiumIndexKlines(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, r := range res {
+		fmt.Print("开盘时间:", time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), " ") // 开盘时间
+		fmt.Print("开盘价:", r[1], " ")                                                      // 开盘价
+		fmt.Print("最高价:", r[2], " ")                                                      // 最高价
+		fmt.Print("最低价:", r[3], " ")                                                      // 最低价
+		fmt.Print("收盘价:", r[4], " ")                                                      // 收盘价(当前K线未结束的即为最新价)
+		fmt.Print("成交量:", r[5], " ")                                                      // 成交量
+		fmt.Print("收盘时间:", time.UnixMilli(cast.ToInt64(r[6])), " ")                       // 收盘时间
+		fmt.Print("成交额:", r[7], " ")                                                      // 成交额
+		fmt.Print("成交笔数:", r[8], " ")                                                     // 成交笔数
+		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
+		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
+		fmt.Println(r[11])                                                                // 请忽略该参数
 	}
 }

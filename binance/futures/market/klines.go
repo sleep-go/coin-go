@@ -8,15 +8,22 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/spot/enums"
+	"github.com/sleep-go/coin-go/binance/futures/enums"
 	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
 type Klines interface {
 	Call(ctx context.Context) (body []*KlinesResponse, err error)
-	// CallUI 请求参数与响应和k线接口相同。
-	// uiKlines 返回修改后的k线数据，针对k线图的呈现进行了优化。
-	CallUI(ctx context.Context) (body []*KlinesResponse, err error)
+	// CallContinuousKlines 连续合约K线数据。
+	// 连续合约K线数据
+	CallContinuousKlines(ctx context.Context) (body []*KlinesResponse, err error)
+	// CallIndexPriceKlines 价格指数K线数据
+	CallIndexPriceKlines(ctx context.Context) (body []*KlinesResponse, err error)
+	// CallMarkPriceKlines 价格指数K线数据
+	CallMarkPriceKlines(ctx context.Context) (body []*KlinesResponse, err error)
+	// CallPremiumIndexKlines 溢价指数K线数据
+	CallPremiumIndexKlines(ctx context.Context) (body []*KlinesResponse, err error)
+	SetContractType(contractType enums.ContractType) *klinesRequest
 	SetInterval(interval enums.KlineIntervalType) *klinesRequest
 	SetStartTime(startTime int64) *klinesRequest
 	SetEndTime(endTime int64) *klinesRequest
@@ -25,21 +32,13 @@ type Klines interface {
 type klinesRequest struct {
 	*binance.Client
 	symbol    string
-	limit     enums.LimitType         //Default 500; max 1000.
 	interval  enums.KlineIntervalType //	请参考 K线间隔
 	startTime *int64
 	endTime   *int64
 	timeZone  string
-}
+	limit     enums.LimitType //Default 500; max 1000.
 
-func (k *klinesRequest) SetSymbol(symbol string) *klinesRequest {
-	k.symbol = symbol
-	return k
-}
-
-func (k *klinesRequest) SetLimit(limit enums.LimitType) *klinesRequest {
-	k.limit = limit
-	return k
+	contractType enums.ContractType
 }
 
 // KlinesResponse [
@@ -64,6 +63,20 @@ type KlinesResponse [12]any
 
 func NewKlines(client *binance.Client, symbol string, limit enums.LimitType) Klines {
 	return &klinesRequest{Client: client, symbol: symbol, limit: limit}
+}
+func (k *klinesRequest) SetContractType(contractType enums.ContractType) *klinesRequest {
+	k.contractType = contractType
+	return k
+}
+
+func (k *klinesRequest) SetSymbol(symbol string) *klinesRequest {
+	k.symbol = symbol
+	return k
+}
+
+func (k *klinesRequest) SetLimit(limit enums.LimitType) *klinesRequest {
+	k.limit = limit
+	return k
 }
 
 // SetInterval k线间隔 必传
@@ -99,7 +112,7 @@ func (k *klinesRequest) SetTimeZone(timeZone string) *klinesRequest {
 func (k *klinesRequest) Call(ctx context.Context) (body []*KlinesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketKLines,
+		Path:   consts.FApiMarketKLines,
 	}
 	req.SetParam("symbol", k.symbol)
 	req.SetParam("limit", k.limit)
@@ -114,12 +127,79 @@ func (k *klinesRequest) Call(ctx context.Context) (body []*KlinesResponse, err e
 	}
 	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
 }
-func (k *klinesRequest) CallUI(ctx context.Context) (body []*KlinesResponse, err error) {
+
+// CallContinuousKlines 连续合约K线数据
+// 每根K线的开盘时间可视为唯一ID
+func (k *klinesRequest) CallContinuousKlines(ctx context.Context) (body []*KlinesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketUIKLines,
+		Path:   consts.FApiMarketContinuousKlines,
+	}
+	req.SetParam("pair", k.symbol)
+	req.SetParam("contractType", k.contractType)
+	req.SetParam("limit", k.limit)
+	req.SetOptionalParam("interval", k.interval)
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	resp, err := k.Do(ctx, req)
+	if err != nil {
+		k.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
+}
+
+// CallIndexPriceKlines 价格指数K线数据
+func (k *klinesRequest) CallIndexPriceKlines(ctx context.Context) (body []*KlinesResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketIndexPriceKlines,
+	}
+	req.SetParam("pair", k.symbol)
+	req.SetParam("contractType", k.contractType)
+	req.SetParam("limit", k.limit)
+	req.SetOptionalParam("interval", k.interval)
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	resp, err := k.Do(ctx, req)
+	if err != nil {
+		k.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
+}
+
+// CallMarkPriceKlines 标记价格K线数据
+func (k *klinesRequest) CallMarkPriceKlines(ctx context.Context) (body []*KlinesResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketMarkPriceKlines,
+	}
+	req.SetParam("pair", k.symbol)
+	req.SetParam("contractType", k.contractType)
+	req.SetParam("limit", k.limit)
+	req.SetOptionalParam("interval", k.interval)
+	req.SetOptionalParam("startTime", k.startTime)
+	req.SetOptionalParam("endTime", k.endTime)
+	req.SetOptionalParam("timeZone", k.timeZone)
+	resp, err := k.Do(ctx, req)
+	if err != nil {
+		k.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[[]*KlinesResponse](resp)
+}
+
+// CallPremiumIndexKlines 溢价指数K线数据
+func (k *klinesRequest) CallPremiumIndexKlines(ctx context.Context) (body []*KlinesResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketPremiumIndexKlines,
 	}
 	req.SetParam("symbol", k.symbol)
+	req.SetParam("contractType", k.contractType)
 	req.SetParam("limit", k.limit)
 	req.SetOptionalParam("interval", k.interval)
 	req.SetOptionalParam("startTime", k.startTime)

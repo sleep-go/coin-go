@@ -13,6 +13,43 @@ const (
 	// FApiMarketAggTrades 近期成交(归集)
 	//与trades的区别是，同一个taker在同一时间同一价格与多个maker的成交会被合并为一条记录
 	FApiMarketAggTrades = "/fapi/v1/aggTrades"
+
+	// FApiMarketKLines K线数据
+	FApiMarketKLines = "/fapi/v1/klines"
+
+	// FApiMarketContinuousKlines 连续合约K线数据
+	// 每根K线的开盘时间可视为唯一ID
+	FApiMarketContinuousKlines = "/fapi/v1/continuousKlines"
+
+	// FApiMarketIndexPriceKlines 价格指数K线数据
+	//价格指数K线数据，每根K线的开盘时间可视为唯一ID
+	FApiMarketIndexPriceKlines = "/fapi/v1/indexPriceKlines"
+
+	// FApiMarketMarkPriceKlines 标记价格K线数据,每根K线的开盘时间可视为唯一ID
+	FApiMarketMarkPriceKlines = "/fapi/v1/indexPriceKlines"
+
+	// FApiMarketPremiumIndexKlines 溢价指数K线数据
+	//合约溢价指数K线。每根K线的开盘时间可视为唯一ID。
+	FApiMarketPremiumIndexKlines = "/fapi/v1/premiumIndexKlines"
+
+	// FApiMarketAvgPrice 当前平均价格
+	FApiMarketAvgPrice = "/fapi/v1/avgPrice"
+
+	// FApiMarketTicker24Hr 24hr价格变动情况
+	FApiMarketTicker24Hr = "/fapi/v1/ticker/24hr"
+
+	// FApiMarketTickerTradingDay 交易日行情(Ticker)
+	//交易日价格变动统计。
+	FApiMarketTickerTradingDay = "/fapi/v1/ticker/tradingDay"
+
+	// FApiMarketTickerPrice 最新价格接口
+	FApiMarketTickerPrice = "/fapi/v1/ticker/price"
+
+	// FApiMarketTickerBookTicker 最优挂单接口
+	FApiMarketTickerBookTicker = "/fapi/v1/ticker/bookTicker"
+
+	// FApiMarketTicker 滚动窗口价格变动统计
+	FApiMarketTicker = "/fapi/v1/ticker"
 )
 
 const (

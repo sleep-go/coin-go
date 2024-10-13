@@ -14,6 +14,7 @@ type (
 	StpModeType        string //防止自成交模式
 	PriceMatchType     string //盘口价下单模式
 	RateLimitType      string //限制种类 (RateLimitType)
+	LimitType          int
 )
 
 // 合约类型 (contractType):
@@ -147,4 +148,17 @@ const (
 const (
 	RateLimitTypeRequestWeight RateLimitType = "REQUEST_WEIGHT" //单位时间请求权重之和上限
 	RateLimitTypeOrders        RateLimitType = "ORDERS"         //单位时间下单(撤单)次数上限
+)
+
+// 定义可选的 limit 值的枚举
+// 可选值:[5, 10, 20, 50, 100, 500, 1000, 5000]
+const (
+	Limit5    LimitType = 5
+	Limit10   LimitType = 10
+	Limit20   LimitType = 20
+	Limit50   LimitType = 50
+	Limit100  LimitType = 100
+	Limit500  LimitType = 500
+	Limit1000 LimitType = 1000
+	Limit5000 LimitType = 5000
 )
