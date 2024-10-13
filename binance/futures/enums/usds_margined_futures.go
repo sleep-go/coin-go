@@ -9,6 +9,11 @@ type (
 	PositionSideType   string //持仓方向
 	TimeInForceType    string //有效方式 (timeInForce)
 	WorkingType        string //条件价格触发类型 (WorkingType)
+	NewOrderRespType   string //响应类型 (NewOrderRespType)
+	KlineIntervalType  string //K线间隔
+	StpModeType        string //防止自成交模式
+	PriceMatchType     string //盘口价下单模式
+	RateLimitType      string //限制种类 (RateLimitType)
 )
 
 // 合约类型 (contractType):
@@ -75,4 +80,71 @@ const (
 	TimeInForceTypeFOK TimeInForceType = "FOK" //Fill or Kill 无法全部立即成交就撤销
 	TimeInForceTypeGTX TimeInForceType = "GTX" //GTX - Good Till Crossing 无法成为挂单方就撤销
 	TimeInForceTypeGTD TimeInForceType = "GTD" //GTD - Good Till Date 在特定时间之前有效，到期自动撤销
+)
+
+// 响应类型 (newOrderRespType)
+const (
+	NewOrderRespTypeAck    NewOrderRespType = "ACK"
+	NewOrderRespTypeResult NewOrderRespType = "RESULT"
+)
+
+// K线间隔:
+const (
+	//seconds -> 秒	1s
+
+	KlineIntervalType1s KlineIntervalType = "1s"
+
+	//分钟级别 minutes -> 分钟	1m， 3m， 5m， 15m， 30m
+
+	KlineIntervalType1m  KlineIntervalType = "1m"
+	KlineIntervalType3m  KlineIntervalType = "3m"
+	KlineIntervalType5m  KlineIntervalType = "5m"
+	KlineIntervalType15m KlineIntervalType = "15m"
+	KlineIntervalType30m KlineIntervalType = "30m"
+
+	//  小时级别 hours -> 小时	1h， 2h， 4h， 6h， 8h， 12h
+
+	KlineIntervalType1h  KlineIntervalType = "1h"
+	KlineIntervalType2h  KlineIntervalType = "2h"
+	KlineIntervalType4h  KlineIntervalType = "4h"
+	KlineIntervalType6h  KlineIntervalType = "6h"
+	KlineIntervalType8h  KlineIntervalType = "8h"
+	KlineIntervalType12h KlineIntervalType = "12h"
+
+	// 天级别 days -> 天	1d， 3d
+
+	KlineIntervalType1d KlineIntervalType = "1d"
+	KlineIntervalType3d KlineIntervalType = "3d"
+
+	//周级别 weeks -> 周	1w
+
+	KlineIntervalType1w KlineIntervalType = "1w"
+
+	// 月级别 months -> 月	1M
+
+	KlineIntervalType1M KlineIntervalType = "1M"
+)
+
+// STP MODE 防止自成交模式
+const (
+	StpModeTypeNONE        StpModeType = "NONE"         //此模式使订单免于自我交易预防。
+	StpModeTypeExpireMaker StpModeType = "EXPIRE_MAKER" //此模式通过立即使潜在挂单者(maker)的剩余数量过期来预防交易。
+	StpModeTypeExpireTaker StpModeType = "EXPIRE_TAKER" // 此模式通过立即使吃单者(taker)的剩余数量过期来预防交易。
+	StpModeTypeExpireBoth  StpModeType = "EXPIRE_BOTH"  //此模式通过立即同时使吃单和挂单者的剩余数量过期来预防交易。
+)
+
+// 盘口价下单模式
+const (
+	PriceMatchTypeOpponent   = "OPPONENT"    //盘口对手价
+	PriceMatchTypeOpponent5  = "OPPONENT_5"  //盘口对手5档价
+	PriceMatchTypeOpponent10 = "OPPONENT_10" //盘口对手10档价
+	PriceMatchTypeOpponent20 = "OPPONENT_20" //盘口对手20档价
+	PriceMatchTypeQueue      = "QUEUE"       //盘口同向价
+	PriceMatchTypeQueue5     = "QUEUE_5"     //盘口同向排队5档价
+	PriceMatchTypeQueue10    = "QUEUE_10"    //盘口同向排队10档价
+	PriceMatchTypeQueue20    = "QUEUE_20"    //盘口同向排队20档价
+)
+const (
+	RateLimitTypeRequestWeight RateLimitType = "REQUEST_WEIGHT" //单位时间请求权重之和上限
+	RateLimitTypeOrders        RateLimitType = "ORDERS"         //单位时间下单(撤单)次数上限
 )
