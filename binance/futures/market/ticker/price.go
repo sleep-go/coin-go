@@ -23,6 +23,7 @@ type priceRequest struct {
 type priceResponse struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
+	Time   int64  `json:"time"`
 }
 
 // NewPrice 最新价格接口

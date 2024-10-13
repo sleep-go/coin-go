@@ -273,3 +273,19 @@ func TestNewPrice(t *testing.T) {
 	}
 	fmt.Println(resp)
 }
+func TestBookTicker(t *testing.T) {
+	res, err := ticker.NewBookTicker(client).Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	fmt.Printf("%+v\n", res)
+	resp, err := ticker.NewBookTicker(client).CallAll(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, v := range resp {
+		fmt.Println(v)
+	}
+}

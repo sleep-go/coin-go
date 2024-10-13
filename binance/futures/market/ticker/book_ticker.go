@@ -12,12 +12,12 @@ import (
 )
 
 type BookTicker interface {
-	Call(ctx context.Context) (body []*bookTickerResponse, err error)
+	Call(ctx context.Context, symbol string) (body *bookTickerResponse, err error)
+	CallAll(ctx context.Context) (body []*bookTickerResponse, err error)
 }
 
 type bookTickerRequest struct {
 	*binance.Client
-	symbols []string
 }
 
 type bookTickerResponse struct {
@@ -26,19 +26,29 @@ type bookTickerResponse struct {
 	BidQty   string `json:"bidQty"`
 	AskPrice string `json:"askPrice"`
 	AskQty   string `json:"askQty"`
+	Time     int64  `json:"time"`
 }
 
-func NewBookTicker(client *binance.Client, symbols []string) BookTicker {
-	return &bookTickerRequest{Client: client, symbols: symbols}
+func NewBookTicker(client *binance.Client) BookTicker {
+	return &bookTickerRequest{Client: client}
 }
-func (b *bookTickerRequest) Call(ctx context.Context) (body []*bookTickerResponse, err error) {
+func (b *bookTickerRequest) Call(ctx context.Context, symbol string) (body *bookTickerResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketTickerBookTicker,
+		Path:   consts.FApiMarketTickerBookTicker,
 	}
-	if len(b.symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
-		req.SetParam("symbol", result)
+	req.SetParam("symbol", symbol)
+	res, err := b.Do(ctx, req)
+	if err != nil {
+		b.Debugf("response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[*bookTickerResponse](res)
+}
+func (b *bookTickerRequest) CallAll(ctx context.Context) (body []*bookTickerResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodGet,
+		Path:   consts.FApiMarketTickerBookTicker,
 	}
 	res, err := b.Do(ctx, req)
 	if err != nil {
@@ -95,7 +105,6 @@ func bookTicker[T WsBookTickerEvent | StreamBookTickerEvent](c *binance.Client, 
 
 type WsApiBookTicker interface {
 	binance.WsApi[*WsApiBookTickerResponse]
-	SetSymbols(symbols []string) *bookTickerRequest
 }
 type WsApiBookTickerResponse struct {
 	binance.WsApiResponse
@@ -112,15 +121,7 @@ func NewWsApiBookTicker(c *binance.Client) WsApiBookTicker {
 	return &bookTickerRequest{Client: c}
 }
 
-func (b *bookTickerRequest) SetSymbols(symbols []string) *bookTickerRequest {
-	b.symbols = symbols
-	return b
-}
 func (b *bookTickerRequest) Send(ctx context.Context) (*WsApiBookTickerResponse, error) {
 	req := &binance.Request{Path: "ticker.book"}
-	if len(b.symbols) > 0 {
-		result := fmt.Sprintf(`["%s"]`, strings.Join(b.symbols, `","`))
-		req.SetParam("symbol", result)
-	}
 	return binance.WsApiHandler[*WsApiBookTickerResponse](ctx, b.Client, req)
 }
