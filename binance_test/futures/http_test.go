@@ -145,19 +145,8 @@ func TestContinuousKlines(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	for _, r := range res {
-		fmt.Print("开盘时间:", time.UnixMilli(cast.ToInt64(r[0])).Format(time.DateTime), " ") // 开盘时间
-		fmt.Print("开盘价:", r[1], " ")                                                      // 开盘价
-		fmt.Print("最高价:", r[2], " ")                                                      // 最高价
-		fmt.Print("最低价:", r[3], " ")                                                      // 最低价
-		fmt.Print("收盘价:", r[4], " ")                                                      // 收盘价(当前K线未结束的即为最新价)
-		fmt.Print("成交量:", r[5], " ")                                                      // 成交量
-		fmt.Print("收盘时间:", time.UnixMilli(cast.ToInt64(r[6])), " ")                       // 收盘时间
-		fmt.Print("成交额:", r[7], " ")                                                      // 成交额
-		fmt.Print("成交笔数:", r[8], " ")                                                     // 成交笔数
-		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
-		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
-		fmt.Println(r[11])                                                                // 请忽略该参数
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
 	}
 }
 func TestCallIndexPriceKlines(t *testing.T) {
@@ -239,6 +228,24 @@ func TestCallPremiumIndexKlines(t *testing.T) {
 		fmt.Print("主动买入成交量:", r[9], " ")                                                  // 主动买入成交量
 		fmt.Print("主动买入成交额:", r[10], " ")                                                 // 主动买入成交额
 		fmt.Println(r[11])                                                                // 请忽略该参数
+	}
+}
+func TestCallPremiumIndex(t *testing.T) {
+	resp, err := market.NewPremiumIndex(client).
+		Call(context.Background(), BTCUSDT)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	fmt.Println(resp)
+	res, err := market.NewPremiumIndex(client).
+		CallAll(context.Background())
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
 	}
 }
 func TestHr24(t *testing.T) {

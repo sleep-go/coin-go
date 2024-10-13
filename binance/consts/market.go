@@ -32,15 +32,12 @@ const (
 	//合约溢价指数K线。每根K线的开盘时间可视为唯一ID。
 	FApiMarketPremiumIndexKlines = "/fapi/v1/premiumIndexKlines"
 
-	// FApiMarketAvgPrice 当前平均价格
-	FApiMarketAvgPrice = "/fapi/v1/avgPrice"
+	// FApiMarketPremiumIndex 最新标记价格和资金费率
+	//采集各大交易所数据加权平均
+	FApiMarketPremiumIndex = "/fapi/v1/premiumIndex"
 
 	// FApiMarketTicker24Hr 24hr价格变动情况
 	FApiMarketTicker24Hr = "/fapi/v1/ticker/24hr"
-
-	// FApiMarketTickerTradingDay 交易日行情(Ticker)
-	//交易日价格变动统计。
-	FApiMarketTickerTradingDay = "/fapi/v1/ticker/tradingDay"
 
 	// FApiMarketTickerPrice 最新价格接口
 	FApiMarketTickerPrice   = "/fapi/v1/ticker/price"
@@ -48,9 +45,6 @@ const (
 
 	// FApiMarketTickerBookTicker 最优挂单接口
 	FApiMarketTickerBookTicker = "/fapi/v1/ticker/bookTicker"
-
-	// FApiMarketTicker 滚动窗口价格变动统计
-	FApiMarketTicker = "/fapi/v1/ticker"
 )
 
 const (

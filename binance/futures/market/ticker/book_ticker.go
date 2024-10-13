@@ -29,6 +29,8 @@ type bookTickerResponse struct {
 	Time     int64  `json:"time"`
 }
 
+// NewBookTicker 当前最优挂单
+// 返回当前最优的挂单(最高买单，最低卖单)
 func NewBookTicker(client *binance.Client) BookTicker {
 	return &bookTickerRequest{Client: client}
 }
