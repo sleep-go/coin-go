@@ -10,7 +10,7 @@ import (
 )
 
 type Commission interface {
-	SetTimestamp(timestamp int64) Commission
+	SetSymbol(symbol string) *commissionRequest
 	Call(ctx context.Context) (body *commissionResponse, err error)
 }
 
@@ -18,8 +18,7 @@ type Commission interface {
 // 获取当前账户的佣金费率。(USER_DATA)
 type commissionRequest struct {
 	*binance.Client
-	symbol    string
-	timestamp int64
+	symbol string
 }
 
 type commissionResponse struct {
@@ -50,8 +49,9 @@ func NewCommission(client *binance.Client, symbol string) Commission {
 		symbol: symbol,
 	}
 }
-func (c *commissionRequest) SetTimestamp(timestamp int64) Commission {
-	c.timestamp = timestamp
+
+func (c *commissionRequest) SetSymbol(symbol string) *commissionRequest {
+	c.symbol = symbol
 	return c
 }
 
@@ -62,11 +62,34 @@ func (c *commissionRequest) Call(ctx context.Context) (body *commissionResponse,
 	}
 	req.SetNeedSign(true)
 	req.SetParam("symbol", c.symbol)
-	req.SetParam("timestamp", c.timestamp)
 	resp, err := c.Do(ctx, req)
 	if err != nil {
 		c.Debugf("commissionRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*commissionResponse](resp)
+}
+
+// ****************************** Websocket Api *******************************
+
+type WsApiCommission interface {
+	binance.WsApi[*WsApiCommissionResponse]
+	Commission
+}
+type WsApiCommissionResponse struct {
+	binance.WsApiResponse
+	Result *commissionResponse `json:"result"`
+}
+
+// NewWsApiWsApiCommission 账户佣金费率 (USER_DATA)
+// 获取当前账户的佣金费率。
+func NewWsApiWsApiCommission(c *binance.Client) WsApiCommission {
+	return &commissionRequest{Client: c}
+}
+
+func (c *commissionRequest) Send(ctx context.Context) (*WsApiCommissionResponse, error) {
+	req := &binance.Request{Path: "account.commission"}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", c.symbol)
+	return binance.WsApiHandler[*WsApiCommissionResponse](ctx, c.Client, req)
 }

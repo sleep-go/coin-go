@@ -527,3 +527,34 @@ func TestNewWsApiMyPreventedMatches(t *testing.T) {
 		fmt.Printf("%+v\n", res.RateLimits)
 	}
 }
+func TestWsApiMyAllocations(t *testing.T) {
+	res, err := account.NewWsApiMyAllocations(wsApiClient).
+		SetSymbol(ETHUSDT).
+		SetLimit(enums.Limit5).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		for _, v := range res.Result {
+			fmt.Printf("%+v\n", v)
+		}
+		fmt.Printf("%+v\n", res.RateLimits)
+	}
+}
+func TestNewWsApiWsApiCommission(t *testing.T) {
+	res, err := account.NewWsApiWsApiCommission(wsApiClient).
+		SetSymbol(ETHUSDT).
+		Send(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Error != nil {
+		fmt.Println(res.Error)
+	} else {
+		fmt.Printf("%+v\n", res.Result)
+		fmt.Printf("%+v\n", res.RateLimits)
+	}
+}

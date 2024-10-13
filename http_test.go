@@ -329,9 +329,7 @@ func TestMyPreventedMatches(t *testing.T) {
 	}
 }
 func TestMyAllocations(t *testing.T) {
-	res, err := account.NewMyAllocations(client, BTCUSDT, enums.Limit20).
-		SetTimestamp(time.Now().UnixMilli()).
-		Call(context.Background())
+	res, err := account.NewMyAllocations(client, BTCUSDT, enums.Limit20).Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -341,7 +339,6 @@ func TestMyAllocations(t *testing.T) {
 }
 func TestCommission(t *testing.T) {
 	res, err := account.NewCommission(client, BTCUSDT).
-		SetTimestamp(time.Now().UnixMilli()).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err)
