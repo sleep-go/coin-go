@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/sleep-go/coin-go/binance/spot/enums"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/consts/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/account"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market/ticker"

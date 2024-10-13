@@ -34,7 +34,7 @@ import (
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
-	"github.com/sleep-go/coin-go/binance/consts/enums"
+	"github.com/sleep-go/coin-go/binance/spot/enums"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/general"
 	"github.com/sleep-go/coin-go/binance/spot/endpoints/market"
 )

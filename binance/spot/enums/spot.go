@@ -141,11 +141,13 @@ const (
 	KlineIntervalType1M KlineIntervalType = "1M"
 )
 
+// STP 的发生取决于 Taker 订单 的 STP 模式。
+// 因此，订单薄上的订单的 STP 模式不再有效果，并且将在所有未来的订单处理中被忽略。
 const (
-	StpModeTypeNONE        StpModeType = "NONE"
-	StpModeTypeExpireMaker StpModeType = "EXPIRE_MAKER"
-	StpModeTypeExpireTaker StpModeType = "EXPIRE_TAKER"
-	StpModeTypeExpireBoth  StpModeType = "EXPIRE_BOTH"
+	StpModeTypeNONE        StpModeType = "NONE"         //此模式使订单免于自我交易预防。
+	StpModeTypeExpireMaker StpModeType = "EXPIRE_MAKER" //此模式通过立即使潜在挂单者(maker)的剩余数量过期来预防交易。
+	StpModeTypeExpireTaker StpModeType = "EXPIRE_TAKER" // 此模式通过立即使吃单者(taker)的剩余数量过期来预防交易。
+	StpModeTypeExpireBoth  StpModeType = "EXPIRE_BOTH"  //此模式通过立即同时使吃单和挂单者的剩余数量过期来预防交易。
 )
 
 const (

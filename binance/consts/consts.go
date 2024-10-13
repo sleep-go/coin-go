@@ -25,3 +25,17 @@ const (
 	// WS_API_TEST 现货测试网的 base URL
 	WS_API_TEST = "wss://testnet.binance.vision/ws-api/v3"
 )
+
+const (
+	// REST_FAPI 期货 rest api
+	REST_FAPI = "https://fapi.binance.com"
+	// REST_FAPI_TEST 期货测试 rest api
+	REST_FAPI_TEST = "https://testnet.binancefuture.com"
+	// WS_FUTURE_TEST 期货 Websocket stream 行情推送
+	WS_FSTREAM_TEST = "wss://fstream.binancefuture.com"
+
+	// WS_FAPI 期货websocket api
+	WS_FAPI = "wss://ws-fapi.binance.com/ws-fapi/v1"
+	// WS_FAPI_TEST 期货测试websocket api
+	WS_FAPI_TEST = "wss://testnet.binancefuture.com/ws-fapi/v1"
+)
