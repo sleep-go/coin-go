@@ -75,7 +75,7 @@ func (a *aggTradesRequest) SetEndTime(endTime int64) *aggTradesRequest {
 func (a *aggTradesRequest) Call(ctx context.Context) (body []*aggTradesResponse, err error) {
 	req := &binance.Request{
 		Method: http.MethodGet,
-		Path:   consts.ApiMarketAggTrades,
+		Path:   consts.FApiMarketAggTrades,
 	}
 	req.SetParam("symbol", a.symbol)
 	req.SetParam("limit", a.limit)

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
@@ -81,6 +82,20 @@ func TestTrades(t *testing.T) {
 func TestHistoryTrades(t *testing.T) {
 	res, err := market.NewHistoryTrades(client, BTCUSDT, 1).
 		SetFromId(290414224).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	for _, r := range res {
+		fmt.Printf("%+v\n", r)
+	}
+}
+func TestAggTrades(t *testing.T) {
+	res, err := market.NewAggTrades(client, BTCUSDT, enums.Limit20).
+		SetStartTime(time.Now().UnixMilli() - 60*60*24*30*365*5).
+		SetEndTime(time.Now().UnixMilli()).
+		//SetFromId(3031206).
 		Call(context.Background())
 	if err != nil {
 		t.Fatal(err.Error())

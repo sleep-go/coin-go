@@ -3,10 +3,16 @@ package consts
 const (
 	// FApiMarketDepth 交易对深度信息
 	FApiMarketDepth = "/fapi/v1/depth"
+
 	// FApiMarketTrades 近期成交
 	FApiMarketTrades = "/fapi/v1/trades"
+
 	// FApiMarketHistoricalTrades 查询历史成交
 	FApiMarketHistoricalTrades = "/fapi/v1/historicalTrades"
+
+	// FApiMarketAggTrades 近期成交(归集)
+	//与trades的区别是，同一个taker在同一时间同一价格与多个maker的成交会被合并为一条记录
+	FApiMarketAggTrades = "/fapi/v1/aggTrades"
 )
 
 const (
