@@ -337,3 +337,16 @@ func TestOpenInterest(t *testing.T) {
 	}
 	fmt.Println(res)
 }
+func TestOpenInterestHist(t *testing.T) {
+	client.BaseURL = consts.REST_FAPI
+	res, err := data.NewOpenInterestHist(client).
+		SetPeriod(enums.KlineIntervalType5m).
+		SetLimit(enums.Limit5).
+		Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
