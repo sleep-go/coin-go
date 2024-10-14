@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sleep-go/coin-go/binance/futures/trading"
-
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/futures/enums"
@@ -17,6 +15,7 @@ import (
 	"github.com/sleep-go/coin-go/binance/futures/market"
 	"github.com/sleep-go/coin-go/binance/futures/market/data"
 	"github.com/sleep-go/coin-go/binance/futures/market/ticker"
+	"github.com/sleep-go/coin-go/binance/futures/trading"
 	"github.com/spf13/cast"
 )
 
@@ -444,6 +443,17 @@ func TestCreateOrder(t *testing.T) {
 		SetType(enums.OrderTypeMarket).
 		SetQuantity("0.01").
 		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestCreateOrderTest(t *testing.T) {
+	res, err := trading.NewOrder(client, BTCUSDT).
+		SetSide(enums.SideTypeSell).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.01").
+		CallTest(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
