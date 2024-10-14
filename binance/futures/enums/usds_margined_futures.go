@@ -69,9 +69,9 @@ const (
 
 // 持仓方向
 const (
-	PositionSideTypeBoth  = "BOTH"  //单一持仓方向
-	PositionSideTypeLong  = "LONG"  //多头(双向持仓下)
-	PositionSideTypeShort = "SHORT" //空头(双向持仓下)
+	PositionSideTypeBoth  PositionSideType = "BOTH"  //单一持仓方向
+	PositionSideTypeLong  PositionSideType = "LONG"  //多头(双向持仓下)
+	PositionSideTypeShort PositionSideType = "SHORT" //空头(双向持仓下)
 )
 
 // 有效方式 (timeInForce):
@@ -136,14 +136,14 @@ const (
 
 // 盘口价下单模式
 const (
-	PriceMatchTypeOpponent   = "OPPONENT"    //盘口对手价
-	PriceMatchTypeOpponent5  = "OPPONENT_5"  //盘口对手5档价
-	PriceMatchTypeOpponent10 = "OPPONENT_10" //盘口对手10档价
-	PriceMatchTypeOpponent20 = "OPPONENT_20" //盘口对手20档价
-	PriceMatchTypeQueue      = "QUEUE"       //盘口同向价
-	PriceMatchTypeQueue5     = "QUEUE_5"     //盘口同向排队5档价
-	PriceMatchTypeQueue10    = "QUEUE_10"    //盘口同向排队10档价
-	PriceMatchTypeQueue20    = "QUEUE_20"    //盘口同向排队20档价
+	PriceMatchTypeOpponent   PriceMatchType = "OPPONENT"    //盘口对手价
+	PriceMatchTypeOpponent5  PriceMatchType = "OPPONENT_5"  //盘口对手5档价
+	PriceMatchTypeOpponent10 PriceMatchType = "OPPONENT_10" //盘口对手10档价
+	PriceMatchTypeOpponent20 PriceMatchType = "OPPONENT_20" //盘口对手20档价
+	PriceMatchTypeQueue      PriceMatchType = "QUEUE"       //盘口同向价
+	PriceMatchTypeQueue5     PriceMatchType = "QUEUE_5"     //盘口同向排队5档价
+	PriceMatchTypeQueue10    PriceMatchType = "QUEUE_10"    //盘口同向排队10档价
+	PriceMatchTypeQueue20    PriceMatchType = "QUEUE_20"    //盘口同向排队20档价
 )
 const (
 	RateLimitTypeRequestWeight RateLimitType = "REQUEST_WEIGHT" //单位时间请求权重之和上限

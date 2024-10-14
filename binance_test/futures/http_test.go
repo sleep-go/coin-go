@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/coin-go/binance/futures/trading"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/futures/enums"
@@ -36,6 +38,11 @@ func init() {
 	PRIVATE_KEY_PATH := "./private.pem"
 	fmt.Println(API_KEY)
 	client = binance.NewRsaClient(API_KEY, PRIVATE_KEY_PATH, consts.REST_FAPI_TEST)
+	client = binance.NewClient(
+		"eb17c7e97c0651d9651679ff19810c74ebccf63ed2419a50a9d221e8e1759b60",
+		"33b1aba85d60f60e59b1a9fb93618c48f7e75b00522a986344b94c04f336de73",
+		consts.REST_FAPI_TEST,
+	)
 	client.Debug = true
 }
 func TestPing(t *testing.T) {
@@ -430,4 +437,15 @@ func TestConstituents(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("%+v\n", resp)
+}
+func TestCreateOrder(t *testing.T) {
+	res, err := trading.NewOrder(client, BTCUSDT).
+		SetSide(enums.SideTypeSell).
+		SetType(enums.OrderTypeMarket).
+		SetQuantity("0.01").
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
 }

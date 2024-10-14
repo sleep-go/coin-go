@@ -1,6 +1,13 @@
 package consts
 
 const (
+	// FApiOrder 下单 (TRADE)
+	FApiOrder = "/fapi/v1/order"
+
+	FApiTradingOrderTest = "/fapi/v1/order/test"
+)
+
+const (
 	// ApiOrder
 	//POST 下单 (TRADE)
 	//GET 查询订单 (USER_DATA)
