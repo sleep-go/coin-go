@@ -60,6 +60,9 @@ const (
 
 	// FApiMarketIndexInfo 综合指数交易对信息
 	FApiMarketIndexInfo = "/fapi/v1/indexInfo"
+
+	// FApiMarketAssetIndex 多资产模式资产汇率指数
+	FApiMarketAssetIndex = "/fapi/v1/assetIndex"
 )
 
 const (

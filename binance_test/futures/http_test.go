@@ -409,3 +409,18 @@ func TestIndexInfo(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestAssetIndex(t *testing.T) {
+	resp, err := market.NewAssetIndex(client).Call(context.Background(), "BTCUSD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", resp)
+	res, err := market.NewAssetIndex(client).CallAll(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+
+}
