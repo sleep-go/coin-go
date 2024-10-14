@@ -424,3 +424,10 @@ func TestAssetIndex(t *testing.T) {
 	}
 
 }
+func TestConstituents(t *testing.T) {
+	resp, err := market.NewConstituents(client).Call(context.Background(), ETHUSDT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", resp)
+}

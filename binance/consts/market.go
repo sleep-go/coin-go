@@ -63,6 +63,9 @@ const (
 
 	// FApiMarketAssetIndex 多资产模式资产汇率指数
 	FApiMarketAssetIndex = "/fapi/v1/assetIndex"
+
+	// FApiMarketConstituents 查询指数价格成分
+	FApiMarketConstituents = "/fapi/v1/constituents"
 )
 
 const (

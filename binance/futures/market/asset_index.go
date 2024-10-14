@@ -18,8 +18,7 @@ type assetIndexRequest struct {
 	*binance.Client
 }
 
-// NewAssetIndex Call 最新标记价格和资金费率
-// 采集各大交易所数据加权平均
+// NewAssetIndex 多资产模式资产汇率指数
 func NewAssetIndex(client *binance.Client) AssetIndex {
 	return &assetIndexRequest{
 		Client: client,
