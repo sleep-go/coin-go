@@ -448,6 +448,25 @@ func TestCreateOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+func TestBatchOrder(t *testing.T) {
+	var quantity = "0.01"
+	var requests = []*trading.CreateOrderRequest{
+		{
+			Symbol:   BTCUSDT,
+			Side:     enums.SideTypeSell,
+			Type:     enums.OrderTypeMarket,
+			Quantity: &quantity,
+		},
+	}
+	res, err := trading.NewOrder(client, BTCUSDT).
+		CallBatch(context.Background(), requests)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
+}
 func TestCreateOrderTest(t *testing.T) {
 	res, err := trading.NewOrder(client, BTCUSDT).
 		SetSide(enums.SideTypeSell).

@@ -4,6 +4,9 @@ const (
 	// FApiOrder 下单 (TRADE)
 	FApiOrder = "/fapi/v1/order"
 
+	// FApiBatchOrders 批量下单(TRADE)
+	FApiBatchOrders = "/fapi/v1/batchOrders"
+
 	FApiTradingOrderTest = "/fapi/v1/order/test"
 )
 
