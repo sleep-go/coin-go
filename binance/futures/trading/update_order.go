@@ -12,7 +12,7 @@ import (
 )
 
 type UpdateOrder interface {
-	SetOrderId(orderId int) *UpdateOrderRequest
+	SetOrderId(orderId int64) *UpdateOrderRequest
 	SetOrigClientOrderId(origClientOrderId string) *UpdateOrderRequest
 	SetSymbol(symbol string) *UpdateOrderRequest
 	SetSide(side enums.SideType) *UpdateOrderRequest
@@ -23,7 +23,7 @@ type UpdateOrder interface {
 	CallBatch(ctx context.Context, data []*UpdateOrderRequest) (body []*updateOrderResponse, err error)
 }
 
-// orderId 与 origClientOrderId 必须至少发送一个，同时发送则以 order id为准
+// UpdateOrderRequest orderId 与 origClientOrderId 必须至少发送一个，同时发送则以 order id为准
 // quantity 与 price 均必须发送，这点和 dapi 修改订单不同
 // 当新订单的quantity 或 price不满足PRICE_FILTER / PERCENT_FILTER / LOT_SIZE限制，修改会被拒绝，原订单依旧被保留
 // 订单会在下列情况下被取消：
@@ -33,7 +33,7 @@ type UpdateOrder interface {
 // 改单会将selfTradePreventionMode重置为NONE
 type UpdateOrderRequest struct {
 	*binance.Client
-	OrderId           *int                 `json:"orderId,omitempty"`           //系统订单号
+	OrderId           *int64               `json:"orderId,omitempty"`           //系统订单号
 	OrigClientOrderId *string              `json:"origClientOrderId,omitempty"` //用户自定义的订单号
 	Symbol            string               `json:"symbol,omitempty"`            //交易对
 	Side              enums.SideType       `json:"side,omitempty"`              //订单方向
@@ -69,7 +69,7 @@ type updateOrderResponse struct {
 	UpdateTime              int64                  `json:"updateTime"`
 }
 
-func (c *UpdateOrderRequest) SetOrderId(orderId int) *UpdateOrderRequest {
+func (c *UpdateOrderRequest) SetOrderId(orderId int64) *UpdateOrderRequest {
 	c.OrderId = &orderId
 	return c
 }

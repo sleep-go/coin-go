@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sleep-go/coin-go/binance/futures/account"
+
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/futures/enums"
@@ -520,4 +522,14 @@ func TestUpdateBatchOrder(t *testing.T) {
 	for _, v := range res {
 		fmt.Printf("%+v\n", v)
 	}
+}
+func TestOrderAmendment(t *testing.T) {
+	res, err := account.NewOrderAmendment(client, enums.Limit20).
+		SetSymbol(BTCUSDT).
+		SetOrderId(4067841292).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
 }

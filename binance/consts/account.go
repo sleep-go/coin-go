@@ -31,3 +31,7 @@ const (
 	//请注意，startTime和endTime之间的时间不能超过 24 小时。
 	ApiAccountAllOrderList = "/api/v3/allOrderList"
 )
+
+const (
+	FApiAccountOrderAmendment = "/fapi/v1/orderAmendment"
+)
