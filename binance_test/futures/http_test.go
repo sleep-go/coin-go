@@ -499,18 +499,22 @@ func TestUpdateOrder(t *testing.T) {
 func TestUpdateBatchOrder(t *testing.T) {
 	var quantity = "0.01"
 	var price = "96980"
+	var orderId = int64(4067841292)
+	var orderId1 = int64(4067841293)
 	var requests = []*trading.UpdateOrderRequest{
 		{
 			Symbol:   BTCUSDT,
 			Side:     enums.SideTypeSell,
 			Quantity: &quantity,
 			Price:    &price,
+			OrderId:  &orderId,
 		},
 		{
 			Symbol:   ETHUSDT,
 			Side:     enums.SideTypeSell,
 			Quantity: &quantity,
 			Price:    &price,
+			OrderId:  &orderId1,
 		},
 	}
 	res, err := trading.NewUpdateOrder(client, BTCUSDT).
@@ -538,4 +542,13 @@ func TestDeleteOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("%+v\n", res)
+}
+func TestBatchDeleteOrder(t *testing.T) {
+	res, err := trading.NewDeleteOrder(client, BTCUSDT).CallBatch(context.Background(), []int64{4067841292})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
 }

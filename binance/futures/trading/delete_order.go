@@ -11,10 +11,11 @@ import (
 )
 
 type DeleteOrder interface {
-	Call(ctx context.Context) (body *deleteOrderResponse, err error)
 	SetSymbol(symbol string) *deleteOrderRequest
 	SetOrderId(orderId int64) *deleteOrderRequest
 	SetOrigClientOrderId(origClientOrderId string) *deleteOrderRequest
+	Call(ctx context.Context) (body *deleteOrderResponse, err error)
+	CallBatch(ctx context.Context, orderIdList []int64) (body []*deleteOrderResponse, err error)
 }
 
 // deleteOrderRequest 撤销订单 (TRADE)
@@ -26,6 +27,8 @@ type deleteOrderRequest struct {
 	origClientOrderId *string
 }
 type deleteOrderResponse struct {
+	Code                    int                    `json:"code,omitempty"`
+	Msg                     string                 `json:"msg,omitempty"`
 	ClientOrderId           string                 `json:"clientOrderId"` // 用户自定义的订单号
 	CumQty                  string                 `json:"cumQty"`
 	CumQuote                string                 `json:"cumQuote"`                // 成交金额
@@ -86,6 +89,23 @@ func (d *deleteOrderRequest) Call(ctx context.Context) (body *deleteOrderRespons
 		return nil, err
 	}
 	return utils.ParseHttpResponse[*deleteOrderResponse](resp)
+}
+
+// CallBatch 批量撤销订单 (TRADE)
+func (d *deleteOrderRequest) CallBatch(ctx context.Context, orderIdList []int64) (body []*deleteOrderResponse, err error) {
+	req := &binance.Request{
+		Method: http.MethodDelete,
+		Path:   consts.FApiBatchOrders,
+	}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", d.symbol)
+	req.SetOptionalParam("orderIdList", orderIdList)
+	resp, err := d.Do(ctx, req)
+	if err != nil {
+		d.Debugf("CallBatch response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[[]*deleteOrderResponse](resp)
 }
 
 // ****************************** Websocket Api *******************************

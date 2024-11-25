@@ -58,6 +58,8 @@ type CreateOrderRequest struct {
 	GoodTillDate            *int                   `json:"goodTillDate,omitempty"`            //TIF为GTD时订单的自动取消时间， 当timeInforce为GTD时必传；传入的时间戳仅保留秒级精度，毫秒级部分会被自动忽略，时间戳需大于当前时间+600s且小于253402300799000
 }
 type createOrderResponse struct {
+	Code                    int                    `json:"code,omitempty"`
+	Msg                     string                 `json:"msg,omitempty"`
 	ClientOrderId           string                 `json:"clientOrderId"`
 	CumQty                  string                 `json:"cumQty"`
 	CumQuote                string                 `json:"cumQuote"`

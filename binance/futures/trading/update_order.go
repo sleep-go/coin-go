@@ -42,6 +42,8 @@ type UpdateOrderRequest struct {
 	PriceMatch        enums.PriceMatchType `json:"priceMatch,omitempty"`        //OPPONENT/ OPPONENT_5/ OPPONENT_10/ OPPONENT_20/QUEUE/ QUEUE_5/ QUEUE_10/ QUEUE_20；不能与price同时传
 }
 type updateOrderResponse struct {
+	Code                    int                    `json:"code,omitempty"`
+	Msg                     string                 `json:"msg,omitempty"`
 	OrderId                 int64                  `json:"orderId"`
 	Symbol                  string                 `json:"symbol"`
 	Pair                    string                 `json:"pair"`
@@ -63,10 +65,10 @@ type updateOrderResponse struct {
 	WorkingType             enums.WorkingType      `json:"workingType"`
 	PriceProtect            bool                   `json:"priceProtect"`
 	OrigType                enums.OrderType        `json:"origType"`
-	PriceMatch              enums.PriceMatchType   `json:"priceMatch"`
-	SelfTradePreventionMode enums.StpModeType      `json:"selfTradePreventionMode"`
-	GoodTillDate            int                    `json:"goodTillDate"`
-	UpdateTime              int64                  `json:"updateTime"`
+	PriceMatch              enums.PriceMatchType   `json:"priceMatch"`              //盘口价格下单模式
+	SelfTradePreventionMode enums.StpModeType      `json:"selfTradePreventionMode"` //订单自成交保护模式
+	GoodTillDate            int                    `json:"goodTillDate"`            //订单TIF为GTD时的自动取消时间
+	UpdateTime              int64                  `json:"updateTime"`              // 更新时间
 }
 
 func (c *UpdateOrderRequest) SetOrderId(orderId int64) *UpdateOrderRequest {
