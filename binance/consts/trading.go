@@ -6,6 +6,8 @@ const (
 
 	// FApiBatchOrders 批量下单(TRADE)
 	FApiBatchOrders = "/fapi/v1/batchOrders"
+	// FApiAllOpenOrders 撤销全部订单 (TRADE)
+	FApiAllOpenOrders = "/fapi/v1/allOpenOrders"
 
 	FApiTradingOrderTest = "/fapi/v1/order/test"
 )

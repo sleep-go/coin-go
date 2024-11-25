@@ -552,3 +552,10 @@ func TestBatchDeleteOrder(t *testing.T) {
 		fmt.Printf("%+v\n", v)
 	}
 }
+func TestCallAllOpenOrders(t *testing.T) {
+	res, err := trading.NewDeleteOrder(client, BTCUSDT).SetSymbol(BTCUSDT).CallAllOpenOrders(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
+}

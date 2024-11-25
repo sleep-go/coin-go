@@ -7,6 +7,7 @@ import (
 	"github.com/sleep-go/coin-go/binance"
 	"github.com/sleep-go/coin-go/binance/consts"
 	"github.com/sleep-go/coin-go/binance/futures/enums"
+	"github.com/sleep-go/coin-go/pkg/errors"
 	"github.com/sleep-go/coin-go/pkg/utils"
 )
 
@@ -16,6 +17,7 @@ type DeleteOrder interface {
 	SetOrigClientOrderId(origClientOrderId string) *deleteOrderRequest
 	Call(ctx context.Context) (body *deleteOrderResponse, err error)
 	CallBatch(ctx context.Context, orderIdList []int64) (body []*deleteOrderResponse, err error)
+	CallAllOpenOrders(ctx context.Context) (body *errors.Status, err error)
 }
 
 // deleteOrderRequest 撤销订单 (TRADE)
@@ -106,6 +108,22 @@ func (d *deleteOrderRequest) CallBatch(ctx context.Context, orderIdList []int64)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*deleteOrderResponse](resp)
+}
+
+// CallAllOpenOrders 撤销全部订单(TRADE)
+func (d *deleteOrderRequest) CallAllOpenOrders(ctx context.Context) (body *errors.Status, err error) {
+	req := &binance.Request{
+		Method: http.MethodDelete,
+		Path:   consts.FApiAllOpenOrders,
+	}
+	req.SetNeedSign(true)
+	req.SetParam("symbol", d.symbol)
+	resp, err := d.Do(ctx, req)
+	if err != nil {
+		d.Debugf("CallAllOpenOrders response err:%v", err)
+		return nil, err
+	}
+	return utils.ParseHttpResponse[*errors.Status](resp)
 }
 
 // ****************************** Websocket Api *******************************
