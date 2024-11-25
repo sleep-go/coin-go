@@ -457,6 +457,12 @@ func TestBatchOrder(t *testing.T) {
 			Type:     enums.OrderTypeMarket,
 			Quantity: &quantity,
 		},
+		{
+			Symbol:   ETHUSDT,
+			Side:     enums.SideTypeSell,
+			Type:     enums.OrderTypeMarket,
+			Quantity: &quantity,
+		},
 	}
 	res, err := trading.NewOrder(client, BTCUSDT).
 		CallBatch(context.Background(), requests)
@@ -477,4 +483,41 @@ func TestCreateOrderTest(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("%+v\n", res)
+}
+func TestUpdateOrder(t *testing.T) {
+	res, err := trading.NewUpdateOrder(client, BTCUSDT).
+		SetOrderId(4067841292).
+		SetQuantity("0.005").
+		SetSide(enums.SideTypeSell).
+		SetPrice("97976.2").Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestUpdateBatchOrder(t *testing.T) {
+	var quantity = "0.01"
+	var price = "96980"
+	var requests = []*trading.UpdateOrderRequest{
+		{
+			Symbol:   BTCUSDT,
+			Side:     enums.SideTypeSell,
+			Quantity: &quantity,
+			Price:    &price,
+		},
+		{
+			Symbol:   ETHUSDT,
+			Side:     enums.SideTypeSell,
+			Quantity: &quantity,
+			Price:    &price,
+		},
+	}
+	res, err := trading.NewUpdateOrder(client, BTCUSDT).
+		CallBatch(context.Background(), requests)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		fmt.Printf("%+v\n", v)
+	}
 }
