@@ -559,3 +559,11 @@ func TestCallAllOpenOrders(t *testing.T) {
 	}
 	fmt.Println(res)
 }
+
+func TestCallCountdownCancelAll(t *testing.T) {
+	res, err := trading.NewCancelOrder(client, BTCUSDT).CallCountdownCancelAll(context.Background(), 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
+}
