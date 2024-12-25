@@ -14,8 +14,6 @@ type CancelOrder interface {
 	CallCountdownCancelAll(ctx context.Context, countdownTime uint64) (body *cancelOrderResponse, err error)
 }
 
-// cancelOrderRequest 撤销订单 (TRADE)
-// orderId 与 origClientOrderId 必须至少发送一个.
 type cancelOrderRequest struct {
 	*binance.Client
 	symbol        string

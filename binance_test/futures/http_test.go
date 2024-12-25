@@ -567,3 +567,12 @@ func TestCallCountdownCancelAll(t *testing.T) {
 	}
 	fmt.Println(res)
 }
+func TestQueryOrder(t *testing.T) {
+	res, err := trading.NewQueryOrder(client, BTCUSDT).
+		SetOrderId(4067841292).
+		Call(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
