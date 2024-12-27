@@ -106,7 +106,7 @@ func (o *allOrdersRequest) Call(ctx context.Context) (body []*allOrdersResponse,
 	req.SetOptionalParam("endTime", o.endTime)
 	resp, err := o.Do(ctx, req)
 	if err != nil {
-		o.Debugf("queryOrderRequest response err:%v", err)
+		o.Debugf("allOrdersRequest response err:%v", err)
 		return nil, err
 	}
 	return utils.ParseHttpResponse[[]*allOrdersResponse](resp)

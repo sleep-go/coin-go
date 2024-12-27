@@ -576,3 +576,13 @@ func TestQueryOrder(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+
+func TestAllOrders(t *testing.T) {
+	response, err := account.NewAllOrders(client, BTCUSDT, enums.Limit20).Call(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for _, v := range response {
+		fmt.Printf("%+v\n", v)
+	}
+}

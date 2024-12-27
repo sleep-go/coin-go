@@ -13,6 +13,9 @@ const (
 	// FApiCountdownCancelAll 倒计时撤销所有订单 (TRADE)
 	FApiCountdownCancelAll = "/fapi/v1/countdownCancelAll"
 
+	// FApiTradingAllOrders 查询所有订单（包括历史订单） (USER_DATA)
+	FApiTradingAllOrders = "/fapi/v1/allOrders"
+
 	FApiTradingOrderTest = "/fapi/v1/order/test"
 )
 
