@@ -9,17 +9,20 @@ import (
 	"github.com/sleep-go/coin-go/trongrid/assets"
 	"github.com/sleep-go/coin-go/trongrid/base"
 	"github.com/sleep-go/coin-go/trongrid/contracts"
+	"github.com/sleep-go/coin-go/trongrid/events"
 )
 
 var a accounts.Accounts
 var a1 assets.Assets
 var c contracts.Contracts
+var e events.Events
 
 func init() {
 	client := base.NewClient(http.DefaultClient, true)
 	a = accounts.Accounts{Client: client}
 	a1 = assets.Assets{Client: client}
 	c = contracts.Contracts{Client: client}
+	e = events.Events{Client: client}
 }
 
 func TestGetAccountInfoByAddress(t *testing.T) {
@@ -109,6 +112,60 @@ func TestGetTrc20TokenHolderBalances(t *testing.T) {
 		OrderBy:         "",
 		Fingerprint:     "",
 		Limit:           0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetEventsByTransactionId(t *testing.T) {
+	res, err := e.GetEventsByTransactionId(&events.GetEventsByTransactionIdReq{
+		TransactionID:   "8c37004e25da2ded852f0f0afa57cb22f49dd363c416c351730f0dff3ff489a8",
+		OnlyUnconfirmed: false,
+		OnlyConfirmed:   false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetEventsByContractAddress(t *testing.T) {
+	res, err := e.GetEventsByContractAddress(&events.GetEventsByContractAddressReq{
+		Address:           "TDLVXu6mvt34kRRmHJtDc26bR99d7eu7No",
+		EventName:         "",
+		BlockNumber:       0,
+		OnlyUnconfirmed:   false,
+		OnlyConfirmed:     false,
+		MinBlockTimestamp: nil,
+		MaxBlockTimestamp: nil,
+		OrderBy:           "",
+		Fingerprint:       "",
+		Limit:             0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetEventsByBlockNumber(t *testing.T) {
+	res, err := e.GetEventsByBlockNumber(&events.GetEventsByBlockNumberReq{
+		BlockNumber:   29384990,
+		OnlyConfirmed: false,
+		Limit:         0,
+		Fingerprint:   "",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetEventsOfLatestBlock(t *testing.T) {
+	res, err := e.GetEventsOfLatestBlock(&events.GetEventsOfLatestBlockReq{
+		OnlyConfirmed: false,
 	})
 	if err != nil {
 		t.Fatal(err)
