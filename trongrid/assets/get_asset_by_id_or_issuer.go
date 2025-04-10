@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/sleep-go/coin-go/tron/base"
+	"github.com/sleep-go/coin-go/trongrid/base"
 )
 
 type GetAssetByIdOrIssuerResp struct {

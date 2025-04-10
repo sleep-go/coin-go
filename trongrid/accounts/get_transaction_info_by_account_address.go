@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/sleep-go/coin-go/tron/base"
+	"github.com/sleep-go/coin-go/trongrid/base"
 )
 
-type GetContractTransactionInfoByAccountAddressResp struct {
+type GetTransactionInfoByAccountAddressResp struct {
 	base.Msg
 	Data []struct {
 		Ret []struct {
@@ -75,25 +75,27 @@ type GetContractTransactionInfoByAccountAddressResp struct {
 		PageSize int   `json:"page_size"`
 	} `json:"meta"`
 }
-type GetContractTransactionInfoByAccountAddressReq struct {
+type GetTransactionInfoByAccountAddressReq struct {
 	Address         string     //owner address in base58 or hex
 	OnlyConfirmed   bool       //true | false. If false, it returns both confirmed and unconfirmed transactions. If no param is specified, it returns both confirmed and unconfirmed transactions. Cannot be used at the same time with only_unconfirmed param.
 	OnlyUnconfirmed bool       //true | false. If false, it returns both confirmed and unconfirmed transactions. If no param is specified, it returns both confirmed and unconfirmed transactions. Cannot be used at the same time with only_confirmed param.
+	OnlyTo          bool       //true | false. If true, only transactions to this address, default: false
+	OnlyFrom        bool       //true | false. If true, only transactions from this address, default: false
 	Limit           int32      //number of transactions per page, default 20, max 200
 	Fingerprint     string     //fingerprint of the last transaction returned by the previous page; when using it, the other parameters and filters should remain the same
 	OrderBy         string     //block_timestamp,asc | block_timestamp,desc (default)
 	MinTimestamp    *time.Time //minimum block_timestamp, default 0
 	MaxTimestamp    *time.Time //maximum block_timestamp, default now
-	ContractAddress string     //contract address in base58 or hex
-	OnlyTo          bool       //true | false. If true, only transactions to this address, default: false
-	OnlyFrom        bool       //true | false. If true, only transactions from this address, default: false
+	SearchInternal  bool       //true (default) | false. If true, query params applied to both normal and internal transactions. If false, query params only applied to normal transactions.
 }
 
-// GetContractTransactionInfoByAccountAddress The same time window can get up to 1000 pieces of data. If you need to get more data, you can move the time window to get more data.
-func (a *Accounts) GetContractTransactionInfoByAccountAddress(req *GetContractTransactionInfoByAccountAddressReq) (*GetContractTransactionInfoByAccountAddressResp, error) {
+// GetTransactionInfoByAccountAddress The same time window can get up to 1000 pieces of data. If you need to get more data, you can move the time window to get more data.
+func (a *Accounts) GetTransactionInfoByAccountAddress(req *GetTransactionInfoByAccountAddressReq) (*GetTransactionInfoByAccountAddressResp, error) {
 	values := url.Values{}
 	values.Add("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
 	values.Add("only_unconfirmed", fmt.Sprintf("%v", req.OnlyUnconfirmed))
+	values.Add("only_to", fmt.Sprintf("%v", req.OnlyTo))
+	values.Add("only_from", fmt.Sprintf("%v", req.OnlyFrom))
 	if req.Limit != 0 {
 		values.Add("limit", fmt.Sprintf("%d", req.Limit))
 	}
@@ -107,16 +109,14 @@ func (a *Accounts) GetContractTransactionInfoByAccountAddress(req *GetContractTr
 	if req.MaxTimestamp != nil {
 		values.Add("max_timestamp", fmt.Sprintf("%d", req.MaxTimestamp.UnixMilli()))
 	}
-	values.Add("contract_address", req.ContractAddress)
-	values.Add("only_to", fmt.Sprintf("%v", req.OnlyTo))
-	values.Add("only_from", fmt.Sprintf("%v", req.OnlyFrom))
-	path := fmt.Sprintf("/v1/accounts/%s/transactions/trc20", req.Address)
+	values.Add("search_internal", fmt.Sprintf("%v", req.SearchInternal))
+	path := fmt.Sprintf("/v1/accounts/%s/transactions", req.Address)
 	response, err := a.Client.Get(path, values)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
-	var resp = new(GetContractTransactionInfoByAccountAddressResp)
+	var resp = new(GetTransactionInfoByAccountAddressResp)
 	err = json.NewDecoder(response.Body).Decode(&resp)
 	if err != nil {
 		return nil, err

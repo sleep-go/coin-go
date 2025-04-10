@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/sleep-go/coin-go/tron/base"
+	"github.com/sleep-go/coin-go/trongrid/base"
 )
 
 type Assets struct {

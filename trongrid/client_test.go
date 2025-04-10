@@ -1,22 +1,25 @@
-package tron
+package trongrid
 
 import (
 	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/sleep-go/coin-go/tron/accounts"
-	"github.com/sleep-go/coin-go/tron/assets"
-	"github.com/sleep-go/coin-go/tron/base"
+	"github.com/sleep-go/coin-go/trongrid/accounts"
+	"github.com/sleep-go/coin-go/trongrid/assets"
+	"github.com/sleep-go/coin-go/trongrid/base"
+	"github.com/sleep-go/coin-go/trongrid/contracts"
 )
 
 var a accounts.Accounts
 var a1 assets.Assets
+var c contracts.Contracts
 
 func init() {
 	client := base.NewClient(http.DefaultClient, true)
 	a = accounts.Accounts{Client: client}
 	a1 = assets.Assets{Client: client}
+	c = contracts.Contracts{Client: client}
 }
 
 func TestGetAccountInfoByAddress(t *testing.T) {
@@ -81,6 +84,31 @@ func TestGetAssetByIdOrIssuer(t *testing.T) {
 	res, err := a1.GetAssetByIdOrIssuer(&assets.GetAssetByIdOrIssuerReq{
 		Identifier:    "41c0343ebf132a80a15a5b368af6938f30f5572fda",
 		OnlyConfirmed: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetTransactionInfoByContractAddress(t *testing.T) {
+	res, err := c.GetTransactionInfoByContractAddress(&contracts.GetTransactionInfoByContractAddressReq{
+		ContractAddress: "TDLVXu6mvt34kRRmHJtDc26bR99d7eu7No",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+
+func TestGetTrc20TokenHolderBalances(t *testing.T) {
+	res, err := c.GetTrc20TokenHolderBalances(&contracts.GetTrc20TokenHolderBalancesReq{
+		ContractAddress: "TDLVXu6mvt34kRRmHJtDc26bR99d7eu7No",
+		OnlyConfirmed:   false,
+		OnlyUnconfirmed: false,
+		OrderBy:         "",
+		Fingerprint:     "",
+		Limit:           0,
 	})
 	if err != nil {
 		t.Fatal(err)
