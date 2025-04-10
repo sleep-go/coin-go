@@ -63,3 +63,27 @@ func TestListAllAssets(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", res)
 }
+
+func TestGetAssetsByName(t *testing.T) {
+	res, err := a1.GetAssetsByName(&assets.GetAssetsByNameReq{
+		Name:          "name",
+		Limit:         0,
+		Fingerprint:   "",
+		OrderBy:       "",
+		OnlyConfirmed: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
+func TestGetAssetByIdOrIssuer(t *testing.T) {
+	res, err := a1.GetAssetByIdOrIssuer(&assets.GetAssetByIdOrIssuerReq{
+		Identifier:    "41c0343ebf132a80a15a5b368af6938f30f5572fda",
+		OnlyConfirmed: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", res)
+}
