@@ -92,24 +92,24 @@ type GetTransactionInfoByAccountAddressReq struct {
 // GetTransactionInfoByAccountAddress The same time window can get up to 1000 pieces of data. If you need to get more data, you can move the time window to get more data.
 func (a *Accounts) GetTransactionInfoByAccountAddress(req *GetTransactionInfoByAccountAddressReq) (*GetTransactionInfoByAccountAddressResp, error) {
 	values := url.Values{}
-	values.Add("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
-	values.Add("only_unconfirmed", fmt.Sprintf("%v", req.OnlyUnconfirmed))
-	values.Add("only_to", fmt.Sprintf("%v", req.OnlyTo))
-	values.Add("only_from", fmt.Sprintf("%v", req.OnlyFrom))
+	values.Set("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
+	values.Set("only_unconfirmed", fmt.Sprintf("%v", req.OnlyUnconfirmed))
+	values.Set("only_to", fmt.Sprintf("%v", req.OnlyTo))
+	values.Set("only_from", fmt.Sprintf("%v", req.OnlyFrom))
 	if req.Limit != 0 {
-		values.Add("limit", fmt.Sprintf("%d", req.Limit))
+		values.Set("limit", fmt.Sprintf("%d", req.Limit))
 	}
 	if req.Fingerprint != "" {
-		values.Add("fingerprint", req.Fingerprint)
+		values.Set("fingerprint", req.Fingerprint)
 	}
-	values.Add("order_by", req.OrderBy)
+	values.Set("order_by", req.OrderBy)
 	if req.MinTimestamp != nil {
-		values.Add("min_timestamp", fmt.Sprintf("%d", req.MinTimestamp.UnixMilli()))
+		values.Set("min_timestamp", fmt.Sprintf("%d", req.MinTimestamp.UnixMilli()))
 	}
 	if req.MaxTimestamp != nil {
-		values.Add("max_timestamp", fmt.Sprintf("%d", req.MaxTimestamp.UnixMilli()))
+		values.Set("max_timestamp", fmt.Sprintf("%d", req.MaxTimestamp.UnixMilli()))
 	}
-	values.Add("search_internal", fmt.Sprintf("%v", req.SearchInternal))
+	values.Set("search_internal", fmt.Sprintf("%v", req.SearchInternal))
 	path := fmt.Sprintf("/v1/accounts/%s/transactions", req.Address)
 	response, err := a.Client.Get(path, values)
 	if err != nil {

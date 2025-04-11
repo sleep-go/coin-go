@@ -34,13 +34,13 @@ func (c *Contracts) GetTrc20TokenHolderBalances(req *GetTrc20TokenHolderBalances
 	values.Set("only_confirmed", fmt.Sprint(req.OnlyConfirmed))
 	values.Set("only_unconfirmed", fmt.Sprint(req.OnlyUnconfirmed))
 	if req.OrderBy != "" {
-		values.Add("order_by", req.OrderBy)
+		values.Set("order_by", req.OrderBy)
 	}
 	if req.Fingerprint != "" {
-		values.Add("fingerprint", req.Fingerprint)
+		values.Set("fingerprint", req.Fingerprint)
 	}
 	if req.Limit != 0 {
-		values.Add("limit", strconv.Itoa(int(req.Limit)))
+		values.Set("limit", strconv.Itoa(int(req.Limit)))
 	}
 	path := fmt.Sprintf("/v1/contracts/%s/tokens", req.ContractAddress)
 	response, err := c.Client.Get(path, values)

@@ -58,22 +58,22 @@ type GetEventsByContractAddressReq struct {
 
 func (e *Events) GetEventsByContractAddress(req *GetEventsByContractAddressReq) (*GetEventsByContractAddressResp, error) {
 	values := url.Values{}
-	values.Add("event_name", req.EventName)
+	values.Set("event_name", req.EventName)
 	if req.BlockNumber != 0 {
-		values.Add("block_number", fmt.Sprintf("%v", req.BlockNumber))
+		values.Set("block_number", fmt.Sprintf("%v", req.BlockNumber))
 	}
 	values.Set("only_confirmed", fmt.Sprint(req.OnlyConfirmed))
 	values.Set("only_unconfirmed", fmt.Sprint(req.OnlyUnconfirmed))
 	if req.MinBlockTimestamp != nil {
-		values.Add("min_block_timestamp", fmt.Sprintf("%v", req.MinBlockTimestamp.UnixMilli()))
+		values.Set("min_block_timestamp", fmt.Sprintf("%v", req.MinBlockTimestamp.UnixMilli()))
 	}
 	if req.MaxBlockTimestamp != nil {
-		values.Add("max_block_timestamp", fmt.Sprintf("%v", req.MaxBlockTimestamp.UnixMilli()))
+		values.Set("max_block_timestamp", fmt.Sprintf("%v", req.MaxBlockTimestamp.UnixMilli()))
 	}
 	values.Set("order_by", req.OrderBy)
 	values.Set("fingerprint", req.Fingerprint)
 	if req.Limit != 0 {
-		values.Add("limit", fmt.Sprintf("%d", req.Limit))
+		values.Set("limit", fmt.Sprintf("%d", req.Limit))
 	}
 	path := fmt.Sprintf("/v1/contracts/%s/events", req.Address)
 	response, err := e.Client.Get(path, values)

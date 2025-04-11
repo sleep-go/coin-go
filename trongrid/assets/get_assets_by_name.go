@@ -42,15 +42,15 @@ type GetAssetsByNameReq struct {
 func (a *Assets) GetAssetsByName(req *GetAssetsByNameReq) (*GetAssetsByNameResp, error) {
 	values := url.Values{}
 	if req.Limit != 0 {
-		values.Add("limit", strconv.Itoa(int(req.Limit)))
+		values.Set("limit", strconv.Itoa(int(req.Limit)))
 	}
 	if req.Fingerprint != "" {
-		values.Add("fingerprint", req.Fingerprint)
+		values.Set("fingerprint", req.Fingerprint)
 	}
 	if req.OrderBy != "" {
-		values.Add("order_by", req.OrderBy)
+		values.Set("order_by", req.OrderBy)
 	}
-	values.Add("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
+	values.Set("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
 	path := fmt.Sprintf("/v1/assets/%s/list", req.Name)
 	response, err := a.Client.Get(path, values)
 	if err != nil {

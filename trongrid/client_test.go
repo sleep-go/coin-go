@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/sleep-go/coin-go/trongrid/accounts"
 	"github.com/sleep-go/coin-go/trongrid/assets"
@@ -48,8 +49,10 @@ func TestGetTransactionInfoByAccountAddress(t *testing.T) {
 }
 
 func TestGetContractTransactionInfoByAccountAddress(t *testing.T) {
+	now := time.Date(2021, 12, 12, 12, 12, 12, 12, time.Local)
 	res, err := a.GetContractTransactionInfoByAccountAddress(&accounts.GetContractTransactionInfoByAccountAddressReq{
 		Address:         "TGNBhSEXcaxYcsFavVyZEbuWPqtz7mNACF",
+		MinTimestamp:    &now,
 		ContractAddress: "TDLVXu6mvt34kRRmHJtDc26bR99d7eu7No",
 	})
 	if err != nil {

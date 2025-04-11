@@ -65,8 +65,8 @@ type GetAccountInfoByAddressReq struct {
 
 func (a *Accounts) GetAccountInfoByAddress(req *GetAccountInfoByAddressReq) (*GetAccountInfoByAddressResp, error) {
 	values := url.Values{}
-	values.Add("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
-	values.Add("only_unconfirmed", fmt.Sprintf("%v", req.OnlyUnconfirmed))
+	values.Set("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
+	values.Set("only_unconfirmed", fmt.Sprintf("%v", req.OnlyUnconfirmed))
 	path := fmt.Sprintf("/v1/accounts/%s", req.Address)
 	response, err := a.Client.Get(path, values)
 	if err != nil {

@@ -37,7 +37,7 @@ type GetAssetByIdOrIssuerReq struct {
 
 func (a *Assets) GetAssetByIdOrIssuer(req *GetAssetByIdOrIssuerReq) (*GetAssetByIdOrIssuerResp, error) {
 	values := url.Values{}
-	values.Add("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
+	values.Set("only_confirmed", fmt.Sprintf("%v", req.OnlyConfirmed))
 	path := fmt.Sprintf("/v1/assets/%s", req.Identifier)
 	response, err := a.Client.Get(path, values)
 	if err != nil {

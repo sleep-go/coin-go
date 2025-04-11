@@ -48,13 +48,13 @@ type ListAllAssetsReq struct {
 func (a *Assets) ListAllAssets(req *ListAllAssetsReq) (*ListAllAssetsResp, error) {
 	values := url.Values{}
 	if req.OrderBy != "" {
-		values.Add("order_by", req.OrderBy)
+		values.Set("order_by", req.OrderBy)
 	}
 	if req.Limit != 0 {
-		values.Add("limit", strconv.Itoa(int(req.Limit)))
+		values.Set("limit", strconv.Itoa(int(req.Limit)))
 	}
 	if req.Fingerprint != "" {
-		values.Add("fingerprint", req.Fingerprint)
+		values.Set("fingerprint", req.Fingerprint)
 	}
 	path := fmt.Sprintf("/v1/assets")
 	response, err := a.Client.Get(path, values)
